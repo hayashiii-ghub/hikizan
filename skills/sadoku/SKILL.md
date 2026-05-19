@@ -149,6 +149,8 @@ template (5 セクション固定)、書き方の手順、4 チェック、PII s
 
 SKILL.md 側ではモード起動の判定と完了記録への evidence 引用のみ担う。停止条件や必須情報の欠落がなければ、まずレビュー可能な初稿を 1 回で出す。
 
+**`teishutsu` からの handoff intake**: `teishutsu` skill の Step 4 (PR 作成) 直前に「PR 本文が未準備」状態で呼ばれることがある。handoff block の `change intent` / `files changed` / `verification` を入力として 5 セクション初稿を返し、`teishutsu` がそれを `gh pr create --body` に渡す。本 mode の出力フォーマット自体は変えない (handoff 経由でも user 直接でも同じ初稿)。
+
 ## 停止条件
 
 以下のいずれかに該当したら**作業を止めてユーザに確認**:
