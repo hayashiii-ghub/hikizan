@@ -88,14 +88,9 @@ waza の `kakunin` / `kentou` / `tsuiseki` 等とは skill 名が違うので衝
 
 hikizan は `hooks/hooks.json` 経由で CC の Bash ツール呼び出しを監視し、定義済みの条件に該当するときだけ介入します。skill 本文は正常経路で漏れを防ぎ、hook は「skill を経由しない経路でも止める最後の砦」を担当します。
 
-| event                                  | 条件                                                              | 挙動                                              |
-|----------------------------------------|-------------------------------------------------------------------|---------------------------------------------------|
-| `SessionStart` (startup)               | プロジェクト直下に `CLAUDE.md` なし、または `## hikizan Conventions` セクション欠落 | `templates/CLAUDE.md` を冪等 bootstrap            |
-| `PreToolUse` (Bash, `git push*`)       | non-fast-forward / force push to main・master・develop            | exit 2 + stderr に選択肢                          |
-| `PreToolUse` (Bash, `gh pr create*`)   | `--draft` も `--reviewer` も無い                                  | exit 2 + stderr に選択肢                          |
-| `PostToolUse` (Bash, `git commit*`)    | submodule pointer 変更ありで submodule 未 push                    | stderr warning (block しない)                     |
+4 つの hook が動きます: `SessionStart` で `templates/CLAUDE.md` を冪等 bootstrap、`git push` / `gh pr create` の介入条件チェック、`git commit` 後の submodule pointer 整合性 warning。**発火条件マトリクスは `hooks/conditions.md` を参照** (SoT)。
 
-発火イベントは `~/.hikizan/metrics.jsonl` に 1 行 1 JSON で記録されます (環境変数 `HIKIZAN_METRICS_DIR` で書き込み先変更可)。詳細仕様は `hooks/conditions.md`。
+発火イベントは `~/.hikizan/metrics.jsonl` に 1 行 1 JSON で記録されます (環境変数 `HIKIZAN_METRICS_DIR` で書き込み先変更可)。
 
 ## Codex 併用
 
@@ -182,21 +177,22 @@ wt new feat-B --launch claude  # 作成して Claude を起動
 
 install + 最初の発話 1 つで動く状態にする手順。
 
-1. install (Cursor の場合):
+1. Claude Code セッションで install:
 
-   ```bash
-   npx skills add github:hayashiii-ghub/hikizan -g -a cursor
+   ```
+   /plugin marketplace add hayashiii-ghub/hikizan
+   /plugin install hikizan
    ```
 
-   Claude Code は `-a claude-code`、Codex は `-a codex` 等に差し替え。詳細は [install (skill pack)](#install-skill-pack) 参照。
+   別ハーネス (Cursor / Codex) は [install (skill pack)](#install-skill-pack) 参照。
 
-2. agent を起動して発話:
+2. 発話してみる:
 
    ```
    コードレビューして
    ```
 
-   → `sadoku` が起動して review が走る。
+   → `/hikizan:sadoku` が起動して review が走る。
 
 3. 他の trigger は下の [trigger 早見表](#trigger-早見表) を参照。
 
@@ -276,8 +272,6 @@ hikizan/
 │   │   └── references/testing-anti-patterns.md
 │   └── teishutsu/
 │       └── SKILL.md
-├── adapters/                    ← Codex adapter (adapters/codex/) 等、Agent Skills 標準でカバーできない特殊ケース用
-│   └── README.md
 └── docs/
     ├── workflow.md              ← 使い方ガイド (利用者向け、mermaid 図入り)
     └── style-guide.md           ← 記述ルール (自然な日本語 / 番号付け禁止 / etc.)
@@ -285,13 +279,7 @@ hikizan/
 
 ## version
 
-plugin 全体 (`.claude-plugin/plugin.json`) は 0.1.0 から start。各 skill は個別 semver:
-- sadoku: 3.0.0 (レビュー咀嚼モード廃止で major)
-- kouchiku: 2.0.0 (計画実行モード追加)
-- tansaku: 2.0.0 (改名)
-- shiken: 3.0.0 (改名 + 漢字ラベル変更)
-- teishutsu: 0.1.0 (新規)
-- wt: 0.1.0 (MVP)
+plugin 全体: 0.1.0 (`.claude-plugin/plugin.json` 参照)。skill 個別の version は各 `skills/<name>/SKILL.md` の frontmatter にあります。
 
 ## ライセンス / 出典
 

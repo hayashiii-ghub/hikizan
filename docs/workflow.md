@@ -327,14 +327,7 @@ expected return:
 
 ## 8. hook 安全網
 
-skill 本文は「正常経路で漏れを防ぐ」、hook は「skill を経由しない経路でも止める最後の砦」。実体は `hooks/hooks.json` と `scripts/`。発火イベントは `~/.hikizan/metrics.jsonl` に記録される (`HIKIZAN_METRICS_DIR` で書き込み先変更可)。
-
-| event                              | 条件                                                    | 挙動                                                     |
-| ---------------------------------- | ------------------------------------------------------- | -------------------------------------------------------- |
-| `SessionStart` (startup)           | プロジェクト直下に CLAUDE.md なし、または「## hikizan Conventions」セクション欠落 | `templates/CLAUDE.md` を冪等 bootstrap                  |
-| `PreToolUse` (Bash, `git push*`)   | non-fast-forward / force push to main・master・develop | exit 2 + stderr に選択肢                                 |
-| `PreToolUse` (Bash, `gh pr create*`) | `--draft` も `--reviewer` も無い                       | exit 2 + stderr に選択肢                                 |
-| `PostToolUse` (Bash, `git commit*`) | submodule pointer 変更ありで submodule 未 push          | stderr warning (block しない)                            |
+skill 本文は「正常経路で漏れを防ぐ」、hook は「skill を経由しない経路でも止める最後の砦」。実体は `hooks/hooks.json` と `scripts/`。4 つの hook (SessionStart で CLAUDE.md bootstrap、`git push` / `gh pr create` の条件チェック、`git commit` 後の submodule warning) の**発火条件マトリクスは `hooks/conditions.md` を参照** (SoT)。発火イベントは `~/.hikizan/metrics.jsonl` に記録される (`HIKIZAN_METRICS_DIR` で書き込み先変更可)。
 
 ```mermaid
 flowchart LR

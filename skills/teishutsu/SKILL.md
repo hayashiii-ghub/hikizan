@@ -52,7 +52,7 @@ git submodule status --recursive
 ```
 
 - submodule に未 commit / 未 push がある場合:
-  1. submodule 内で commit message ドラフト → user 承認 (sadoku の commit-message mode に振らず、teishutsu 内で 1 段落生成して確認)
+  1. submodule 内で commit message ドラフトを teishutsu 内で 1 段落生成 → user 承認
   2. submodule で commit + push
 - 親 commit より submodule push を **必ず先**にする (post-commit hook が submodule 未 push を警告するが、warning では巻き戻せないため teishutsu 側で事前解消する)
 

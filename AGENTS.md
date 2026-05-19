@@ -13,11 +13,11 @@
 - **使い方ガイド** は `docs/workflow.md` (mermaid 図入り)、記述ルールは `docs/style-guide.md`
 - **hooks** は `hooks/hooks.json` (SessionStart / PreToolUse / PostToolUse)、停止条件マトリクスは `hooks/conditions.md`、scripts は `hooks/scripts/`、発火ログは `~/.hikizan/metrics.jsonl`
 - **CLAUDE.md template** は `templates/CLAUDE.md` (SessionStart hook が冪等 bootstrap する)
-- **配置** は (a) Claude Code plugin (`/plugin marketplace add hayashiii-ghub/hikizan` + `/plugin install hikizan`) または (b) Agent Skills CLI (`npx skills add github:hayashiii-ghub/hikizan`) の 2 経路。Codex 連携は OpenAI 公式の [openai/codex-plugin-cc](https://github.com/openai/codex-plugin-cc)、LSP 連携は CC 公式 marketplace の `typescript-lsp` / `pyright-lsp` / `rust-analyzer-lsp` を別途 install する設計 (hikizan 側で adapter / .lsp.json は持たない)。`adapters/` は Agent Skills 標準でカバーできない特殊ケース用の予約領域
+- **配置** は (a) Claude Code plugin (`/plugin marketplace add hayashiii-ghub/hikizan` + `/plugin install hikizan`) または (b) Agent Skills CLI (`npx skills add github:hayashiii-ghub/hikizan`) の 2 経路。Codex 連携は OpenAI 公式の [openai/codex-plugin-cc](https://github.com/openai/codex-plugin-cc)、LSP 連携は CC 公式 marketplace の `typescript-lsp` / `pyright-lsp` / `rust-analyzer-lsp` を別途 install する設計 (hikizan 側で adapter / .lsp.json は持たない)
 
 ## このリポジトリでの作業ルール
 
-1. skill 本体 (`skills/`) はハーネス agnostic に書く。Claude Code / Cursor / Codex 等の固有 API 名は本文に出さない (出す場合は `adapters/` に隔離 or 注釈で明示)
+1. skill 本体 (`skills/`) はハーネス agnostic に書く。Claude Code / Cursor / Codex 等の固有 API 名は本文に出さない (出す場合は注釈で明示)
 2. PR 粒度: 1 issue = 1 PR (hikizan 自身の `sadoku` の停止条件と同じ)
 3. ドキュメントは引き算原則に従う: 選択肢提示 + 推奨度 N/10 + 1 行根拠 / 図優先
 4. skill discovery は frontmatter `description` を SoT にする。`when_to_use` は非標準の補助メモとして短く残すだけで、同義語を網羅しない
