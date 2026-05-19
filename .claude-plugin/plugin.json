@@ -1,0 +1,11 @@
+{
+  "name": "hikizan",
+  "description": "日本語圏チーム開発向け Claude Code plugin。動詞単位の 4 skill (sadoku / kouchiku / tansaku / shiken) と引き算の哲学。",
+  "version": "0.1.0",
+  "author": {
+    "name": "hayashiii-ghub"
+  },
+  "homepage": "https://github.com/hayashiii-ghub/hikizan",
+  "repository": "https://github.com/hayashiii-ghub/hikizan",
+  "license": "MIT"
+}
