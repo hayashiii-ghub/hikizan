@@ -41,7 +41,7 @@ git log --diff-filter=A --name-only -10 | head -30
 - [推測項目] (確度: NN%) — [根拠: file:line / commit / TODO 等]
 ```
 
-シンボル探索 (関数 / クラス / 変数の定義 / 参照) が必要な場合は、LSP が利用可能なら LSP を優先、テキスト探索 (TODO / FIXME / 設定 / Markdown) は grep のままにする。LSP 未設定環境では grep にフォールバック (詳細は別 issue で本文化予定)。
+シンボル探索 (関数 / クラス / 変数の定義 / 参照) が必要な場合は LSP を優先、テキスト探索 (TODO / FIXME / 設定 / Markdown / コメント内文字列) は grep を使う。LSP 未設定環境では grep にフォールバックする (LSP 環境構築は本 plugin の責務ではなく、公式 LSP plugin = `typescript-lsp` / `pyright-lsp` / `rust-analyzer-lsp` 等を別途 install する設計、詳細は README「LSP 併用」節)。
 
 軽量検討モード / 評価モードでは Phase 0 は省略可。通常検討モード / 計画実行モードでは原則実行。
 
