@@ -104,6 +104,27 @@ CC plugin の namespace 規約により、hikizan / codex の skill 名は衝突
 
 hikizan の hooks (pre-push / pre-pr-create / post-commit) は CC 本体の Bash ツール呼び出しに対して発火するため、Codex 経由で実行されるコマンドが CC の Bash を通る限り、同じ停止条件が効きます。
 
+## LSP 併用
+
+シンボル探索 (関数 / クラス / 変数の定義 / 参照) に LSP の正確性が必要な場合は、CC 公式 marketplace から各言語の LSP plugin を別途 install します。hikizan 自身は `.lsp.json` を持たない設計 (Codex 連携と同じく、orchestration は外部 plugin に委譲)。
+
+```bash
+# Claude Code セッション内で実行 ( /plugin Discover タブで "lsp" を検索しても同じ )
+/plugin install typescript-lsp@anthropic
+/plugin install pyright-lsp@anthropic
+/plugin install rust-analyzer-lsp@anthropic
+```
+
+各 LSP plugin は **language server バイナリを別途要求**します。例:
+
+| LSP plugin | 言語 | バイナリ install |
+|---|---|---|
+| `typescript-lsp` | TypeScript / JavaScript | `npm install -g typescript-language-server typescript` |
+| `pyright-lsp` | Python | `pip install pyright` (または `npm install -g pyright`) |
+| `rust-analyzer-lsp` | Rust | [rust-analyzer 公式手順](https://rust-analyzer.github.io/manual.html#installation) |
+
+hikizan の skill は **「シンボル系は LSP、テキスト系は grep、LSP 未設定なら grep にフォールバック」** の規約で書かれているため、LSP plugin を入れていない環境でも grep ベースで動作します (精度は落ちる)。
+
 ## install (wt — git worktree CLI)
 
 並列開発で worktree を扱うための CLI。skill とは独立、bash 単体。

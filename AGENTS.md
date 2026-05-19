@@ -11,7 +11,7 @@
   - `shiken` (試験) — TDD discipline / PRUNE
   - `teishutsu` (提出) — PR 提出フロー (リモート確認 / submodule / parent commit / cwd-aware gh)
 - **使い方ガイド** は `docs/workflow.md` (mermaid 図入り)
-- **配置** は (a) Claude Code plugin (`/plugin marketplace add hayashiii-ghub/hikizan` + `/plugin install hikizan`) または (b) Agent Skills CLI (`npx skills add github:hayashiii-ghub/hikizan`) の 2 経路。Codex 連携は OpenAI 公式の [openai/codex-plugin-cc](https://github.com/openai/codex-plugin-cc) を別途 install する設計 (hikizan 側で adapter は持たない)。`adapters/` は Agent Skills 標準でカバーできない特殊ケース用の予約領域
+- **配置** は (a) Claude Code plugin (`/plugin marketplace add hayashiii-ghub/hikizan` + `/plugin install hikizan`) または (b) Agent Skills CLI (`npx skills add github:hayashiii-ghub/hikizan`) の 2 経路。Codex 連携は OpenAI 公式の [openai/codex-plugin-cc](https://github.com/openai/codex-plugin-cc)、LSP 連携は CC 公式 marketplace の `typescript-lsp` / `pyright-lsp` / `rust-analyzer-lsp` を別途 install する設計 (hikizan 側で adapter / .lsp.json は持たない)。`adapters/` は Agent Skills 標準でカバーできない特殊ケース用の予約領域
 
 ## このリポジトリでの作業ルール
 
