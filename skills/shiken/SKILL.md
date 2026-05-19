@@ -79,6 +79,7 @@ verification:
 - TDD RED-GREEN サイクルは **inline 強制**、subagent 委譲禁止 (目視必須)
 - スキップ時は完了記録に理由 1 行必須 (`tdd: skip — CSS-only layout adjustment, no logic touched`)
 - ロジック行に 1 行でも触れたらスキップ判定から強制復帰
+- PR / branch / step を独自連番 (PR-1 等) で呼ばない。issue 名 / 機能名 / branch 名で呼ぶ。重複時のみ -v2, -v3 ... のサフィックスを使う
 
 ## サイクル: RED → GREEN → REFACTOR → PRUNE
 
