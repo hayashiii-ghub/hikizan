@@ -142,8 +142,19 @@ hikizan の skill は **「シンボル系は LSP、テキスト系は grep、LS
 
 並列開発で worktree を扱うための CLI。skill とは独立、bash 単体。
 
+### Claude Code plugin 経由 (推奨)
+
+`/plugin install hikizan` を実行している場合、`bin/wt` は CC plugin の `bin/` 機構によりセッション中の Bash ツールの `PATH` に自動追加されます。追加手順は不要、Claude Code 内で直接呼び出せます:
+
 ```bash
-# symlink (推奨)
+wt help
+```
+
+### skill pack 単独利用 / shell から直接使いたい場合
+
+`npx skills add` 経由で skill だけ入れている、または CC 外の shell から `wt` を叩きたい場合は、手動で symlink:
+
+```bash
 mkdir -p ~/.local/bin
 ln -s "$(pwd)/bin/wt" ~/.local/bin/wt
 
