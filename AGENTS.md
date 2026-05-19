@@ -20,6 +20,7 @@
 4. skill discovery は frontmatter `description` を SoT にする。`when_to_use` は非標準の補助メモとして短く残すだけで、同義語を網羅しない
 5. skill 間の連携は `kouchiku` を controller、`tansaku` / `shiken` / `sadoku` を discipline owner とし、handoff block で渡す
 6. agent の応答は問い合わせ言語に合わせる。日本語の問い合わせには自然文 (説明 / 要約 / 提案理由 / 質問) を日本語で返す (skill 内の英語 label と技術用語はそのまま残す)
+7. PR / branch / step を独自連番 (PR-1 等) で呼ばない。issue 名 / 機能名 / branch 名で呼ぶ。重複時のみ -v2, -v3 ... のサフィックスを使う
 
 ## このリポジトリを使う AI agent への指示
 

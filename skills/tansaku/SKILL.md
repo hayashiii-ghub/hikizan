@@ -43,6 +43,7 @@ GIT_COMMON=$(cd "$(git rev-parse --git-common-dir)" 2>/dev/null && pwd -P)
 - fix が 5+ ファイルに touch するなら scope 確認 (= 別 bug の可能性)
 - `Never state from memory. Run grep first.` (識別子・呼び出し関係は実物を確認、記憶で答えない)
 - 外部事実 (OSS の現行仕様 / 最新バージョン / 標準) は知識カットオフ後の可能性があるため、利用可能な検索・fetch・一次ソースで裏取りしてから引用する (§3.10 ファクトチェック原則)
+- PR / branch / step を独自連番 (PR-1 等) で呼ばない。issue 名 / 機能名 / branch 名で呼ぶ。重複時のみ -v2, -v3 ... のサフィックスを使う
 
 ## 通常追跡モード
 
