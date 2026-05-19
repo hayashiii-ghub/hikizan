@@ -88,6 +88,7 @@ Standard 以上で security / architecture 観点が必要な場合のみ subage
 - **発話 trigger only** (state trigger を持たない、default の通常レビューに含めない)
 - **`コードレビュー` 経由の compound 起動時**: 通常レビューの完了後、独立 section として simplify findings を出す (severity 順位で混ざらないようにする)
 - **severity 付き** で出す: high / medium / low、kouchiku に振るのは high severity のみが default
+- **disposition (処置) 必須** で出す: 各 finding に「本 PR で修正 / 『実装中に分かったこと』に記録 / 別 issue 候補 / 据え置き」のいずれかを書く。low severity の default は「記録のみ」、medium / high はユーザに判断を委ねる
 
 ### 5 観点
 
@@ -109,13 +110,15 @@ Standard 以上で security / architecture 観点が必要な場合のみ subage
 scope:     [対象 file / 範囲]
 
 ### finding 1
-severity:  high / medium / low
-category:  重複 / 命名 / 抽象化 / dead code / efficiency
-file:      path:line-range
-issue:     [問題、1-2 文]
-evidence:  [該当コード片 1-3 行を引用、そのまま]
-recommend: [提案、1-2 文]
-handoff:   kouchiku (high severity のみ) / user 判断 (medium / low)
+severity:           high / medium / low
+category:           重複 / 命名 / 抽象化 / dead code / efficiency
+file:               path:line-range
+issue:              [問題、1-2 文]
+evidence:           [該当コード片 1-3 行を引用、そのまま]
+recommend:          [提案、1-2 文]
+disposition:        本 PR で修正 / 「実装中に分かったこと」に記録 / 別 issue 候補 / 据え置き
+disposition_reason: コスト / リスク / 別 issue 値 の 3 軸で 1 行
+handoff:            kouchiku (high severity のみ) / user 判断 (medium / low)
 
 ### finding 2
 ...
