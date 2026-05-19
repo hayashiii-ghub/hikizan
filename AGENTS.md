@@ -10,7 +10,9 @@
   - `tansaku` (探索) — バグ調査 / root cause investigation
   - `shiken` (試験) — TDD discipline / PRUNE
   - `teishutsu` (提出) — PR 提出フロー (リモート確認 / submodule / parent commit / cwd-aware gh)
-- **使い方ガイド** は `docs/workflow.md` (mermaid 図入り)
+- **使い方ガイド** は `docs/workflow.md` (mermaid 図入り)、記述ルールは `docs/style-guide.md`
+- **hooks** は `.claude-plugin/hooks/hooks.json` (SessionStart / PreToolUse / PostToolUse)、停止条件マトリクスは `.claude-plugin/hooks/conditions.md`、scripts は `.claude-plugin/hooks/scripts/`、発火ログは `~/.hikizan/metrics.jsonl`
+- **CLAUDE.md template** は `templates/CLAUDE.md` (SessionStart hook が冪等 bootstrap する)
 - **配置** は (a) Claude Code plugin (`/plugin marketplace add hayashiii-ghub/hikizan` + `/plugin install hikizan`) または (b) Agent Skills CLI (`npx skills add github:hayashiii-ghub/hikizan`) の 2 経路。Codex 連携は OpenAI 公式の [openai/codex-plugin-cc](https://github.com/openai/codex-plugin-cc)、LSP 連携は CC 公式 marketplace の `typescript-lsp` / `pyright-lsp` / `rust-analyzer-lsp` を別途 install する設計 (hikizan 側で adapter / .lsp.json は持たない)。`adapters/` は Agent Skills 標準でカバーできない特殊ケース用の予約領域
 
 ## このリポジトリでの作業ルール
@@ -19,7 +21,7 @@
 2. PR 粒度: 1 issue = 1 PR (hikizan 自身の `sadoku` の停止条件と同じ)
 3. ドキュメントは引き算原則に従う: 選択肢提示 + 推奨度 N/10 + 1 行根拠 / 図優先
 4. skill discovery は frontmatter `description` を SoT にする。`when_to_use` は非標準の補助メモとして短く残すだけで、同義語を網羅しない
-5. skill 間の連携は `kouchiku` を controller、`tansaku` / `shiken` / `sadoku` を discipline owner とし、handoff block で渡す
+5. skill 間の連携は `kouchiku` を controller、`tansaku` / `shiken` / `sadoku` を discipline owner、`teishutsu` を PR 提出フローの担当とし、handoff block で渡す
 6. agent の応答は問い合わせ言語に合わせる。日本語の問い合わせには自然文 (説明 / 要約 / 提案理由 / 質問) を日本語で返す (skill 内の英語 label と技術用語はそのまま残す)
 7. PR / branch / step を独自連番 (PR-1 等) で呼ばない。issue 名 / 機能名 / branch 名で呼ぶ。重複時のみ -v2, -v3 ... のサフィックスを使う
 
