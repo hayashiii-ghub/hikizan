@@ -47,9 +47,17 @@
 
 詳細: hikizan plugin の `skills/kouchiku/references/minimal-approach.md`
 
-### PR 提出フロー (将来 teishutsu skill で skill 化予定)
+### PR 提出フロー
 
-- 提出前に `git fetch --all` でリモート状態確認
-- submodule に変更があれば submodule 側から先に commit + push
-- 親 commit は submodule pointer 込みで作成
-- PR 作成は `gh pr create --draft --reviewer @user` を default に (hikizan の pre-pr-create hook が `--draft` も `--reviewer` も無い場合は block する)
+`teishutsu` skill (発話: 「PR出す」「PR提出」「提出して」) が 4 step で運ぶ:
+
+1. リモート状態確認 (`git fetch --all` → 先行 commit がないか)
+2. submodule に変更があれば submodule 側から先に commit + push
+3. 親 commit は submodule pointer 込みで作成
+4. PR 作成 (`gh pr create --draft --reviewer @user` を default、cwd を明示確認してから走らせる)
+
+hikizan の hook (pre-push / pre-pr-create / post-commit) が最後の砦として block / warning を出す。
+
+### Codex 併用時の補足
+
+Claude Code で hikizan を動かしつつ、Codex に下請けさせたい場合は OpenAI 公式の [openai/codex-plugin-cc](https://github.com/openai/codex-plugin-cc) を別途 install する (hikizan は Codex 呼び出し本体を持たない)。CC plugin の namespace 規約により `/hikizan:*` と `/codex:*` は衝突しない。hikizan の hook は CC の Bash ツール呼び出しに対して発火するため、Codex 経由で実行されるコマンドが CC の Bash を通る限り同じ停止条件が効く。
