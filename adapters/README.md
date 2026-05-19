@@ -1,18 +1,16 @@
 # adapters/
 
-このディレクトリは Agent Skills 標準でカバーできない特殊ケース用の領域です。**現状は予告のみ**で、実体はまだ入っていません。
+このディレクトリは Agent Skills 標準でカバーできない特殊ケース用の予約領域です。**現状は空**で問題ありません。
 
-## 主な用途
+## なぜ空か
 
 hikizan は (a) Claude Code plugin (`/plugin` 経由) と (b) skill pack (`npx skills add github:hayashiii-ghub/hikizan`) の 2 経路で配布します。両方とも標準仕様の範囲で動くため、ハーネス独自の変換 / 配置スクリプトは通常不要です。
 
-`adapters/` はこの「標準仕様の範囲外」にあるニーズを置く場所です。
+Codex 連携を求める場合も hikizan 自身では adapter を持たず、OpenAI 公式の [openai/codex-plugin-cc](https://github.com/openai/codex-plugin-cc) を別途 install する設計です (詳細は root の README「Codex 併用」節)。
 
-## 予定している adapter
+`adapters/` はこの「標準仕様の範囲外、かつ既存 plugin で代替できない」ニーズが将来出てきた場合の置き場所です。
 
-- `adapters/codex/` — Claude Code plugin から Codex CLI / SDK を呼び出す adapter。Codex は (b) の skill pack として単独利用もサポートされるが、Claude Code 中心ハーネスから Codex に下請けさせたい場合の橋渡しに使う
-
-## 他に入りうるもの
+## 何が入る予定か
 
 実需要が出た場合のみ追加:
 

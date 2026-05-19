@@ -42,6 +42,8 @@ skill 名は namespace 規約により `/hikizan:sadoku` / `/hikizan:kouchiku` /
 
 hikizan は [Agent Skills 標準](https://agentskills.io) にも沿った **skill pack** です。skills-compatible agent (Cursor / Codex / Claude Code) へ `skills` CLI で配置できます。
 
+> Codex を Claude Code 経由で呼びたい場合は下の [Codex 併用](#codex-併用) 節を参照してください。skill pack 単独で Codex を直接動かしたい場合のみ、本節の手順 (`npx skills add -a codex`) を使います。
+
 ### 推奨: `npx skills add` (1 コマンドで自動配置)
 
 ハーネス別の例:
@@ -81,6 +83,26 @@ Cursor は `~/.cursor/skills/`、Claude Code は `~/.claude/skills/` を auto-di
 | Cline / OpenCode 等 universal | `~/.agents/skills/` または `./.agents/skills/` |
 
 waza の `kakunin` / `kentou` / `tsuiseki` 等とは skill 名が違うので衝突せず共存可能。
+
+## Codex 併用
+
+Claude Code 中心のハーネスで動かしつつ、特定タスクだけ Codex に下請けさせたい場合は、OpenAI 公式の [openai/codex-plugin-cc](https://github.com/openai/codex-plugin-cc) を hikizan と並行で install します。hikizan 自身は Codex 呼び出し本体を持たない設計 (= 外部依存を抱え込まない)。
+
+```bash
+# Claude Code セッション内で実行
+/plugin marketplace add openai/codex-plugin-cc
+/plugin install codex@openai-codex
+/codex:setup
+```
+
+CC plugin の namespace 規約により、hikizan / codex の skill 名は衝突しません。`/hikizan:sadoku` / `/hikizan:kouchiku` 等の skill は Claude (CC 本体) で動き、Codex に下請けさせたい場面は codex-plugin-cc の `codex:codex-rescue` subagent や `/codex:setup` 経由で呼び出します。
+
+要件:
+- ChatGPT subscription または OpenAI API key
+- ローカルに Codex CLI (`npm install -g @openai/codex`)
+- License: Apache-2.0 (codex-plugin-cc 側)
+
+hikizan の hooks (pre-push / pre-pr-create / post-commit) は CC 本体の Bash ツール呼び出しに対して発火するため、Codex 経由で実行されるコマンドが CC の Bash を通る限り、同じ停止条件が効きます。
 
 ## install (wt — git worktree CLI)
 
