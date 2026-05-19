@@ -1,6 +1,6 @@
 # AGENTS.md
 
-このリポジトリは **kufuu** — 日本語圏チーム開発向けの Agent Skills 対応 skill pack です。Codex plugin ではなく、`skills/` と任意の `bin/wt` CLI を配布単位にします。
+このリポジトリは **hikizan** — 日本語圏チーム開発向けの Claude Code plugin 兼 Agent Skills 対応 skill pack です。`.claude-plugin/` (Claude Code 経由) と `skills/` (Agent Skills CLI 経由) の 2 経路で配布します。中核に据えるのは**引き算の哲学**。
 
 ## 構成
 
@@ -10,12 +10,12 @@
   - `tansaku` (探索) — バグ調査 / root cause investigation
   - `shiken` (試験) — TDD discipline / PRUNE
 - **使い方ガイド** は `docs/workflow.md` (mermaid 図入り)
-- **配置** は `npx skills add github:hayashiii-ghub/kufuu` (Agent Skills 標準に沿った skill pack)。`adapters/` は標準でカバーできない特殊ケース用の予約領域 (現状は `adapters/README.md` のみ)
+- **配置** は (a) Claude Code plugin (`/plugin marketplace add hayashiii-ghub/hikizan` + `/plugin install hikizan`) または (b) Agent Skills CLI (`npx skills add github:hayashiii-ghub/hikizan`) の 2 経路。`adapters/` は Codex adapter (`adapters/codex/`) 等、Agent Skills 標準でカバーできない特殊ケース用
 
 ## このリポジトリでの作業ルール
 
 1. skill 本体 (`skills/`) はハーネス agnostic に書く。Claude Code / Cursor / Codex 等の固有 API 名は本文に出さない (出す場合は `adapters/` に隔離 or 注釈で明示)
-2. PR 粒度: 1 issue = 1 PR (kufuu 自身の `sadoku` の停止条件と同じ)
+2. PR 粒度: 1 issue = 1 PR (hikizan 自身の `sadoku` の停止条件と同じ)
 3. ドキュメントは引き算原則に従う: 選択肢提示 + 推奨度 N/10 + 1 行根拠 / 図優先
 4. skill discovery は frontmatter `description` を SoT にする。`when_to_use` は非標準の補助メモとして短く残すだけで、同義語を網羅しない
 5. skill 間の連携は `kouchiku` を controller、`tansaku` / `shiken` / `sadoku` を discipline owner とし、handoff block で渡す
@@ -25,7 +25,7 @@
 ## このリポジトリを使う AI agent への指示
 
 - README.md を最初に読む
-- `bin/wt` は git worktree CLI、kufuu pack 同梱の補助ツール
+- `bin/wt` は git worktree CLI、hikizan に同梱の補助ツール
 - skill の発動 trigger は下記「skill の発動 trigger 一覧」を参照、詳細仕様は各 SKILL.md
 
 ## skill の発動 trigger 一覧

@@ -110,10 +110,10 @@ PRUNE 後の test 数 = 残った仕様の数。
 3. unrelated な dirty file がある場合、作業全体を `git stash` しない。scope を確認する
 
 ```bash
-cp path/to/impl /tmp/kufuu-prune.impl
+cp path/to/impl /tmp/hikizan-prune.impl
 # 対象挙動だけを一時的に壊す
 <test runner> <test>    # → fail を確認 (= test が機能している)
-cp /tmp/kufuu-prune.impl path/to/impl
+cp /tmp/hikizan-prune.impl path/to/impl
 <test runner> <test>    # → pass を再確認
 ```
 
