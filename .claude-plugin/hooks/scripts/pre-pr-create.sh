@@ -4,8 +4,12 @@
 
 set -uo pipefail
 
+# shellcheck source=lib/metrics.sh
+source "$(dirname "$0")/lib/metrics.sh" 2>/dev/null || hikizan_metrics_log() { :; }
+
 JSON=$(cat)
 COMMAND=$(printf '%s' "$JSON" | jq -r '.tool_input.command // ""')
+SESSION_ID=$(printf '%s' "$JSON" | jq -r '.session_id // ""')
 
 case "$COMMAND" in
   *"gh pr create"*) ;;
@@ -24,6 +28,7 @@ case "$COMMAND" in
 esac
 
 if [ "$HAS_DRAFT" -eq 0 ] && [ "$HAS_REVIEWER" -eq 0 ]; then
+  hikizan_metrics_log hook_fired pre-pr-create no_draft_no_reviewer block "$SESSION_ID"
   cat >&2 <<EOF
 gh pr create called without --draft and without --reviewer.
 
@@ -37,4 +42,5 @@ EOF
   exit 2
 fi
 
+hikizan_metrics_log hook_fired pre-pr-create none allow "$SESSION_ID"
 exit 0

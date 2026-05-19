@@ -6,8 +6,12 @@
 
 set -uo pipefail
 
+# shellcheck source=lib/metrics.sh
+source "$(dirname "$0")/lib/metrics.sh" 2>/dev/null || hikizan_metrics_log() { :; }
+
 JSON=$(cat)
 CWD=$(printf '%s' "$JSON" | jq -r '.cwd // ""')
+SESSION_ID=$(printf '%s' "$JSON" | jq -r '.session_id // ""')
 
 [ -n "$CWD" ] && cd "$CWD" 2>/dev/null
 
@@ -34,5 +38,8 @@ for SM in $SUBMODULE_PATHS; do
   fi
 done
 
-[ "$WARNED" -eq 1 ] && printf 'push the submodule first, then re-push the parent.\n' >&2
+if [ "$WARNED" -eq 1 ]; then
+  hikizan_metrics_log hook_fired post-commit submodule_unpushed warn "$SESSION_ID"
+  printf 'push the submodule first, then re-push the parent.\n' >&2
+fi
 exit 0

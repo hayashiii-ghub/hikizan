@@ -21,7 +21,35 @@ Claude Code plugin の hooks で監視する条件 / 挙動 / 終了コードの
 
 ## メトリクス記録
 
-メトリクス書き出しは未実装。Phase 0 step 0-3 で `~/.hikizan/metrics.jsonl` の append schema を確定したら、各 hook script から書き込み始める (event=hook_fired, hook_name, condition, exit_code, timestamp)。
+書き込み先: `~/.hikizan/metrics.jsonl` (環境変数 `HIKIZAN_METRICS_DIR` で上書き可、append only)。
+実装: `scripts/lib/metrics.sh` の `hikizan_metrics_log` 関数を各 hook が source して呼ぶ。silent on failure (jq 不在 / dir 書き込み不可 等で hook 本体は壊さない)。
+
+### スキーマ (1 行 1 JSON event)
+
+```json
+{"ts":"2026-05-19T14:46:00Z","event":"hook_fired","hook":"pre-push","condition":"nff","decision":"block","session_id":"abc123"}
+```
+
+| field | 値 |
+|---|---|
+| `ts` | RFC3339 UTC タイムスタンプ |
+| `event` | `hook_fired` (将来拡張余地) |
+| `hook` | `pre-push` / `pre-pr-create` / `post-commit` / `bootstrap-claude-md` |
+| `condition` | `nff` / `force_protected` / `no_draft_no_reviewer` / `submodule_unpushed` / `create` / `append` / `noop` / `none` |
+| `decision` | `allow` / `block` / `warn` |
+| `session_id` | CC session id (stdin JSON より取得)、無ければ空文字 |
+
+### 集計例
+
+```bash
+# 過去 1 週間の block 件数を hook 別に
+jq -r 'select(.decision == "block") | .hook' ~/.hikizan/metrics.jsonl | sort | uniq -c
+
+# CLAUDE.md bootstrap の create/append/noop 比率
+jq -r 'select(.hook == "bootstrap-claude-md") | .condition' ~/.hikizan/metrics.jsonl | sort | uniq -c
+```
+
+ローテーション / 自動 dashboard は未実装 (利用実績が貯まってから別 issue)。
 
 ## SessionStart の補足
 
