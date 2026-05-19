@@ -86,7 +86,7 @@ waza の `kakunin` / `kentou` / `tsuiseki` 等とは skill 名が違うので衝
 
 ## hooks による安全網
 
-hikizan は `.claude-plugin/hooks/hooks.json` 経由で CC の Bash ツール呼び出しを監視し、定義済みの条件に該当するときだけ介入します。skill 本文は正常経路で漏れを防ぎ、hook は「skill を経由しない経路でも止める最後の砦」を担当します。
+hikizan は `hooks/hooks.json` 経由で CC の Bash ツール呼び出しを監視し、定義済みの条件に該当するときだけ介入します。skill 本文は正常経路で漏れを防ぎ、hook は「skill を経由しない経路でも止める最後の砦」を担当します。
 
 | event                                  | 条件                                                              | 挙動                                              |
 |----------------------------------------|-------------------------------------------------------------------|---------------------------------------------------|
@@ -95,7 +95,7 @@ hikizan は `.claude-plugin/hooks/hooks.json` 経由で CC の Bash ツール呼
 | `PreToolUse` (Bash, `gh pr create*`)   | `--draft` も `--reviewer` も無い                                  | exit 2 + stderr に選択肢                          |
 | `PostToolUse` (Bash, `git commit*`)    | submodule pointer 変更ありで submodule 未 push                    | stderr warning (block しない)                     |
 
-発火イベントは `~/.hikizan/metrics.jsonl` に 1 行 1 JSON で記録されます (環境変数 `HIKIZAN_METRICS_DIR` で書き込み先変更可)。詳細仕様は `.claude-plugin/hooks/conditions.md`。
+発火イベントは `~/.hikizan/metrics.jsonl` に 1 行 1 JSON で記録されます (環境変数 `HIKIZAN_METRICS_DIR` で書き込み先変更可)。詳細仕様は `hooks/conditions.md`。
 
 ## Codex 併用
 
@@ -230,6 +230,17 @@ hikizan/
 ├── .gitignore
 ├── .claude-plugin/              ← Claude Code plugin manifest (CC 経由配布用)
 │   └── plugin.json
+├── hooks/                       ← CC plugin hooks (SessionStart / PreToolUse / PostToolUse)
+│   ├── hooks.json
+│   ├── conditions.md            ← 停止条件マトリクス
+│   └── scripts/
+│       ├── lib/metrics.sh       ← ~/.hikizan/metrics.jsonl writer (silent on failure)
+│       ├── bootstrap-claude-md.sh
+│       ├── pre-push.sh
+│       ├── pre-pr-create.sh
+│       └── post-commit.sh
+├── templates/
+│   └── CLAUDE.md                ← SessionStart hook が冪等 bootstrap する
 ├── bin/
 │   └── wt                       ← git worktree CLI (bash)
 ├── skills/                      ← skill 本体 (SoT、CC plugin / npx skills add の両経路で読まれる)

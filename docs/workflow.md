@@ -327,7 +327,7 @@ expected return:
 
 ## 8. hook 安全網
 
-skill 本文は「正常経路で漏れを防ぐ」、hook は「skill を経由しない経路でも止める最後の砦」。実体は `.claude-plugin/hooks/hooks.json` と `scripts/`。発火イベントは `~/.hikizan/metrics.jsonl` に記録される (`HIKIZAN_METRICS_DIR` で書き込み先変更可)。
+skill 本文は「正常経路で漏れを防ぐ」、hook は「skill を経由しない経路でも止める最後の砦」。実体は `hooks/hooks.json` と `scripts/`。発火イベントは `~/.hikizan/metrics.jsonl` に記録される (`HIKIZAN_METRICS_DIR` で書き込み先変更可)。
 
 | event                              | 条件                                                    | 挙動                                                     |
 | ---------------------------------- | ------------------------------------------------------- | -------------------------------------------------------- |
@@ -343,7 +343,7 @@ flowchart LR
   H -->|"exit 2 + 選択肢"| BACK["呼び出し元 (Claude) に差し戻し"]
 ```
 
-詳細: `.claude-plugin/hooks/conditions.md`。
+詳細: `hooks/conditions.md`。
 
 ---
 
@@ -414,7 +414,7 @@ flowchart TB
 | tansaku                      | `../skills/tansaku/SKILL.md`, `../skills/tansaku/references/logging-techniques.md` |
 | shiken                       | `../skills/shiken/SKILL.md`, `../skills/shiken/references/testing-anti-patterns.md` |
 | teishutsu                    | `../skills/teishutsu/SKILL.md`                                                    |
-| hook 設定 / 停止条件マトリクス | `../.claude-plugin/hooks/conditions.md`, `../.claude-plugin/hooks/hooks.json`     |
+| hook 設定 / 停止条件マトリクス | `../hooks/conditions.md`, `../hooks/hooks.json`     |
 | CLAUDE.md テンプレ           | `../templates/CLAUDE.md`                                                          |
 | 記述ルール                   | `./style-guide.md`                                                                |
 
