@@ -23,6 +23,28 @@ GIT_COMMON=$(cd "$(git rev-parse --git-common-dir)" 2>/dev/null && pwd -P)
 [ "$GIT_DIR" != "$GIT_COMMON" ] && echo "(worktree内: $(git branch --show-current))"
 ```
 
+## Phase 0: 周辺コード自動走査
+
+通常検討モードに入る前に、以下の 4 コマンドを実行して「周辺コードから推測される追加情報」を確度% 付きで出力する。これにより「推測して」というユーザ介入を不要にする。
+
+```bash
+git log --oneline -20
+git submodule foreach 'git log --oneline -5' 2>/dev/null
+grep -rn "TODO\|FIXME" <関連 dir> | head -20
+git log --diff-filter=A --name-only -10 | head -30
+```
+
+出力テンプレ:
+
+```
+周辺コードから推測される追加情報:
+- [推測項目] (確度: NN%) — [根拠: file:line / commit / TODO 等]
+```
+
+シンボル探索 (関数 / クラス / 変数の定義 / 参照) が必要な場合は、LSP が利用可能なら LSP を優先、テキスト探索 (TODO / FIXME / 設定 / Markdown) は grep のままにする。LSP 未設定環境では grep にフォールバック (詳細は別 issue で本文化予定)。
+
+軽量検討モード / 評価モードでは Phase 0 は省略可。通常検討モード / 計画実行モードでは原則実行。
+
 ## モード切替
 
 | モード | 発話トリガー | 状態トリガー | 動作 |
@@ -96,13 +118,15 @@ Premises:        この設計が依存している事実 3-5 個
 Worst case:      6 ヶ月後に最も後悔するシナリオ
 Unknowns:        defer 理由 + 担当明記の項目のみ
 Plan steps:      実装単位 (owner skill / file / 検証コマンド。計画実行モードで使う形)
+Minimal Approach: 上記 plan を素直な規模と対比、最小版を併記または "minimal already" を明記
 ```
 
-**推奨度の付け方** (§3.8 引き算原則):
+**Minimal Approach の判定**:
 
-- N/10 の数値 + 1 行の根拠を必須化 (数値だけだと検証不能)
-- 例: `Approach: 案 A (8/10) — 既存 module の依存方向に沿う、変更点が局所的`
-- 「9/10 と 8/10 の差を 1 行で説明できない」なら数値を下げて根拠を明示
+- issue 文の動詞 (「追加する」「換装する」等) と名詞句を抽出し、素直な規模 (ファイル数 / 行数 / step 数) を概算する
+- plan が素直な規模の 2 倍以上 → 引き算した最小版を併記し、defer した項目を明示
+- 2 倍未満 → "minimal already" と明記
+- 詳細と例は `references/minimal-approach.md` を参照
 
 ## 評価モード
 
