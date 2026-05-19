@@ -2,12 +2,12 @@
 
 日本語圏チーム開発向けの Claude Code plugin / Agent Skills 対応 skill pack + git worktree CLI。tw93/Waza を起点に、SP (anthropic/superpowers) から選択的に取り込み、日本語圏 team-dev に最適化した **core 4 skill** と、並列開発を支える **`wt`** (worktree manager) を含む。
 
-動詞単位で責務を分けた 4 skill (sadoku / kouchiku / tansaku / shiken) と **引き算の哲学**を中核に据える。
+動詞単位で責務を分けた 5 skill (sadoku / kouchiku / tansaku / shiken / teishutsu) と **引き算の哲学**を中核に据える。
 
 - repo: <https://github.com/hayashiii-ghub/hikizan>
 - license: MIT
 
-## core 4 skill
+## core 5 skill
 
 | skill | 漢字 | 動詞 | 担当 |
 |---|---|---|---|
@@ -15,8 +15,9 @@
 | `kouchiku` | 構築 | 考える・作る | 設計判断 / 評価 / 計画策定 / 計画実行 |
 | `tansaku` | 探索 | 追う | バグ調査 / root cause investigation |
 | `shiken` | 試験 | 試す | TDD discipline / PRUNE |
+| `teishutsu` | 提出 | 出す | PR 提出フロー (remote / submodule / parent commit / cwd-aware gh) |
 
-動詞で 4 分割した役割境界が原則。`kouchiku` は controller として設計から計画実行までを持ち、原因調査は `tansaku`、TDD discipline は `shiken`、レビュー / PR 文は `sadoku` に handoff block で渡す。
+動詞で 5 分割した役割境界が原則。`kouchiku` は controller として設計から計画実行までを持ち、原因調査は `tansaku`、TDD discipline は `shiken`、レビュー / PR 文ドラフトは `sadoku`、PR 提出プロセスは `teishutsu` に handoff block で渡す。
 
 ## install (Claude Code plugin)
 
@@ -35,7 +36,7 @@ git clone https://github.com/hayashiii-ghub/hikizan
 claude --plugin-dir ./hikizan
 ```
 
-skill 名は namespace 規約により `/hikizan:sadoku` / `/hikizan:kouchiku` / `/hikizan:tansaku` / `/hikizan:shiken` で呼ばれる。
+skill 名は namespace 規約により `/hikizan:sadoku` / `/hikizan:kouchiku` / `/hikizan:tansaku` / `/hikizan:shiken` / `/hikizan:teishutsu` で呼ばれる。
 
 ## install (skill pack)
 
@@ -145,6 +146,7 @@ install 後、各 skill は発話で起動する。
 "PR文書いて"            → sadoku PR 説明文
 "エラー" / "動かない"     → tansaku 通常追跡
 "TDDで" / "テストから書いて" → shiken
+"PR出す" / "PR提出"     → teishutsu
 ```
 
 詳しい trigger 一覧と mode 切替は `docs/workflow.md` (mermaid 図入り) を参照。
@@ -185,13 +187,17 @@ hikizan/
 │   │       └── agents/
 │   │           ├── reviewer-security.md
 │   │           └── reviewer-architecture.md
-│   ├── kouchiku/SKILL.md
+│   ├── kouchiku/
+│   │   ├── SKILL.md
+│   │   └── references/minimal-approach.md
 │   ├── tansaku/
 │   │   ├── SKILL.md
 │   │   └── references/logging-techniques.md
-│   └── shiken/
-│       ├── SKILL.md
-│       └── references/testing-anti-patterns.md
+│   ├── shiken/
+│   │   ├── SKILL.md
+│   │   └── references/testing-anti-patterns.md
+│   └── teishutsu/
+│       └── SKILL.md
 ├── adapters/                    ← Codex adapter (adapters/codex/) 等、Agent Skills 標準でカバーできない特殊ケース用
 │   └── README.md
 └── docs/
@@ -206,6 +212,7 @@ plugin 全体 (`.claude-plugin/plugin.json`) は 0.1.0 から start。各 skill 
 - kouchiku: 2.0.0 (計画実行モード追加)
 - tansaku: 2.0.0 (改名)
 - shiken: 3.0.0 (改名 + 漢字ラベル変更)
+- teishutsu: 0.1.0 (新規)
 - wt: 0.1.0 (MVP)
 
 ## ライセンス / 出典

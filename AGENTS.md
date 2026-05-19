@@ -9,6 +9,7 @@
   - `kouchiku` (構築) — 設計判断 / 計画策定 / 計画実行
   - `tansaku` (探索) — バグ調査 / root cause investigation
   - `shiken` (試験) — TDD discipline / PRUNE
+  - `teishutsu` (提出) — PR 提出フロー (リモート確認 / submodule / parent commit / cwd-aware gh)
 - **使い方ガイド** は `docs/workflow.md` (mermaid 図入り)
 - **配置** は (a) Claude Code plugin (`/plugin marketplace add hayashiii-ghub/hikizan` + `/plugin install hikizan`) または (b) Agent Skills CLI (`npx skills add github:hayashiii-ghub/hikizan`) の 2 経路。`adapters/` は Codex adapter (`adapters/codex/`) 等、Agent Skills 標準でカバーできない特殊ケース用
 
@@ -46,6 +47,7 @@
 | `tansaku` | 二分探索 | `前は動いてた` / `アップデート後から` / `更新後動かない` |
 | `tansaku` | 再発追跡 | `同じ問題が再発` |
 | `shiken` (試験) | 起動 | `TDDで` / `テストから書いて` |
+| `teishutsu` (提出) | 起動 | `PR出す` / `PR提出` / `PR ready` / `提出して` |
 
 **注**: reviewer コメントへの返信文ドラフトは skill mode 化していない (通常会話で `返信書いて` / `押し戻したい` のように直接依頼)。実装が必要な指摘は `kouchiku` の計画実行モードに振る。
 
