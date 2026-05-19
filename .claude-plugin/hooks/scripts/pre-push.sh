@@ -5,9 +5,13 @@
 
 set -uo pipefail
 
+# shellcheck source=lib/metrics.sh
+source "$(dirname "$0")/lib/metrics.sh" 2>/dev/null || hikizan_metrics_log() { :; }
+
 JSON=$(cat)
 COMMAND=$(printf '%s' "$JSON" | jq -r '.tool_input.command // ""')
 CWD=$(printf '%s' "$JSON" | jq -r '.cwd // ""')
+SESSION_ID=$(printf '%s' "$JSON" | jq -r '.session_id // ""')
 
 [ -n "$CWD" ] && cd "$CWD" 2>/dev/null
 
@@ -26,6 +30,7 @@ UPSTREAM="origin/$BRANCH"
 if git rev-parse --verify "$UPSTREAM" >/dev/null 2>&1; then
   BEHIND=$(git rev-list --count "HEAD..$UPSTREAM" 2>/dev/null || printf '0')
   if [ "$BEHIND" -gt 0 ] 2>/dev/null; then
+    hikizan_metrics_log hook_fired pre-push nff block "$SESSION_ID"
     cat >&2 <<EOF
 non-fast-forward push detected on branch '$BRANCH'.
 
@@ -60,6 +65,7 @@ case "$COMMAND" in
         }
       }')
     if printf '%s' "${TARGET:-}" | grep -qE "$PROTECTED"; then
+      hikizan_metrics_log hook_fired pre-push force_protected block "$SESSION_ID"
       cat >&2 <<EOF
 force push targeting protected branch '$TARGET'.
 
@@ -71,4 +77,5 @@ EOF
     ;;
 esac
 
+hikizan_metrics_log hook_fired pre-push none allow "$SESSION_ID"
 exit 0
