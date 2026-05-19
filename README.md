@@ -1,6 +1,6 @@
 # hikizan
 
-日本語圏チーム開発向けの Claude Code plugin / Agent Skills 対応 skill pack + git worktree CLI。tw93/Waza を起点に、SP (anthropic/superpowers) から選択的に取り込み、日本語圏 team-dev に最適化した **core 4 skill** と、並列開発を支える **`wt`** (worktree manager) を含む。
+日本語圏チーム開発向けの Claude Code plugin / Agent Skills 対応 skill pack + git worktree CLI。tw93/Waza を起点に、SP (anthropic/superpowers) から選択的に取り込み、日本語圏 team-dev に最適化した **core 5 skill** と、並列開発を支える **`wt`** (worktree manager) を含む。
 
 動詞単位で責務を分けた 5 skill (sadoku / kouchiku / tansaku / shiken / teishutsu) と **引き算の哲学**を中核に据える。
 
@@ -83,6 +83,19 @@ Cursor は `~/.cursor/skills/`、Claude Code は `~/.claude/skills/` を auto-di
 | Cline / OpenCode 等 universal | `~/.agents/skills/` または `./.agents/skills/` |
 
 waza の `kakunin` / `kentou` / `tsuiseki` 等とは skill 名が違うので衝突せず共存可能。
+
+## hooks による安全網
+
+hikizan は `.claude-plugin/hooks/hooks.json` 経由で CC の Bash ツール呼び出しを監視し、定義済みの条件に該当するときだけ介入します。skill 本文は正常経路で漏れを防ぎ、hook は「skill を経由しない経路でも止める最後の砦」を担当します。
+
+| event                                  | 条件                                                              | 挙動                                              |
+|----------------------------------------|-------------------------------------------------------------------|---------------------------------------------------|
+| `SessionStart` (startup)               | プロジェクト直下に `CLAUDE.md` なし、または `## hikizan Conventions` セクション欠落 | `templates/CLAUDE.md` を冪等 bootstrap            |
+| `PreToolUse` (Bash, `git push*`)       | non-fast-forward / force push to main・master・develop            | exit 2 + stderr に選択肢                          |
+| `PreToolUse` (Bash, `gh pr create*`)   | `--draft` も `--reviewer` も無い                                  | exit 2 + stderr に選択肢                          |
+| `PostToolUse` (Bash, `git commit*`)    | submodule pointer 変更ありで submodule 未 push                    | stderr warning (block しない)                     |
+
+発火イベントは `~/.hikizan/metrics.jsonl` に 1 行 1 JSON で記録されます (環境変数 `HIKIZAN_METRICS_DIR` で書き込み先変更可)。詳細仕様は `.claude-plugin/hooks/conditions.md`。
 
 ## Codex 併用
 
