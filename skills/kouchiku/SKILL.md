@@ -66,6 +66,7 @@ kouchiku は controller として次の skill を選ぶが、専門 skill の責
 | 純ロジック / API / ビジネスルール / bugfix 実装 | `shiken` | RED → GREEN → PRUNE の discipline を守る |
 | 実装完了後の diff review / PR description | `sadoku` | 実装者視点から離れて diff を見る |
 | 整理 (重複削除 / 命名統一 / 不要な抽象化除去 / dead code / efficiency) | `sadoku` simplify findings → kouchiku で実装 | 発見は sadoku、実装は controller が responsibility を持つ |
+| PR 提出 (remote 確認 / submodule / parent commit / cwd-aware gh pr create) | `teishutsu` | hook と二段構成、submission 工程の漏れを skill で先制検出 |
 | 設計判断 / scope 整理 / 計画分解 / 複数案評価 | `kouchiku` | controller が判断を保持する |
 
 handoff 時は以下の block を必ず出す。`evidence` は file:line / command output / logs など、受け手が再確認できるものにする。
