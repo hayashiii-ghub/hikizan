@@ -13,7 +13,7 @@
 - **使い方ガイド** は `docs/workflow.md` (mermaid 図入り)。記述ルールは下記 §記述ルール
 - **hooks** は `hooks/hooks.json` (SessionStart / PreToolUse / PostToolUse)、停止条件マトリクスは `hooks/conditions.md`、scripts は `hooks/scripts/`、発火ログは `~/.hikizan/metrics.jsonl`
 - **CLAUDE.md template** は `templates/CLAUDE.md` (SessionStart hook が冪等 bootstrap する)
-- **配置** は (a) Claude Code plugin (`/plugin marketplace add hayashiii-ghub/hikizan` + `/plugin install hikizan`) または (b) Agent Skills CLI (`npx skills add github:hayashiii-ghub/hikizan`) の 2 経路。Codex 連携は OpenAI 公式の [openai/codex-plugin-cc](https://github.com/openai/codex-plugin-cc)、LSP 連携は CC 公式 marketplace の `typescript-lsp` / `pyright-lsp` / `rust-analyzer-lsp` を別途 install する設計 (hikizan 側で adapter / .lsp.json は持たない)
+- **配置** は (a) Claude Code plugin (`/plugin marketplace add hayashiii-ghub/hikizan` + `/plugin install hikizan@hikizan`) または (b) Agent Skills CLI (`npx skills add github:hayashiii-ghub/hikizan`) の 2 経路。Codex 連携は OpenAI 公式の [openai/codex-plugin-cc](https://github.com/openai/codex-plugin-cc)、LSP 連携は CC 公式 marketplace の `typescript-lsp` / `pyright-lsp` / `rust-analyzer-lsp` を別途 install する設計 (hikizan 側で adapter / .lsp.json は持たない)
 
 ## このリポジトリでの作業ルール
 
