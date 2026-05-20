@@ -114,7 +114,11 @@ Not building:    [out-of-scope、1-3 項目]
 Approach:        [選んだ案、推奨度 N/10 + 1 行根拠]
 Alternatives:    [代替案がある場合のみ、各案に推奨度 N/10 + 1 行根拠]
                  ※ 明らかなら 1 案でよい、迷うときのみ代替案 1 つ
+Structure:       [任意] 構造変更 (module 境界 / 依存 / data flow) を伴う場合のみ
+                 before/after を mermaid 1 枚で。線形手順だけなら省略
 Key decisions:   3-5 項目 (それぞれ「なぜ別の選択肢を捨てたか」を 1 行)
+Interface sketch: [任意] 最も load-bearing な interface 1 点を signature / data 形で
+                 (実在 symbol を file:line 付きで参照、~5-8 行、logic 本体なし)
 Premises:        この設計が依存している事実 3-5 個
 Worst case:      6 ヶ月後に最も後悔するシナリオ
 Unknowns:        defer 理由 + 担当明記の項目のみ
@@ -128,6 +132,12 @@ Minimal Approach: 上記 plan を素直な規模と対比、最小版を併記�
 - plan が素直な規模の 2 倍以上 → 引き算した最小版を併記し、defer した項目を明示
 - 2 倍未満 → "minimal already" と明記
 - 詳細と例は `references/minimal-approach.md` を参照
+
+**Structure 図 / Interface sketch の指針** (どちらも任意):
+
+- **Structure 図**: 構造変更 (module 境界 / 依存 / data flow) を伴うときだけ mermaid。線形手順は箇条書きで足りる
+- **Interface sketch**: 1 plan に 1 つ、最も load-bearing な interface 境界のみ。approach 選定後に書く。実在 symbol を `file:line` で参照 (grounded、invent 不可)。logic 本体は書かない (要るなら実装 → `Unknowns` に defer)
+- sketch は「signature を綺麗に書けない = 設計未確定」を plan 時点で炙り出す forcing function。何も surface しなければ documentation 止まり
 
 ## 評価モード
 
@@ -183,7 +193,7 @@ expected return:
 
 ## Hard Rules
 
-- 計画実行モード以外では code を書かない (= 検討 / 評価モードでは plan / verdict だけを返す)
+- 計画実行モード以外では実装コードを書かない。設計を一意に固定する説明用 snippet (signature / data 形、~5-8 行・logic 本体なし) は可
 - 3 案以上は出さない (paralysis 防止)
 - 前提崩し / 攻撃検証を埋めずに通常検討モードの出力を返さない
 - 評価モードは user 制約を根拠にする (技術的な好みだけで Kill/Keep を決めない)
