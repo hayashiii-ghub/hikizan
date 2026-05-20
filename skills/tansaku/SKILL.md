@@ -3,8 +3,6 @@ name: tansaku
 description: "Use this skill when something is broken and the cause is unclear — bugs, crashes, errors, regressions, unexpected test failures, behavior that doesn't match expectations — including phrasings エラー, 動かない, 落ちる, クラッシュ, バグ調査, 前は動いてた, アップデート後から, 同じ問題が再発, root cause, debug. Activate on mysterious test failures or features that used to work — even without explicit 'bug' wording."
 license: MIT
 when_to_use: "バグ調査, debugging, root cause, エラー原因, 動かない"
-metadata:
-  version: "2.0.0"
 ---
 
 # tansaku (探索)
@@ -43,7 +41,7 @@ GIT_COMMON=$(cd "$(git rev-parse --git-common-dir)" 2>/dev/null && pwd -P)
 - fix が 5+ ファイルに touch するなら scope 確認 (= 別 bug の可能性)
 - `Never state from memory. Verify with the right tool first.` (識別子・呼び出し関係は実物を確認、記憶で答えない。シンボル系は LSP、テキスト系は grep)
 - シンボル探索 (関数 / クラス / 変数の定義 / 参照) は LSP を優先、テキスト探索 (TODO / FIXME / 設定 / Markdown / エラーメッセージ文字列) は grep を使う。LSP 未設定環境では grep にフォールバック (公式 LSP plugin の install は README「LSP 併用」節)
-- 外部事実 (OSS の現行仕様 / 最新バージョン / 標準) は知識カットオフ後の可能性があるため、利用可能な検索・fetch・一次ソースで裏取りしてから引用する (§3.10 ファクトチェック原則)
+- 外部事実 (OSS の現行仕様 / 最新バージョン / 標準) は知識カットオフ後の可能性があるため、利用可能な検索・fetch・一次ソースで裏取りしてから引用する (ファクトチェック原則)
 - PR / branch / step を独自連番 (PR-1 等) で呼ばない。issue 名 / 機能名 / branch 名で呼ぶ。重複時のみ -v2, -v3 ... のサフィックスを使う
 
 ## 通常追跡モード

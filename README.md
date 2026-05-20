@@ -61,16 +61,9 @@ npx skills add github:hayashiii-ghub/hikizan -g -a codex
 
 `-g` で global (home dir)、省略時は cwd の project local。`-a` 無しだと現在のハーネスを auto-detect。詳細は [vercel-labs/skills](https://github.com/vercel-labs/skills) 参照。
 
-### 配置の仕組み (2 段構造)
+### 配置先
 
-`skills` CLI は **canonical store + agent symlink** の 2 段で配置する:
-
-```
-~/.agents/skills/<skill>/   ← 実体 (canonical store, 全 agent 共通)
-~/.<agent>/skills/<skill>   ← canonical への symlink (各 agent が読む)
-```
-
-Cursor は `~/.cursor/skills/`、Claude Code は `~/.claude/skills/` を auto-discovery 対象にする。`~/.agents/skills/` のみ読むのは Cline / OpenCode 等 universal 系。
+`npx skills add` は各 skill を対象ツールの skills ディレクトリに配置する。Claude Code は `~/.claude/skills/<skill>/`、Cursor は `~/.cursor/skills/<skill>/`。各ツールはそのディレクトリを auto-discovery する。
 
 ### 手動配置 (npx を使わない場合)
 
@@ -275,14 +268,10 @@ hikizan/
 
 ## version
 
-plugin 全体: 0.1.0 (`.claude-plugin/plugin.json` 参照)。skill 個別の version は各 `skills/<name>/SKILL.md` の frontmatter にあります。
+plugin 全体: 0.1.0 (`.claude-plugin/plugin.json` 参照)。
 
 ## ライセンス / 出典
 
 - License: MIT (`LICENSE` 参照)
 - ベース: [tw93/Waza](https://github.com/tw93/Waza)
 - 参考: [anthropic/superpowers](https://github.com/anthropic/superpowers)
-
-## contributing
-
-issues / PRs を歓迎します。新しい skill 追加よりも、既存 skill の磨き込みを優先する pack 哲学です。

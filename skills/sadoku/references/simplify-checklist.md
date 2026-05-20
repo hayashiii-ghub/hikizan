@@ -2,7 +2,7 @@
 
 `sadoku` の simplify findings モードで参照する。各観点ごとの判定基準と書き直し方の指針。
 
-simplify findings は **発見と提案まで**。実装は kouchiku に handoff block で委譲する (sadoku の役割境界、判断 14)。
+simplify findings は **発見と提案まで**。実装は kouchiku に handoff block で委譲する (sadoku の役割境界)。
 
 ## 1. 重複
 
@@ -56,7 +56,7 @@ simplify findings は **発見と提案まで**。実装は kouchiku に handoff
 
 **書き直し方**:
 - 削除を提案。controller が確定したら一括 remove
-- 「念のため残す」は不採用 (引き算原則 §3.8、git history に残るので復元可能)
+- 「念のため残す」は不採用 (引き算原則、git history に残るので復元可能)
 - comment-out 放置は理由コメントなしなら必ず削除
 
 **severity 目安**: 公開 export の dead は high、private helper の dead は medium、変数 / import の dead は low。
@@ -83,7 +83,7 @@ simplify findings は **発見と提案まで**。実装は kouchiku に handoff
 
 ## 他原則との関係
 
-- **§3.8 引き算原則** の operationalization (meta-principle を per-PR の判定基準に落とす)
-- **判断 12** (shiken PRUNE) と相補: PRUNE は test 専用、simplify findings は production code 専用
-- **判断 14** (sadoku 純化) を守る: sadoku は実装しない、発見と提案のみ
-- **§3.6 評価=環境変化** と整合: handoff 後の実装結果 (整理後 diff + test pass) を verification log として残す
+- **引き算原則** の operationalization (meta-principle を per-PR の判定基準に落とす)
+- **shiken の PRUNE** と相補: PRUNE は test 専用、simplify findings は production code 専用
+- **sadoku の純化** を守る: sadoku は実装しない、発見と提案のみ
+- **評価=環境変化** と整合: handoff 後の実装結果 (整理後 diff + test pass) を verification log として残す
