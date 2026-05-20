@@ -206,16 +206,16 @@ install 後、各 skill は発話で起動する。
 
 ## 設計原則
 
-1. **waza 哲学の継承**: 1 skill 多 mode、references 分離、scripts で決定論的処理
-2. **Controller Owns Information**: 情報取得目的の subagent は default で使わない
-3. **Inline default + subagent 明示 gate**: subagent は (a) 重い情報取得 / (b) Specialist review / (c) 機械 fan-out の 3 条件のみ
-4. **SP から選択的取り込み**: Announce-at-start / worktree Step 0 検出 / Hard Rules 冒頭の 1 文ガード。Iron Law / Red Flags / Rationalization 表は不採用
-5. **日本語圏最適化**: skill name は英語短語、本文は日本語、固有名詞 (TDD, mock, RED/GREEN/REFACTOR/PRUNE 等) は英語残し
-6. **評価は「環境変化」で見る**: 完了記録の機械検証可能項目は command 出力をそのまま引用、自己申告は禁止
-7. **散文は「伝わりやすさ」のみ**: 4 チェック (結論先出し / 1 段落 1 主張 / 読み手語彙 / 儀礼削除)
-8. **引き算 (認知負荷削減)**: 選択肢提示 + 推奨度 N/10 + 1 行根拠 / 構造変更は図・線形手順は箇条書き / 読み手の負荷を最優先。hikizan の他原則 (PR 粒度・テスト最小化) と同じ「引き算」哲学を全 skill に貫通させる
-9. **工数はトークンベース**: 判断軸を「行数 / 人間時間」から「token 消費 / context 占有 / API コスト」に切り替え。実行者は AI agent 前提
-10. **ファクトチェック**: 知識カットオフ後 / 不確実な事実は利用可能な検索・fetch・一次ソースで裏取りしてから断定
+1. **waza 哲学の継承**: 1 つの skill に複数 mode / references は分離 / 決定論的な処理は scripts に置く
+2. **Controller Owns Information**: 情報取得だけが目的の subagent はデフォルトで使わない
+3. **inline 既定、subagent は明示 gate**: subagent を使うのは (a) 重い情報取得 / (b) specialist review / (c) 機械的な fan-out の 3 つに限る
+4. **SP からの選択的な取り込み**: announce-at-start / worktree の Step 0 検出 / Hard Rules 冒頭の 1 文ガード を採用。Iron Law / Red Flags / Rationalization 表は採用しない
+5. **日本語圏への最適化**: skill 名は短い英語、本文は日本語、固有名詞 (TDD, mock, RED/GREEN/REFACTOR/PRUNE 等) は英語のまま残す
+6. **評価は「環境変化」で見る**: 完了記録のうち機械的に検証できる項目は command の出力をそのまま引用し、自己申告は禁止する
+7. **文章は「伝わりやすさ」だけで判断する**: 4 つのチェック (結論を先に出す / 1 段落 1 主張 / 読み手の語彙 / 儀礼的表現を削る)
+8. **引き算 (認知負荷の削減)**: 選択肢の提示 + 推奨度 N/10 + 1 行根拠 / 構造変更は図・線形手順は箇条書き / 読み手の負荷を最優先する。hikizan の他の原則 (PR 粒度・テスト最小化) と同じ「引き算」の哲学を全 skill で貫く
+9. **工数は token 規模で考える**: 重さは「人間の作業時間」ではなく token 消費 / context 占有 / API コストで捉える。行数・ファイル数はその proxy。実行者は AI agent であることを前提とする
+10. **ファクトチェック**: 知識カットオフより後の事実や不確実な情報は、検索・fetch・一次ソースで裏取りしてから断定する
 
 ## ディレクトリ構成
 

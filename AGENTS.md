@@ -38,8 +38,11 @@
 | 命名規約 (連番禁止 / `-v2` サフィックス) | `skills/kouchiku/SKILL.md` Hard Rules |
 | 自然な日本語 (中国語起源語の言い換え) | AGENTS.md §記述ルール (下記) |
 | hook 発火条件マトリクス | `hooks/conditions.md` |
+| 設計原則 (charter) | `README.md` §設計原則 |
 
 `templates/CLAUDE.md` は利用者の常時ロード context として一部ルール (命名 / remote 操作) を再掲するが、これは意図的な派生コピー。挙動を変えるときは上表の SoT を編集する。
+
+設計原則を skill 本文から参照するときは番号でなく**名前**で書く (`§3.8` のような番号体系は doc 改訂で陳腐化する)。
 
 ## 記述ルール
 
