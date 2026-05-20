@@ -26,7 +26,7 @@ Claude Code 利用者は `/plugin` 経由が推奨経路。
 ```bash
 # Claude Code セッション内で実行
 /plugin marketplace add hayashiii-ghub/hikizan
-/plugin install hikizan
+/plugin install hikizan@hikizan
 ```
 
 開発・検証時は `--plugin-dir` で直接読み込み:
@@ -129,7 +129,7 @@ hikizan の skill は **「シンボル系は LSP、テキスト系は grep、LS
 
 ### Claude Code plugin 経由 (推奨)
 
-`/plugin install hikizan` を実行している場合、`bin/wt` は CC plugin の `bin/` 機構によりセッション中の Bash ツールの `PATH` に自動追加されます。追加手順は不要、Claude Code 内で直接呼び出せます:
+`/plugin install hikizan@hikizan` を実行している場合、`bin/wt` は CC plugin の `bin/` 機構によりセッション中の Bash ツールの `PATH` に自動追加されます。追加手順は不要、Claude Code 内で直接呼び出せます:
 
 ```bash
 wt help
@@ -171,7 +171,7 @@ install + 最初の発話 1 つで動く状態にする手順。
 
    ```
    /plugin marketplace add hayashiii-ghub/hikizan
-   /plugin install hikizan
+   /plugin install hikizan@hikizan
    ```
 
    別ハーネス (Cursor / Codex) は [install (skill pack)](#install-skill-pack) 参照。
