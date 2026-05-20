@@ -57,7 +57,3 @@
 4. PR 作成 (`gh pr create --draft --reviewer @user` を default、cwd を明示確認してから走らせる)
 
 hikizan の hook (pre-push / pre-pr-create / post-commit) が最後の砦として block / warning を出す。
-
-### Codex 併用時の補足
-
-Claude Code で hikizan を動かしつつ、Codex に下請けさせたい場合は OpenAI 公式の [openai/codex-plugin-cc](https://github.com/openai/codex-plugin-cc) を別途 install する (hikizan は Codex 呼び出し本体を持たない)。CC plugin の namespace 規約により `/hikizan:*` と `/codex:*` は衝突しない。hikizan の hook は CC の Bash ツール呼び出しに対して発火するため、Codex 経由で実行されるコマンドが CC の Bash を通る限り同じ停止条件が効く。

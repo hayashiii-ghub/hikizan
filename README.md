@@ -42,7 +42,7 @@ skill 名は namespace 規約により `/hikizan:sadoku` / `/hikizan:kouchiku` /
 
 hikizan は [Agent Skills 標準](https://agentskills.io) にも沿った **skill pack** です。skills-compatible agent (Cursor / Codex / Claude Code) へ `skills` CLI で配置できます。
 
-> Codex を Claude Code 経由で呼びたい場合は下の [Codex 併用](#codex-併用) 節を参照してください。skill pack 単独で Codex を直接動かしたい場合のみ、本節の手順 (`npx skills add -a codex`) を使います。
+> Codex を Claude Code 経由で呼びたい場合は下の [外部 plugin 併用](#外部-plugin-併用) 節を参照してください。skill pack 単独で Codex を直接動かしたい場合のみ、本節の手順 (`npx skills add -a codex`) を使います。
 
 ### 推奨: `npx skills add` (1 コマンドで自動配置)
 
@@ -92,9 +92,13 @@ hikizan は `hooks/hooks.json` 経由で CC の Bash ツール呼び出しを監
 
 発火イベントは `~/.hikizan/metrics.jsonl` に 1 行 1 JSON で記録されます (環境変数 `HIKIZAN_METRICS_DIR` で書き込み先変更可)。
 
-## Codex 併用
+## 外部 plugin 併用
 
-Claude Code 中心のハーネスで動かしつつ、特定タスクだけ Codex に下請けさせたい場合は、OpenAI 公式の [openai/codex-plugin-cc](https://github.com/openai/codex-plugin-cc) を hikizan と並行で install します。hikizan 自身は Codex 呼び出し本体を持たない設計 (= 外部依存を抱え込まない)。
+hikizan は orchestration 本体を抱え込まない設計。Codex 連携と LSP は公式 plugin を別途 install します。
+
+### Codex
+
+特定タスクだけ Codex に下請けさせたい場合は、OpenAI 公式の [openai/codex-plugin-cc](https://github.com/openai/codex-plugin-cc) を hikizan と並行で install します。
 
 ```bash
 # Claude Code セッション内で実行
@@ -103,18 +107,11 @@ Claude Code 中心のハーネスで動かしつつ、特定タスクだけ Code
 /codex:setup
 ```
 
-CC plugin の namespace 規約により、hikizan / codex の skill 名は衝突しません。`/hikizan:sadoku` / `/hikizan:kouchiku` 等の skill は Claude (CC 本体) で動き、Codex に下請けさせたい場面は codex-plugin-cc の `codex:codex-rescue` subagent や `/codex:setup` 経由で呼び出します。
+namespace 規約により `/hikizan:*` と `/codex:*` は衝突しません。要件は ChatGPT subscription または OpenAI API key と、ローカルの Codex CLI (`npm install -g @openai/codex`)。hikizan の hooks は CC 本体の Bash ツール呼び出しに発火するため、Codex 経由で実行されるコマンドが CC の Bash を通る限り同じ停止条件が効きます。
 
-要件:
-- ChatGPT subscription または OpenAI API key
-- ローカルに Codex CLI (`npm install -g @openai/codex`)
-- License: Apache-2.0 (codex-plugin-cc 側)
+### LSP
 
-hikizan の hooks (pre-push / pre-pr-create / post-commit) は CC 本体の Bash ツール呼び出しに対して発火するため、Codex 経由で実行されるコマンドが CC の Bash を通る限り、同じ停止条件が効きます。
-
-## LSP 併用
-
-シンボル探索 (関数 / クラス / 変数の定義 / 参照) に LSP の正確性が必要な場合は、CC 公式 marketplace から各言語の LSP plugin を別途 install します。hikizan 自身は `.lsp.json` を持たない設計 (Codex 連携と同じく、orchestration は外部 plugin に委譲)。
+シンボル探索 (関数 / クラス / 変数の定義 / 参照) に LSP の正確性が必要な場合は、CC 公式 marketplace から各言語の LSP plugin を install します。
 
 ```bash
 # Claude Code セッション内で実行 ( /plugin Discover タブで "lsp" を検索しても同じ )
@@ -123,7 +120,7 @@ hikizan の hooks (pre-push / pre-pr-create / post-commit) は CC 本体の Bash
 /plugin install rust-analyzer-lsp@anthropic
 ```
 
-各 LSP plugin は **language server バイナリを別途要求**します。例:
+各 LSP plugin は **language server バイナリを別途要求**します:
 
 | LSP plugin | 言語 | バイナリ install |
 |---|---|---|
@@ -232,7 +229,7 @@ install 後、各 skill は発話で起動する。
 ```
 hikizan/
 ├── README.md                    ← この入口 (人間中心、GitHub で最初に表示)
-├── AGENTS.md                    ← AI agent 入口 + Working Agreements + skill trigger 表
+├── AGENTS.md                    ← AI agent 入口 + 作業ルール + SoT マップ + 記述ルール
 ├── LICENSE                      ← MIT
 ├── .gitignore
 ├── .claude-plugin/              ← Claude Code plugin manifest (CC 経由配布用)
@@ -273,8 +270,7 @@ hikizan/
 │   └── teishutsu/
 │       └── SKILL.md
 └── docs/
-    ├── workflow.md              ← 使い方ガイド (利用者向け、mermaid 図入り)
-    └── style-guide.md           ← 記述ルール (自然な日本語 / 番号付け禁止 / etc.)
+    └── workflow.md              ← 使い方ガイド (利用者向け、mermaid 図入り)
 ```
 
 ## version

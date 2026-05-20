@@ -10,7 +10,7 @@
   - `tansaku` (探索) — バグ調査 / root cause investigation
   - `shiken` (試験) — TDD discipline / PRUNE
   - `teishutsu` (提出) — PR 提出フロー (リモート確認 / submodule / parent commit / cwd-aware gh)
-- **使い方ガイド** は `docs/workflow.md` (mermaid 図入り)、記述ルールは `docs/style-guide.md`
+- **使い方ガイド** は `docs/workflow.md` (mermaid 図入り)。記述ルールは下記 §記述ルール
 - **hooks** は `hooks/hooks.json` (SessionStart / PreToolUse / PostToolUse)、停止条件マトリクスは `hooks/conditions.md`、scripts は `hooks/scripts/`、発火ログは `~/.hikizan/metrics.jsonl`
 - **CLAUDE.md template** は `templates/CLAUDE.md` (SessionStart hook が冪等 bootstrap する)
 - **配置** は (a) Claude Code plugin (`/plugin marketplace add hayashiii-ghub/hikizan` + `/plugin install hikizan`) または (b) Agent Skills CLI (`npx skills add github:hayashiii-ghub/hikizan`) の 2 経路。Codex 連携は OpenAI 公式の [openai/codex-plugin-cc](https://github.com/openai/codex-plugin-cc)、LSP 連携は CC 公式 marketplace の `typescript-lsp` / `pyright-lsp` / `rust-analyzer-lsp` を別途 install する設計 (hikizan 側で adapter / .lsp.json は持たない)
@@ -23,35 +23,47 @@
 4. skill discovery は frontmatter `description` を SoT にする。`when_to_use` は非標準の補助メモとして短く残すだけで、同義語を網羅しない
 5. skill 間の連携は `kouchiku` を controller、`tansaku` / `shiken` / `sadoku` を discipline owner、`teishutsu` を PR 提出フローの担当とし、handoff block で渡す
 6. agent の応答は問い合わせ言語に合わせる。日本語の問い合わせには自然文 (説明 / 要約 / 提案理由 / 質問) を日本語で返す (skill 内の英語 label と技術用語はそのまま残す)
-7. PR / branch / step を独自連番 (PR-1 等) で呼ばない。issue 名 / 機能名 / branch 名で呼ぶ。重複時のみ -v2, -v3 ... のサフィックスを使う
+7. 命名規約 (PR / branch / step の連番禁止、重複時のみ `-v2` サフィックス) に従う。正本は `skills/kouchiku/SKILL.md` の Hard Rules
+
+## SoT マップ
+
+ルールは下表の 1 箇所だけを正本 (SoT) とし、他ファイルは参照に留める (重複転記しない)。
+
+| ルール | SoT |
+|---|---|
+| skill 発動 trigger | 各 `skills/<name>/SKILL.md` の frontmatter `description` |
+| 各 skill の mode 定義 | 各 `skills/<name>/SKILL.md` の モード切替 |
+| skill 間 handoff (流れ・block 形式) | `docs/workflow.md` §7 |
+| 引き算原則 (推奨度 N/10 / 3 案禁止 / Minimal Approach) | `skills/kouchiku/references/minimal-approach.md` |
+| 命名規約 (連番禁止 / `-v2` サフィックス) | `skills/kouchiku/SKILL.md` Hard Rules |
+| 自然な日本語 (中国語起源語の言い換え) | AGENTS.md §記述ルール (下記) |
+| hook 発火条件マトリクス | `hooks/conditions.md` |
+
+`templates/CLAUDE.md` は利用者の常時ロード context として一部ルール (命名 / remote 操作) を再掲するが、これは意図的な派生コピー。挙動を変えるときは上表の SoT を編集する。
+
+## 記述ルール
+
+skill 本文 / ドキュメントを書くときは中国語起源の表現を避け、自然な日本語にする。
+
+| 使わない | 使う |
+|---|---|
+| 起草 | ドラフト / 下書き |
+| 最小一歩 | 最小ステップ |
+| 押し戻し | 反論 / 差し戻し |
+
+「横展開」は IT 業界で定着しているため使用可。
 
 ## このリポジトリを使う AI agent への指示
 
 - README.md を最初に読む
 - `bin/wt` は git worktree CLI、hikizan に同梱の補助ツール
-- skill の発動 trigger は下記「skill の発動 trigger 一覧」を参照、詳細仕様は各 SKILL.md
+- skill の発動 trigger は下記 §skill の発動 trigger を参照、詳細仕様は各 SKILL.md
 
-## skill の発動 trigger 一覧
+## skill の発動 trigger
 
-ユーザの発話に下記キーワードが含まれたら、対応する skill / mode を起動する。詳細 (停止条件 / 完了記録 / 状態 trigger / 専門家レビューなど) は各 `skills/<name>/SKILL.md` を参照。
+各 skill の発動 trigger は frontmatter `description` が SoT。発話 trigger と mode 切替の一覧は `docs/workflow.md` §6、quick reference は `README.md` の trigger 早見表を参照。
 
-| skill | mode | 発話 trigger |
-|---|---|---|
-| `sadoku` (査読) | 通常レビュー | `レビューして` |
-| `sadoku` | simplify findings | `整理して` / `simplify` / `整理ポイントある?` / `スリム化したい` |
-| `sadoku` | 通常レビュー + simplify (compound) | `コードレビュー` / `コードレビューして` |
-| `sadoku` | PR 説明文 | `PR文書いて` / `PR description` |
-| `kouchiku` (構築) | 軽量検討 | `どうやって直す` / `やり方どっち` |
-| `kouchiku` | 通常検討 | `設計どうする` / `方針決めたい` / `アーキテクチャ判断` |
-| `kouchiku` | 評価 | `やる価値ある` / `採用すべきか` / `kill か keep か` / `やめる?` |
-| `kouchiku` | 計画実行 | `計画実行` / `進めて` / `着手` / `実装開始` |
-| `tansaku` (探索) | 通常追跡 | `エラー` / `動かない` / `落ちる` / `クラッシュ` |
-| `tansaku` | 二分探索 | `前は動いてた` / `アップデート後から` / `更新後動かない` |
-| `tansaku` | 再発追跡 | `同じ問題が再発` |
-| `shiken` (試験) | 起動 | `TDDで` / `テストから書いて` |
-| `teishutsu` (提出) | 起動 | `PR出す` / `PR提出` / `PR ready` / `提出して` |
-
-**注**: reviewer コメントへの返信文ドラフトは skill mode 化していない (通常会話で `返信書いて` / `押し戻したい` のように直接依頼)。実装が必要な指摘は `kouchiku` の計画実行モードに振る。
+**注**: reviewer コメントへの返信文ドラフトは skill mode 化していない (通常会話で `返信書いて` / `反論したい` のように直接依頼)。実装が必要な指摘は `kouchiku` の計画実行モードに振る。
 
 ## ライセンス
 

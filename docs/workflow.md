@@ -409,7 +409,7 @@ flowchart TB
 | teishutsu                    | `../skills/teishutsu/SKILL.md`                                                    |
 | hook 設定 / 停止条件マトリクス | `../hooks/conditions.md`, `../hooks/hooks.json`     |
 | CLAUDE.md テンプレ           | `../templates/CLAUDE.md`                                                          |
-| 記述ルール                   | `./style-guide.md`                                                                |
+| 記述ルール                   | `../AGENTS.md` §記述ルール                                                                |
 
 ---
 
