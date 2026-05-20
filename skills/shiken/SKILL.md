@@ -3,8 +3,6 @@ name: shiken
 description: "Use this skill when implementing behavior or fixing bugs in pure logic, business rules, API behavior, or build/CI logic — anywhere a regression would be costly. The skill enforces TDD discipline: failing test first, witness fail, implement minimally, PRUNE after green. Phrasings include TDDで, テストから書いて, テスト先行. Activate when fixing a bug that needs a regression guard or adding logic to untested code — even without explicit 'TDD' wording."
 license: MIT
 when_to_use: "TDD, テスト先行, テストから書く"
-metadata:
-  version: "3.0.0"
 ---
 
 # shiken (試験)

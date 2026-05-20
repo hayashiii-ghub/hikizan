@@ -3,8 +3,6 @@ name: sadoku
 description: "Use this skill when the user wants code reviewed, findings simplified, or a PR description written — including the phrasings レビューして, コードレビュー, 整理して, simplify, PR文書いて, PR description. Activate after implementation, when reviewing a git diff before opening a PR, or when restructuring messy findings — even when the user doesn't say 'review' explicitly."
 license: MIT
 when_to_use: "PR確認, レビュー, code review, 整理, simplify, PR description"
-metadata:
-  version: "3.0.0"
 ---
 
 # sadoku (査読)
@@ -166,7 +164,7 @@ SKILL.md 側ではモード起動の判定と完了記録への evidence 引用�
   - snapshot test の濫用 (small diff で全更新)
   - `.skip` / `xfail` が理由コメントなしで残っている
 - **PR 粒度違反**: diff が複数 issue にまたがっている (= 1 issue = 1 PR ルール違反)
-- **未確認の外部事実引用**: 「最新の X バージョン」「Y 標準」のような外部事実が裏取りなしで PR 説明文 / コメントに混入している (§3.10 ファクトチェック原則、URL 引用必須)
+- **未確認の外部事実引用**: 「最新の X バージョン」「Y 標準」のような外部事実が裏取りなしで PR 説明文 / コメントに混入している (ファクトチェック原則、URL 引用必須)
 
 ## Hard Rules
 

@@ -24,13 +24,13 @@
 
 ```
 Minimal Approach:
-  本 plan は X step / Y ファイル / Z 行で、issue 文の素直な規模 (X' step / Y' ファイル / Z' 行) の 3 倍。
+  本 plan は 6 step / 9 ファイル / 約 360 行で、issue 文の素直な規模 (2 step / 3 ファイル / 約 120 行) の 3 倍。
   最小版:
-    - step 1 (A-3 番号付け禁止) のみを 1 PR で出す
-    - これだけで「PR-1 / PR-2 混乱」の予防効果が出る
+    - step 1 (対象関数の rename) のみを 1 PR で出す
+    - これだけで issue 文の要求は満たせる
   defer した項目:
-    - step 2-4 (周辺走査) → 別 issue (理由: 着手前の調査コストが本 plan の効果を遅らせる)
-    - Phase 5/6 (新 skill / Codex adapter) → Phase 1-4 完了後 (理由: 依存関係)
+    - step 2-4 (呼び出し側の一括整理) → 別 issue (理由: issue 文に無い改善で本 plan の出荷を遅らせる)
+    - step 5-6 (新規 helper の抽出) → 重複が 3 箇所以上に増えてから (理由: 早すぎる抽象化を避ける)
 ```
 
 素直な規模に近い plan:

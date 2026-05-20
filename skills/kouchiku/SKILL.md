@@ -3,8 +3,6 @@ name: kouchiku
 description: "Use this skill when the user wants help deciding how to build something, evaluating whether to keep/kill/pivot an approach, drafting an implementation plan, or executing an approved plan — including phrasings 設計どうする, 方針決めたい, どうやって直す, やり方どっち, やる価値ある, 採用すべきか, kill か keep か, 計画実行, 進めて, 着手. Activate when discussing technical trade-offs, or when the user just got approval and wants implementation — even without explicit 'design' or 'plan' wording."
 license: MIT
 when_to_use: "設計判断, 方針決め, design decision, kill or keep, 計画実行"
-metadata:
-  version: "2.0.0"
 ---
 
 # kouchiku (構築)
@@ -91,7 +89,7 @@ brute:   [雑にやるならこれ、N/10 + 1 行根拠]
 risk:    [採用時の最大の懸念 1 つ]
 ```
 
-3 案以上は提示しない (paralysis を避ける)。明らかな case は推奨 1 案で十分。brute はあえて出さなくてもよい (§3.8 引き算原則)。
+3 案以上は提示しない (paralysis を避ける)。明らかな case は推奨 1 案で十分。brute はあえて出さなくてもよい (引き算原則)。
 
 ## 通常検討モード
 

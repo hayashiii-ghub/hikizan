@@ -65,4 +65,4 @@ jq -r 'select(.hook == "bootstrap-claude-md") | .condition' ~/.hikizan/metrics.j
 - `scripts/pre-pr-create.sh` — PreToolUse on `gh pr create*`
 - `scripts/post-commit.sh` — PostToolUse on `git commit*`
 - `templates/CLAUDE.md` — bootstrap される本文
-- Phase 5 `teishutsu` skill — hook と二重構造の人手側 (skill 本文の停止条件として、hook は最後の砦)
+- `teishutsu` skill — hook と二重構造の人手側 (skill 本文の停止条件として、hook は最後の砦)

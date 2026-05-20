@@ -3,8 +3,6 @@ name: teishutsu
 description: "Use this skill when the user wants to submit a pull request — including the phrasings PR出す, PR提出, PR ready, PR open する, submit. Handles the full submission flow: remote state check, submodule-first ordering, parent commit, cwd-aware gh pr create. Activates after implementation is complete and ready to ship, even when the user just says 提出する or 出す without explicit PR wording."
 license: MIT
 when_to_use: "PR提出, PR出す, PR ready, submission, PR open"
-metadata:
-  version: "0.1.0"
 ---
 
 # teishutsu (提出)
@@ -132,7 +130,7 @@ reviewer:
 
 ## hook との二重構造
 
-| 停止条件 | 本 skill | Phase 3 hook |
+| 停止条件 | 本 skill | hook |
 |---|---|---|
 | non-fast-forward | Step 1 で先制検出 | pre-push が最後の砦 (block) |
 | force to protected | Step 3 で警告 | pre-push が block |
