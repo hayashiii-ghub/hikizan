@@ -268,7 +268,7 @@ hikizan/
 
 ## version
 
-plugin 全体: 0.1.0 (`.claude-plugin/plugin.json` 参照)。
+hikizan は `version` を固定せず、git commit を version として扱う。`/plugin update` で最新 commit に追従する。
 
 ## ライセンス / 出典
 
