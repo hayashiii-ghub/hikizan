@@ -8,8 +8,8 @@
     {
       "name": "hikizan",
       "source": {
-        "source": "github",
-        "repo": "hayashiii-ghub/hikizan"
+        "source": "url",
+        "url": "https://github.com/hayashiii-ghub/hikizan.git"
       }
     }
   ]

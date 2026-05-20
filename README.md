@@ -25,11 +25,11 @@ Claude Code 利用者は `/plugin` 経由が推奨経路。
 
 ```bash
 # Claude Code セッション内で実行
-/plugin marketplace add https://github.com/hayashiii-ghub/hikizan
+/plugin marketplace add https://github.com/hayashiii-ghub/hikizan.git
 /plugin install hikizan@hikizan
 ```
 
-HTTPS URL を明示すると、GitHub SSH key 未設定の環境でも clone できます。
+`.git` 付き HTTPS URL を明示すると、GitHub SSH key 未設定の環境でも git repository として clone できます。
 
 開発・検証時は `--plugin-dir` で直接読み込み:
 
@@ -172,7 +172,7 @@ install + 最初の発話 1 つで動く状態にする手順。
 1. Claude Code セッションで install:
 
    ```
-   /plugin marketplace add https://github.com/hayashiii-ghub/hikizan
+   /plugin marketplace add https://github.com/hayashiii-ghub/hikizan.git
    /plugin install hikizan@hikizan
    ```
 
