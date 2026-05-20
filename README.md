@@ -228,7 +228,8 @@ hikizan/
 ├── LICENSE                      ← MIT
 ├── .gitignore
 ├── .claude-plugin/              ← Claude Code plugin manifest (CC 経由配布用)
-│   └── plugin.json
+│   ├── plugin.json              ← plugin 本体の manifest
+│   └── marketplace.json         ← 単一 plugin の marketplace (source: "./")
 ├── hooks/                       ← CC plugin hooks (SessionStart / PreToolUse / PostToolUse)
 │   ├── hooks.json
 │   ├── conditions.md            ← 停止条件マトリクス

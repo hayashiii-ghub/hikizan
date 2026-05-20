@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
-# wt — git worktree manager (kufuu pack)
-# https://github.com/hayashiii-ghub/kufuu
+# wt — git worktree manager (hikizan plugin)
+# https://github.com/hayashiii-ghub/hikizan
 #
 # 7 subcommands: new / ls / status / rm / cleanup / enter / sync
 # worktree path: <repo>/.worktrees/<task>/
@@ -331,7 +331,7 @@ _sync_one() {
 # ===== wt help / version =====
 cmd_help() {
   cat <<'EOF'
-wt — git worktree manager (kufuu pack)
+wt — git worktree manager (hikizan plugin)
 
 usage:
   wt new <task> [--from <base>] [--launch <agent>]
@@ -368,11 +368,11 @@ usage:
 
 設計:
   worktree path は .worktrees/<task>/ (repo 内)、.gitignore 推奨
-  詳細は https://github.com/hayashiii-ghub/kufuu
+  詳細は https://github.com/hayashiii-ghub/hikizan
 EOF
 }
 
-cmd_version() { echo "wt $VERSION (kufuu)"; }
+cmd_version() { echo "wt $VERSION (hikizan)"; }
 
 # ===== dispatcher =====
 sub="${1:-help}"
