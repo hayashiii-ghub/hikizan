@@ -1,6 +1,6 @@
 # instrument を 1 つだけ仕込むパターン
 
-`tansaku` の通常追跡モードで「hypothesis を 1 つ confirm / discard する」ための instrument 集。**証拠は 1 つだけ**。1 回の実験で hypothesis の真偽を分ける。仕込んだら必ず外す (commit には残さない)。
+`kouchiku` の診断分岐で「hypothesis を 1 つ confirm / discard する」ための instrument 集。**証拠は 1 つだけ**。1 回の実験で hypothesis の真偽を分ける。仕込んだら必ず外す (commit には残さない)。
 
 ## 7 パターン
 
@@ -34,7 +34,7 @@ git log -S "問題のシンボル名" --oneline
 git log -S "問題の文字列" -p -- path/to/file
 ```
 
-**注意**: 二分探索 (`tansaku` の二分探索モード) と組み合わせて、culprit commit を特定する。
+**注意**: 二分探索と組み合わせて、culprit commit を特定する。
 
 ### 4. strace / dtruss / opensnoop (システムコール)
 
@@ -58,6 +58,7 @@ DevTools > Network > Preserve log
 ```
 
 または curl で再現:
+
 ```bash
 curl -v -X POST https://... -H '...' -d '...'
 ```
@@ -91,4 +92,4 @@ grep -E 'ERROR|WARN' /tmp/snapshot.log
 
 - **1 hypothesis = 1 instrument**。同時に 2 つ仕込んだ時点で「とりあえず試そう」モード、停止条件発動
 - 仕込んだ instrument は **fix 確定後すぐ revert** する (PR 出荷前に必ず grep で確認)
-- production code に `console.log` / `debugger` / `dump()` 等が残ったら `sadoku` の停止条件「未知の識別子」と同じレベルで指摘される
+- production code に `console.log` / `debugger` / `dump()` 等が残ったら `sadoku` の停止条件で指摘される

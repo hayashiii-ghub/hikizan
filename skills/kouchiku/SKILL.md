@@ -11,7 +11,7 @@ when_to_use: "設計判断, 方針決め, design decision, kill or keep, 計画�
 🌲 Using /kouchiku for [purpose taken from trigger context].
 ```
 
-「考える」から「作る」までを一貫して担う。設計判断 / 評価 / 計画策定だけでなく、**承認された計画の実行**まで責任を持つ。ただし controller として専門 skill を選ぶ責務を持ち、原因調査 / TDD / レビューの discipline は内包しない。実装後のレビューは `sadoku` に渡す。
+「考える」から「作る」までを一貫して担う。設計判断 / 評価 / 計画策定だけでなく、**承認された計画の実行**まで責任を持つ。原因未確定の不具合や予期しない test failure は計画実行内の診断分岐で root cause を確定する。ただし TDD / レビュー / 提出の discipline は内包せず、必要な局面で `shiken` / `sadoku` / `teishutsu` に渡す。
 
 ## Step 0: worktree 検出
 
@@ -45,27 +45,31 @@ git log --diff-filter=A --name-only -10 | head -30
 
 ## モード切替
 
-| モード | 発話トリガー | 状態トリガー | 動作 |
-|---|---|---|---|
-| 軽量検討 | `どうやって直す` / `やり方どっち` | scope が 3 ファイル未満 | 推奨 1 案 (file:line) + brute force 案 + 1 risk |
-| 通常検討 | `設計どうする` / `方針決めたい` / `アーキテクチャ判断` | 新機能着手前 | 推奨案 + 1 代替 (近接時のみ) + 前提崩し + 攻撃検証 + 計画化 |
-| 評価 | `やる価値ある` / `採用すべきか` / `kill か keep か` / `やめる?` | なし | Kill / Keep / Pivot 判定 + 3 理由 |
-| 計画実行 | `計画実行` / `進めて` / `着手` / `実装開始` | 通常検討の出力が承認直後 | 計画を実行、各 step で検証、完了報告まで |
 
-通常検討 → 計画実行は同じ skill 内で連続して走る。原因未確定なら `tansaku`、TDD 必要層なら `shiken`、実装完了後は `sadoku` に handoff block で渡す。
+| モード  | 発話トリガー                                | 状態トリガー           | 動作                                          |
+| ---- | ------------------------------------- | ---------------- | ------------------------------------------- |
+| 軽量検討 | `どうやって直す` / `やり方どっち`                  | scope が 3 ファイル未満 | 推奨 1 案 (file:line) + brute force 案 + 1 risk |
+| 通常検討 | `設計どうする` / `方針決めたい` / `アーキテクチャ判断`     | 新機能着手前           | 推奨案 + 1 代替 (近接時のみ) + 前提崩し + 攻撃検証 + 計画化      |
+| 評価   | `やる価値ある` / `採用すべきか` / `そもそも` / `やめる?` | なし               | Kill / Keep / Pivot 判定 + 3 理由               |
+| 計画実行 | `計画実行` / `進めて` / `着手` / `実装開始`        | 通常検討の出力が承認直後     | 計画を実行、各 step で検証、完了報告まで                     |
+
+
+通常検討 → 計画実行は同じ skill 内で連続して走る。原因未確定なら計画実行内の診断分岐で root cause を確定し、TDD 必要層なら `shiken`、実装完了後は `sadoku` に handoff block で渡す。
 
 ## Handoff Policy
 
 kouchiku は controller として次の skill を選ぶが、専門 skill の責務を内包しない。
 
-| 条件 | handoff 先 | 理由 |
-|---|---|---|
-| 原因未確定の不具合 / 予期しない test failure / 再現不明の挙動 | `tansaku` | root cause を確定してから設計判断する |
-| 純ロジック / API / ビジネスルール / bugfix 実装 | `shiken` | RED → GREEN → PRUNE の discipline を守る |
-| 実装完了後の diff review | `sadoku` | 実装者視点から離れて diff を見る |
-| 整理 (重複削除 / 命名統一 / 不要な抽象化除去 / dead code / efficiency) | `sadoku` simplify findings → kouchiku で実装 | 発見は sadoku、実装は controller が responsibility を持つ |
-| PR 本文ドラフト / PR 提出 (remote 確認 / submodule / parent commit / cwd-aware gh pr create) | `teishutsu` | hook と二段構成、submission 工程の漏れを skill で先制検出 |
-| 設計判断 / scope 整理 / 計画分解 / 複数案評価 | `kouchiku` | controller が判断を保持する |
+
+| 条件                                                                                 | handoff 先                                 | 理由                                             |
+| ---------------------------------------------------------------------------------- | ----------------------------------------- | ---------------------------------------------- |
+| 原因未確定の不具合 / 予期しない test failure / 再現不明の挙動                                           | `kouchiku` 診断分岐                         | root cause を確定してから設計判断する                       |
+| 純ロジック / API / ビジネスルール / bugfix 実装                                                  | `shiken`                                  | RED → GREEN → PRUNE の discipline を守る           |
+| 実装完了後の diff review                                                                 | `sadoku`                                  | 実装者視点から離れて diff を見る                            |
+| 整理 (重複削除 / 命名統一 / 不要な抽象化除去 / dead code / efficiency)                               | `sadoku` simplify findings → kouchiku で実装 | 発見は sadoku、実装は controller が responsibility を持つ |
+| PR 本文ドラフト / PR 提出 (remote 確認 / submodule / parent commit / cwd-aware gh pr create) | `teishutsu`                               | hook と二段構成、submission 工程の漏れを skill で先制検出       |
+| 設計判断 / scope 整理 / 計画分解 / 複数案評価                                                     | `kouchiku`                                | controller が判断を保持する                            |
+
 
 handoff 時は以下の block を必ず出す。`evidence` は file:line / command output / logs など、受け手が再確認できるものにする。
 
@@ -159,7 +163,7 @@ If pivot:   [何に方向転換するか、1 段落]
 **手順**
 
 1. 計画を再読し、不明点があれば確認を投げる
-2. step ごとに inline で実装 (subagent には委譲しない。原因未確定なら `tansaku`、TDD 必要層なら `shiken` に handoff)
+2. step ごとに inline で実装 (subagent には委譲しない。原因未確定なら診断分岐、TDD 必要層なら `shiken` に handoff)
 3. 各 step 完了後に検証 (test / lint / type-check / 手動確認)
 4. scope 外の発見は実装せず「実装中に分かったこと」に記録 (後で `teishutsu` の PR 本文ドラフトで参照)
 5. 完了報告を出力 → `sadoku` に PR レビュー用 handoff block を渡す
@@ -167,6 +171,20 @@ If pivot:   [何に方向転換するか、1 段落]
 **TDD 必要層を踏むときの分岐**
 
 純ロジック / API / バグ修正 などの強制レイヤーに触れる場合は、計画実行を一時停止して `shiken` (TDD) のサイクルに入る。GREEN → PRUNE を終えてから次の step に戻る。
+
+**診断分岐**
+
+原因未確定の不具合 / 予期しない test failure / 再現不明の挙動に当たったら、実装変更を止めて root cause を確定する。
+
+- root cause を 1 文で言語化できるまで実装を変更しない (`I believe the root cause is [X] because [evidence].`)
+- 症状をそのまま列挙する: error message, stack trace, 再現手順, 期待値, 実際の値
+- hypothesis を 1 文にし、`references/diagnosis-techniques.md` を読んで instrument を 1 つだけ走らせる
+- confirm → fix / `shiken` へ。discard → hypothesis を再構築
+- 同じ症状が修正後も残る場合は停止し、hypothesis を再構築する
+- 3 回失敗したら `hypothesis attempts` / `current best guess` / `remaining unknowns` / `recommended next step` を出して user の proceed 判断を求める
+- fix が 5+ ファイルに touch するなら scope を確認する (= 別 bug の可能性)
+- fix 後は同 input に対する before / after の挙動 diff を完了記録にそのまま引用する
+- regression guard が必要なら `shiken` に渡す。root cause と再現条件を固定し、TDD の実装 discipline は `shiken` に委譲する
 
 **handoff 例**
 
@@ -187,7 +205,7 @@ expected return:
 
 - 破壊的な自動実行 (`rm -rf`, `git reset --hard`, force push 等) は明示確認なしに走らせない
 - 計画にない変更を勝手にしない (scope 外の発見は記録のみ、実装しない)
-- 検証コマンドが失敗したら次の step に進まない。原因を `tansaku` で追跡
+- 検証コマンドが失敗したら次の step に進まない。診断分岐で root cause を追跡
 - 計画に無い 5+ ファイル touch が発生したら停止し、scope を再確認
 
 ## Hard Rules
@@ -219,10 +237,11 @@ Plan approved. このまま実装する場合は「計画実行」「進めて�
 mode:              軽量検討 / 通常検討 / 評価 / 計画実行
 worktree:          in-worktree / normal-repo
 output type:       plan / verdict / evaluation / execution-result
-handoff target:    tansaku / shiken / sadoku / none
+handoff target:    shiken / sadoku / teishutsu / none
 
 # 計画実行モードのみ
 steps done:        N (of M planned)
+diagnosis:         [root cause / before-after diff / none]
 verification:      [command] -> pass / fail
                      検証ログ: [出力末尾 3-5 行、失敗時は full error]
 scope drift:       on target / drift: [何を別 issue に切り出したか]

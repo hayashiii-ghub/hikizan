@@ -11,7 +11,7 @@ when_to_use: "PR確認, レビュー, code review, 整理, simplify"
 🌲 Using /sadoku for [purpose taken from trigger context].
 ```
 
-「diff を見る」に純化した skill。通常レビュー / simplify findings の 2 モード。実装行為 (計画実行) は `kouchiku`、TDD は `shiken`、バグ調査は `tansaku`、PR 本文ドラフトと提出フローは `teishutsu` に分離。reviewer コメントへの返信文ドラフトや個別対応は skill mode 化せず通常会話で対応する (分類・咀嚼工程は人間判断のままにする)。
+「diff を見る」ための skill。通常レビュー / simplify findings の 2 モード。実装行為 (計画実行) と原因調査は `kouchiku`、TDD は `shiken`、PR 本文ドラフトと提出フローは `teishutsu` に分離。reviewer コメントへの返信文ドラフトや個別対応は skill mode 化せず通常会話で対応する (分類・咀嚼工程は人間判断のままにする)。
 
 ## Step 0: worktree 検出
 
@@ -25,10 +25,12 @@ GIT_COMMON=$(cd "$(git rev-parse --git-common-dir)" 2>/dev/null && pwd -P)
 
 ## モード切替
 
-| モード | 発話トリガー | 状態トリガー |
-|---|---|---|
-| 通常レビュー | `レビューして` | diff 検出 |
-| simplify findings | `整理して` / `simplify` / `整理ポイントある?` / `スリム化したい` | — |
+
+| モード               | 発話トリガー                                        | 状態トリガー  |
+| ----------------- | --------------------------------------------- | ------- |
+| 通常レビュー            | `レビューして`                                      | diff 検出 |
+| simplify findings | `整理して` / `simplify` / `整理ポイントある?` / `スリム化したい` | —       |
+
 
 **compound trigger**: `コードレビュー` / `コードレビューして` は **通常レビュー → simplify findings** を順に実行する (それぞれ独立 section として出力)。
 
@@ -38,7 +40,7 @@ reviewer コメントへの返信文ドラフトは skill mode 化しない。�
 
 ## Handoff Intake
 
-`kouchiku` / `tansaku` / `shiken` からの handoff block がある場合は、diff だけでなく前段の判断と検証ログも review evidence として読む。足りない場合は推測で補完せず、通常レビューの停止条件として扱う。
+`kouchiku` / `shiken` からの handoff block がある場合は、diff だけでなく前段の判断と検証ログも review evidence として読む。足りない場合は推測で補完せず、通常レビューの停止条件として扱う。
 
 期待する入力:
 
@@ -55,7 +57,9 @@ tdd:
   - GREEN: [...]
   - PRUNE: [...]
 root cause:
-  - [tansaku があれば]
+  - [bugfix / diagnosis があれば kouchiku の root cause 1 文 + evidence]
+confirmed:
+  - [bugfix / diagnosis があれば同 input の before / after diff]
 scope notes:
   - [やらなかったこと]
 review focus:
@@ -70,11 +74,13 @@ diff 読解に入る前に `references/project-context.md` を読み、変更フ
 
 **深さ判定**
 
-| 深さ | 条件 | 動作 |
-|---|---|---|
-| Quick | 50 行以内、テスト変更のみ等 | 停止条件チェックのみ |
-| Standard | 50〜500 行 | 停止条件 + 専門家レビュー (security / architecture) |
-| Deep | 500 行超、または security 接触 | Standard に加えて adversarial レビュー |
+
+| 深さ       | 条件                     | 動作                                       |
+| -------- | ---------------------- | ---------------------------------------- |
+| Quick    | 50 行以内、テスト変更のみ等        | 停止条件チェックのみ                               |
+| Standard | 50〜500 行               | 停止条件 + 専門家レビュー (security / architecture) |
+| Deep     | 500 行超、または security 接触 | Standard に加えて adversarial レビュー           |
+
 
 **専門家レビューの起動 — gate (b)**
 
@@ -93,13 +99,15 @@ Standard 以上で security / architecture 観点が必要な場合のみ subage
 
 詳細と各観点の判定基準は `references/simplify-checklist.md` を参照。
 
-| 観点 | 例 |
-|---|---|
-| 重複 | 3 箇所以上の類似 code、共通化候補 |
-| 命名 | 同 module 内の命名揺れ、慣用と外れる用語 |
-| 不要な抽象化 | 1 箇所からしか呼ばれない wrapper、premature な generic |
-| dead code | 未使用 export / private function / 到達不能 branch |
-| efficiency | 明らかな改善余地 (O(n²) → O(n) 等、計測不要な範囲) |
+
+| 観点         | 例                                           |
+| ---------- | ------------------------------------------- |
+| 重複         | 3 箇所以上の類似 code、共通化候補                        |
+| 命名         | 同 module 内の命名揺れ、慣用と外れる用語                    |
+| 不要な抽象化     | 1 箇所からしか呼ばれない wrapper、premature な generic   |
+| dead code  | 未使用 export / private function / 到達不能 branch |
+| efficiency | 明らかな改善余地 (O(n²) → O(n) 等、計測不要な範囲)           |
+
 
 ### 出力フォーマット
 
@@ -158,6 +166,8 @@ medium / low は `teishutsu` の PR 本文ドラフト時に「実装中に分�
   - `.skip` / `xfail` が理由コメントなしで残っている
 - **PR 粒度違反**: diff が複数 issue にまたがっている (= 1 issue = 1 PR ルール違反)
 - **未確認の外部事実引用**: 「最新の X バージョン」「Y 標準」のような外部事実が裏取りなしで review finding / コメントに混入している (ファクトチェック原則、URL 引用必須)
+- **root cause 証跡不足**: bugfix / diagnosis を含む diff で root cause 1 文、evidence、同 input の before / after diff が無い
+- **debug instrument 残留**: `console.log` / `debugger` / `dump()` / 一時 log tag など、調査用 instrument が production code に残っている
 
 ## Hard Rules
 
@@ -178,6 +188,8 @@ tests:            N added, M essential
                     検証ログ: [test command 最終 summary 行]
 verification:     [command] -> pass / fail
                     検証ログ: [出力末尾 3-5 行、失敗時は full error]
+root cause:       present / missing / not applicable
+                    検証ログ: [handoff の root cause / before-after diff]
 PII scan:         clean / found: [...]
                     検証ログ: [grep command + 出力 / 0件は "0 matches"]
 文章:             伝わる / 伝わらない (伝わらない場合: 何が伝わらないか)    ※ 自己申告

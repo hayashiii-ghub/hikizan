@@ -35,7 +35,7 @@ shiken は test を「書いて捨てる」局面が多いため、`wt` で隔�
 
 ## Handoff Intake
 
-`kouchiku` / `tansaku` から呼ばれる時に期待する入力。足りない場合は推測で補完せず、停止条件として扱い、欠落項目を呼び出し元に問い合わせる。
+`kouchiku` から呼ばれる時に期待する入力。足りない場合は推測で補完せず、停止条件として扱い、欠落項目を呼び出し元に問い合わせる。
 
 ```
 handoff: shiken
@@ -43,7 +43,7 @@ reason: [TDD 必要層 (純ロジック / API / ビジネスルール) または
 spec: [testable な粒度に分解した仕様]
 edge cases: [想定する境界 / 例外]
 non-goals: [この cycle で扱わない範囲]
-root cause: [bugfix なら tansaku の出力、新機能なら省略可]
+root cause: [bugfix なら kouchiku 診断分岐の出力、新機能なら省略可]
 test target:
   - [file / module]
   - [assert する behavior]
@@ -58,7 +58,7 @@ expected return:
 RED → GREEN → PRUNE の単位に落としきり、GREEN 後は実装判断を広げず、呼び出し元へ検証ログ付きで返す。
 
 ```
-handoff return: kouchiku / tansaku / sadoku
+handoff return: kouchiku / sadoku
 implemented behavior: [何を満たしたか]
 tests:
   - RED: [test runner output]

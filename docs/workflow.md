@@ -1,6 +1,6 @@
 ---
-title: Skill ワークフロー例（v4）
-description: sadoku / kouchiku / tansaku / shiken / teishutsu の境界と典型フロー、hook 安全網
+title: Skill ワークフロー例（v5）
+description: sadoku / kouchiku / shiken / teishutsu の境界と典型フロー、hook 安全網
 ---
 
 # Skill ワークフロー例
@@ -27,12 +27,13 @@ description: sadoku / kouchiku / tansaku / shiken / teishutsu の境界と典型
 
 ## 1. 役割境界
 
-動詞単位で 5 分割。`kouchiku` は controller として handoff 先を選ぶが、原因調査 / TDD / レビュー / 提出の discipline は各専門 skill に渡す。
+動詞単位で 4 分割。`kouchiku` は controller として設計 / 計画実行 / 原因診断を持ち、TDD / レビュー / 提出の discipline は各専門 skill に渡す。
 
 ```mermaid
 flowchart TB
   subgraph BUILD["kouchiku（構築）"]
     K["考える・作る<br/>設計 / 評価 / 計画 + 計画実行"]
+    KD["診る<br/>diagnosis / root cause"]
   end
   subgraph TEST["shiken（試験）"]
     S["試す<br/>RED → GREEN → REFACTOR → PRUNE"]
@@ -40,20 +41,16 @@ flowchart TB
   subgraph REVIEW["sadoku（査読）"]
     R["見る<br/>code review / simplify"]
   end
-  subgraph HUNT["tansaku（探索）"]
-    T["追う<br/>バグ調査 / root cause"]
-  end
   subgraph SUBMIT["teishutsu（提出）"]
     M["出す<br/>PR 本文 / remote / submodule / parent / cwd-aware gh"]
   end
 
-  BUILD -->|"原因未確定"| HUNT
-  HUNT -->|"root cause 確定"| TEST
-  HUNT -.->|"調査結果"| BUILD
-  BUILD -->|"TDD 必要層"| TEST
-  TEST -->|"検証ログ付き return"| BUILD
-  BUILD -->|"実装完了"| REVIEW
-  REVIEW -.->|"simplify finding<br/>(high severity)"| BUILD
+  K -->|"原因未確定"| KD
+  KD -->|"root cause 確定"| K
+  K -->|"TDD 必要層"| TEST
+  TEST -->|"検証ログ付き return"| K
+  K -->|"実装完了"| REVIEW
+  REVIEW -.->|"simplify finding<br/>(high severity)"| K
   REVIEW -->|"レビュー済 diff"| SUBMIT
 ```
 
@@ -67,8 +64,8 @@ issue 受領から PR 出荷まで。**kouchiku** が controller として計画
 flowchart TB
   A["issue + DoD"] -->|"設計どうする"| B["kouchiku 通常検討<br/>問題定義・案・前提崩し・攻撃検証・Plan"]
   B -->|"Plan 承認 / 進めて"| C["kouchiku 計画実行<br/>owner skill 付き Plan steps"]
-  C -->|"原因未確定"| I["tansaku<br/>root cause 1文 + evidence"]
-  I -->|"調査結果 return"| C
+  C -->|"原因未確定"| I["kouchiku diagnosis<br/>root cause 1文 + evidence"]
+  I -->|"root cause 確定"| C
   C -->|"TDD 必要層"| D["shiken<br/>RED → GREEN → REFACTOR → PRUNE"]
   D -->|"検証ログ付き return"| C
   C -->|"handoff block"| E["sadoku 通常レビュー<br/>深さ・停止条件・完了記録"]
@@ -80,7 +77,8 @@ flowchart TB
 
 > **ポイント**
 >
-> - **kouchiku → tansaku / shiken → kouchiku** の往復は handoff block で起こる。
+> - 原因未確定の調査は **kouchiku diagnosis** として inline で起こる。
+> - **kouchiku → shiken → kouchiku** の往復は handoff block で起こる。
 > - **sadoku** は実装完了後に初めて起動（「見る」専門）。
 > - **専門家レビュー**は Standard 以上のみ。Quick は停止条件中心。
 
@@ -92,7 +90,7 @@ flowchart TB
 
 ```mermaid
 flowchart TB
-  B0["バグ報告 / error / 動かない"] --> B1["tansaku 通常追跡<br/>症状列挙・hypothesis 1文・instrument 1つ・confirm/fix"]
+  B0["バグ報告 / error / 動かない"] --> B1["kouchiku diagnosis<br/>症状列挙・hypothesis 1文・instrument 1つ・confirm/fix"]
   B1 -->|"root cause 確定<br/>fix 前"| B2["shiken regression guard<br/>RED: 実装前は fail<br/>GREEN: fix 後 pass<br/>PRUNE: revert で fail 目視"]
   B2 --> B3["sadoku 通常レビュー"]
   B3 --> B4["teishutsu PR 本文 + 提出"]
@@ -101,7 +99,7 @@ flowchart TB
 
 > **ポイント**
 >
-> - **tansaku**: hypothesis を 1 文にできるまでコードに触らない discipline。
+> - **kouchiku diagnosis**: hypothesis を 1 文にできるまでコードに触らない discipline。
 > - **bugfix** は shiken の**強制**層。再現テストを先行。
 > - 「直りました」だけは不可。**fix 前後の挙動差分をそのまま引用**。
 
@@ -151,9 +149,7 @@ flowchart TB
 | kouchiku | 通常検討 | 「設計どうする」「方針決めたい」「アーキテクチャ判断」 |
 | kouchiku | 評価 | 「やる価値ある」「採用すべきか」「kill か keep」 |
 | kouchiku | 計画実行 | 「計画実行」「進めて」「着手」「実装開始」 |
-| tansaku | 通常追跡 | 「エラー」「動かない」「落ちる」「クラッシュ」 |
-| tansaku | 二分探索 | 「前は動いてた」「アップデート後」「更新後動かない」 |
-| tansaku | 再発追跡 | 「同じ問題が再発」 |
+| kouchiku | diagnosis | 「エラー」「動かない」「落ちる」「クラッシュ」「前は動いてた」「同じ問題が再発」 |
 | shiken | 起動 | 「TDDで」「テストから書いて」 |
 | teishutsu | PR 本文ドラフト / 提出 | 「PR文書いて」「PR description」「PR出す」「PR提出」「PR ready」「提出して」 |
 
@@ -171,11 +167,12 @@ flowchart TB
 | (user)               | kouchiku 通常検討      | 「設計どうする」            | issue + DoD           |
 | (user)               | kouchiku 軽量検討      | 「どうやって直す」          | 修正対象              |
 | (user)               | kouchiku 評価          | 「やる価値ある」            | 判断対象              |
+| (user)               | kouchiku diagnosis     | 「エラー」「動かない」      | バグ症状              |
 | kouchiku 通常検討    | kouchiku 計画実行      | 「計画実行」「進めて」      | owner skill 付き Plan steps |
-| kouchiku 計画実行    | tansaku                | 原因未確定 / test failure   | 症状 + evidence + expected return |
-| tansaku              | kouchiku 計画実行      | root cause 確定             | root cause 1 文 + fix 候補 |
+| kouchiku 計画実行    | kouchiku diagnosis     | 原因未確定 / test failure   | 症状 + evidence |
+| kouchiku diagnosis   | kouchiku 計画実行      | root cause 確定             | root cause 1 文 + fix 候補 |
 | kouchiku 計画実行    | shiken                 | TDD 必要層に触れた          | spec / edge case / non-goals |
-| tansaku              | shiken                 | bugfix 確定                 | root cause + failing behavior + test target |
+| kouchiku diagnosis   | shiken                 | bugfix 確定                 | root cause + failing behavior + test target |
 | shiken               | kouchiku 計画実行      | サイクル完了                | RED/GREEN/PRUNE log + files changed |
 | kouchiku 計画実行    | sadoku 通常レビュー    | 実装完了                    | handoff block + 完成 diff |
 | (user)               | sadoku 通常レビュー    | 「レビューして」            | diff                  |
@@ -184,7 +181,6 @@ flowchart TB
 | (user)               | sadoku simplify findings | 「整理して」「simplify」  | diff (範囲)           |
 | sadoku 通常レビュー  | sadoku simplify findings | compound (「コードレビュー」) | レビュー後の連結実行 |
 | sadoku simplify findings | kouchiku 計画実行  | simplify finding (high)     | 対象 finding + file:line |
-| (user)               | tansaku                | 「エラー」「動かない」      | バグ症状              |
 | (user)               | teishutsu              | 「PR出す」「PR提出」        | 実装完了 + diff       |
 | kouchiku 計画実行    | teishutsu              | 完了報告 + 本文準備済       | files changed + body  |
 | (user)               | teishutsu              | 「PR文書いて」              | change intent + files + verification |
@@ -237,7 +233,7 @@ flowchart TB
   N2 --> OK2["✅ shiken 強制層を経由"]
 ```
 
-### NG-3: hypothesis なしで tansaku
+### NG-3: hypothesis なしで diagnosis
 
 ```mermaid
 flowchart TB
@@ -262,8 +258,7 @@ flowchart TB
 | skill     | 検証ログ必須項目                                                 | 形式                    |
 | --------- | ---------------------------------------------------------------- | ----------------------- |
 | sadoku    | 停止条件 scan / tests / verification / PII scan                  | command + 出力末尾      |
-| kouchiku  | （計画実行モードのみ）verification                               | command + 出力末尾      |
-| tansaku   | Confirmed（fix 前後の挙動差分）/ Tests                           | そのまま引用            |
+| kouchiku  | （計画実行 / diagnosis のみ）verification / Confirmed（fix 前後の挙動差分） | command + 出力末尾 / そのまま引用 |
 | shiken    | RED / GREEN / PRUNE 各 phase                                     | test runner 最終行      |
 | teishutsu | remote state / submodule / parent commit / push / PR body / cwd at gh / PR | command + 出力 (`pwd` はそのまま引用) |
 
@@ -280,8 +275,7 @@ flowchart TB
 | 文脈抽出                     | `../skills/sadoku/references/project-context.md`                                  |
 | subagent                     | `../skills/sadoku/references/agents/reviewer-security.md`, `reviewer-architecture.md` |
 | kouchiku                     | `../skills/kouchiku/SKILL.md`                                                     |
-| 引き算プロトコル             | `../skills/kouchiku/references/minimal-approach.md`                               |
-| tansaku                      | `../skills/tansaku/SKILL.md`, `../skills/tansaku/references/logging-techniques.md` |
+| kouchiku references          | `../skills/kouchiku/references/minimal-approach.md`, `../skills/kouchiku/references/diagnosis-techniques.md` |
 | shiken                       | `../skills/shiken/SKILL.md`, `../skills/shiken/references/testing-anti-patterns.md` |
 | teishutsu                    | `../skills/teishutsu/SKILL.md`                                                    |
 | PR テンプレ                  | `../skills/teishutsu/references/pr-template.md`                                   |
