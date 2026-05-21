@@ -23,10 +23,12 @@ GIT_COMMON=$(cd "$(git rev-parse --git-common-dir)" 2>/dev/null && pwd -P)
 
 ## 起動トリガー
 
-| 発話トリガー | 状態トリガー | 動作 |
-|---|---|---|
-| `PR文書いて` / `PR description` | PR open 直前 | Step 4 の PR 本文ドラフトだけを実行して終了 |
-| `PR出す` / `PR提出` / `PR ready` / `提出して` | `kouchiku` 計画実行モードの完了報告直後 | 提出フローを実行 |
+
+| 発話トリガー                                | 状態トリガー                    | 動作                          |
+| ------------------------------------- | ------------------------- | --------------------------- |
+| `PR文書いて` / `PR description`           | PR open 直前                | Step 4 の PR 本文ドラフトだけを実行して終了 |
+| `PR出す` / `PR提出` / `PR ready` / `提出して` | `kouchiku` 計画実行モードの完了報告直後 | 提出フローを実行                    |
+
 
 状態トリガーは誤発火回避のため、検出後に確認 prompt を 1 行挟む (`実装完了です。PR を出しますか?`)。
 
@@ -135,12 +137,14 @@ reviewer:
 
 ## hook との二重構造
 
-| 停止条件 | 本 skill | hook |
-|---|---|---|
-| non-fast-forward | Step 1 で先制検出 | pre-push が最後の砦 (block) |
-| force to protected | Step 5 で警告 | pre-push が block |
-| reviewer / draft 未指定 | Step 6 で確認 | pre-pr-create が block |
-| submodule 未 push | Step 2 で順序遵守 | post-commit が warning |
+
+| 停止条件                 | 本 skill      | hook                   |
+| -------------------- | ------------ | ---------------------- |
+| non-fast-forward     | Step 1 で先制検出 | pre-push が最後の砦 (block) |
+| force to protected   | Step 5 で警告   | pre-push が block       |
+| reviewer / draft 未指定 | Step 6 で確認   | pre-pr-create が block  |
+| submodule 未 push     | Step 2 で順序遵守 | post-commit が warning  |
+
 
 **役割分担**: skill は「正常経路で漏れを防ぐ」、hook は「skill を経由しない経路でも止める最後の砦」。teishutsu は hook より厳しい (block しないものを skill が積極的に止める / 確認に上げる)。
 
@@ -172,3 +176,4 @@ PR:              [url] / draft / reviewers: [@user]
 ## references/
 
 - `pr-template.md` — PR 本文ドラフトの contract (5 セクション template / 手順 / 文章チェック / PII scan / 粒度ルール)
+
