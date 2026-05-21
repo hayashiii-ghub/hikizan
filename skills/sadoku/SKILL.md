@@ -1,8 +1,8 @@
 ---
 name: sadoku
-description: "Use this skill when the user wants code reviewed, findings simplified, or a PR description written — including the phrasings レビューして, コードレビュー, 整理して, simplify, PR文書いて, PR description. Activate after implementation, when reviewing a git diff before opening a PR, or when restructuring messy findings — even when the user doesn't say 'review' explicitly."
+description: "Use this skill when the user wants code reviewed or findings simplified — including the phrasings レビューして, コードレビュー, 整理して, simplify. Activate after implementation, when reviewing a git diff before opening a PR, or when restructuring messy findings — even when the user doesn't say 'review' explicitly."
 license: MIT
-when_to_use: "PR確認, レビュー, code review, 整理, simplify, PR description"
+when_to_use: "PR確認, レビュー, code review, 整理, simplify"
 ---
 
 # sadoku (査読)
@@ -11,7 +11,7 @@ when_to_use: "PR確認, レビュー, code review, 整理, simplify, PR descript
 🌲 Using /sadoku for [purpose taken from trigger context].
 ```
 
-「diff を見る・書く」に純化した skill。通常レビュー / simplify findings / PR 説明文の 3 モード。実装行為 (計画実行) は `kouchiku`、TDD は `shiken`、バグ調査は `tansaku` に分離。reviewer コメントへの返信文ドラフトや個別対応は skill mode 化せず通常会話で対応する (分類・咀嚼工程は人間判断のままにする)。
+「diff を見る」に純化した skill。通常レビュー / simplify findings の 2 モード。実装行為 (計画実行) は `kouchiku`、TDD は `shiken`、バグ調査は `tansaku`、PR 本文ドラフトと提出フローは `teishutsu` に分離。reviewer コメントへの返信文ドラフトや個別対応は skill mode 化せず通常会話で対応する (分類・咀嚼工程は人間判断のままにする)。
 
 ## Step 0: worktree 検出
 
@@ -29,7 +29,6 @@ GIT_COMMON=$(cd "$(git rev-parse --git-common-dir)" 2>/dev/null && pwd -P)
 |---|---|---|
 | 通常レビュー | `レビューして` | diff 検出 |
 | simplify findings | `整理して` / `simplify` / `整理ポイントある?` / `スリム化したい` | — |
-| PR 説明文 | `PR文書いて` / `PR description` | PR open 直前 |
 
 **compound trigger**: `コードレビュー` / `コードレビューして` は **通常レビュー → simplify findings** を順に実行する (それぞれ独立 section として出力)。
 
@@ -67,7 +66,7 @@ review focus:
 
 深さ判定 → diff 読解 → 停止条件チェック → 専門家レビュー → 完了記録。
 
-hikizan repo 本体のドキュメント / skill 本文をレビューするときは、`bin/check-terms` があれば実行し、避けたい表現が残っていないか確認する。
+diff 読解に入る前に `references/project-context.md` を読み、変更ファイルの依存関係 / テスト構造 / 命名規則 / touch ファイル数を確認する。
 
 **深さ判定**
 
@@ -141,15 +140,7 @@ expected return:
   - verification log (test pass / lint pass)
 ```
 
-medium / low は PR 説明文の「実装中に分かったこと」に記録するか、据え置き判断を user に委ねる。
-
-## PR 説明文モード
-
-template (5 セクション固定)、書き方の手順、4 チェック、PII scan、粒度ルールはすべて `references/pr-template.md` に集約してある。このモードに入ったら **まず `references/pr-template.md` を読み込み**、そこの手順に従って章ごとに提案する。
-
-SKILL.md 側ではモード起動の判定と完了記録への evidence 引用のみ担う。停止条件や必須情報の欠落がなければ、まずレビュー可能な初稿を 1 回で出す。
-
-**`teishutsu` からの handoff intake**: `teishutsu` skill の Step 4 (PR 作成) 直前に「PR 本文が未準備」状態で呼ばれることがある。handoff block の `change intent` / `files changed` / `verification` を入力として 5 セクション初稿を返し、`teishutsu` がそれを `gh pr create --body` に渡す。本 mode の出力フォーマット自体は変えない (handoff 経由でも user 直接でも同じ初稿)。
+medium / low は `teishutsu` の PR 本文ドラフト時に「実装中に分かったこと」へ渡すか、据え置き判断を user に委ねる。
 
 ## 停止条件
 
@@ -158,7 +149,7 @@ SKILL.md 側ではモード起動の判定と完了記録への evidence 引用�
 - 破壊的な自動実行 (例: `rm -rf`, `git reset --hard`, force push 等) を明示確認なしで走らせていないか
 - diff 内の未知の識別子 (識別子が grep でヒットしないなら、勝手に補完せず質問)
 - 依存追加の妥当性が不明 (lockfile 変更があれば理由を確認)
-- **PR 説明文 / commit / release notes に PII / Secrets が混入している** (email, token, 個人名等)
+- **review finding / commit / release notes に PII / Secrets が混入している** (email, token, 個人名等)
 - **テスト最小性違反** (いずれか):
   - mock の存在・呼び出し回数を assert している test
   - production class に test-only method が追加されている
@@ -166,7 +157,7 @@ SKILL.md 側ではモード起動の判定と完了記録への evidence 引用�
   - snapshot test の濫用 (small diff で全更新)
   - `.skip` / `xfail` が理由コメントなしで残っている
 - **PR 粒度違反**: diff が複数 issue にまたがっている (= 1 issue = 1 PR ルール違反)
-- **未確認の外部事実引用**: 「最新の X バージョン」「Y 標準」のような外部事実が裏取りなしで PR 説明文 / コメントに混入している (ファクトチェック原則、URL 引用必須)
+- **未確認の外部事実引用**: 「最新の X バージョン」「Y 標準」のような外部事実が裏取りなしで review finding / コメントに混入している (ファクトチェック原則、URL 引用必須)
 
 ## Hard Rules
 
@@ -194,7 +185,6 @@ PII scan:         clean / found: [...]
 
 ## references/
 
-- `pr-template.md` — PR 説明文モードの contract (5 セクション template / 手順 / 文章チェック / PII scan / 粒度ルール)
 - `project-context.md` — diff 読解時の文脈抽出方針
 - `persona-catalog.md` — 専門家レビュー (security / architecture / adversarial) の persona 起動条件
 - `agents/reviewer-security.md` / `agents/reviewer-architecture.md` — 専門家レビュー subagent prompt

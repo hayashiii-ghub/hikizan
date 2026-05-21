@@ -38,13 +38,13 @@ flowchart TB
     S["試す<br/>RED → GREEN → REFACTOR → PRUNE"]
   end
   subgraph REVIEW["sadoku（査読）"]
-    R["見る・書く<br/>code review / PR 説明文"]
+    R["見る<br/>code review / simplify"]
   end
   subgraph HUNT["tansaku（探索）"]
     T["追う<br/>バグ調査 / root cause"]
   end
   subgraph SUBMIT["teishutsu（提出）"]
-    M["出す<br/>remote / submodule / parent / cwd-aware gh"]
+    M["出す<br/>PR 本文 / remote / submodule / parent / cwd-aware gh"]
   end
 
   BUILD -->|"原因未確定"| HUNT
@@ -54,8 +54,7 @@ flowchart TB
   TEST -->|"検証ログ付き return"| BUILD
   BUILD -->|"実装完了"| REVIEW
   REVIEW -.->|"simplify finding<br/>(high severity)"| BUILD
-  REVIEW -->|"PR 本文 ok"| SUBMIT
-  SUBMIT -.->|"PR 本文未準備"| REVIEW
+  REVIEW -->|"レビュー済 diff"| SUBMIT
 ```
 
 ---
@@ -74,7 +73,7 @@ flowchart TB
   D -->|"検証ログ付き return"| C
   C -->|"handoff block"| E["sadoku 通常レビュー<br/>深さ・停止条件・完了記録"]
   E -->|"Standard 以上"| F["専門家レビュー<br/>subagent 並列最大3<br/>security / arch / adversarial は inline"]
-  F -->|"裏取り済み反映"| G["sadoku PR 説明文<br/>pr-template 8 step"]
+  F -->|"裏取り済み反映"| G["teishutsu PR 本文<br/>pr-template 8 step"]
   G -->|"PII scan / 4 チェック"| H["teishutsu<br/>remote / submodule / parent / cwd-aware gh"]
   H -->|"hook で衝突なし"| J["PR open"]
 ```
@@ -95,8 +94,8 @@ flowchart TB
 flowchart TB
   B0["バグ報告 / error / 動かない"] --> B1["tansaku 通常追跡<br/>症状列挙・hypothesis 1文・instrument 1つ・confirm/fix"]
   B1 -->|"root cause 確定<br/>fix 前"| B2["shiken regression guard<br/>RED: 実装前は fail<br/>GREEN: fix 後 pass<br/>PRUNE: revert で fail 目視"]
-  B2 --> B3["sadoku 通常レビュー + PR 説明文"]
-  B3 --> B4["teishutsu"]
+  B2 --> B3["sadoku 通常レビュー"]
+  B3 --> B4["teishutsu PR 本文 + 提出"]
   B4 --> B5["PR open"]
 ```
 
@@ -133,7 +132,7 @@ flowchart TB
   D0["どうやって直す / やり方どっち"] --> D1["kouchiku 軽量検討<br/>推奨案・brute 案・risk"]
   D1 -->|"案選択 / 計画実行"| D2["kouchiku 計画実行<br/>（TDD 必要なら shiken）"]
   D2 --> D3["sadoku 通常レビュー Quick<br/>停止条件のみ・〜50行想定"]
-  D3 --> D4["teishutsu"]
+  D3 --> D4["teishutsu PR 本文 + 提出"]
   D4 --> D5["PR open"]
 ```
 
@@ -148,7 +147,6 @@ flowchart TB
 | sadoku | 通常レビュー | 「レビューして」 |
 | sadoku | simplify findings | 「整理して」「simplify」「スリム化したい」 |
 | sadoku | 通常レビュー → simplify (compound) | 「コードレビュー」 |
-| sadoku | PR 説明文 | 「PR文書いて」「PR description」 |
 | kouchiku | 軽量検討 | 「どうやって直す」「やり方どっち」 |
 | kouchiku | 通常検討 | 「設計どうする」「方針決めたい」「アーキテクチャ判断」 |
 | kouchiku | 評価 | 「やる価値ある」「採用すべきか」「kill か keep」 |
@@ -157,7 +155,7 @@ flowchart TB
 | tansaku | 二分探索 | 「前は動いてた」「アップデート後」「更新後動かない」 |
 | tansaku | 再発追跡 | 「同じ問題が再発」 |
 | shiken | 起動 | 「TDDで」「テストから書いて」 |
-| teishutsu | 起動 | 「PR出す」「PR提出」「PR ready」「提出して」 |
+| teishutsu | PR 本文ドラフト / 提出 | 「PR文書いて」「PR description」「PR出す」「PR提出」「PR ready」「提出して」 |
 
 > **shiken の強制レイヤー**: 純ロジック / API / バグ修正に触れたら強制、インタラクションは推奨、純スタイル / アニメ / 文言のみはスキップ可 (理由必須)。
 > **状態トリガー** (git diff 検出・計画実行の完了報告直後など) の詳細は各 `SKILL.md` を参照。reviewer コメント対応は skill mode 化しない (通常会話で「返信書いて」)。
@@ -183,15 +181,13 @@ flowchart TB
 | (user)               | sadoku 通常レビュー    | 「レビューして」            | diff                  |
 | sadoku 通常レビュー  | subagent (reviewer-*)  | gate (b)                    | diff + 範囲           |
 | subagent             | sadoku                 | 評価完了                    | findings（要裏取り）  |
-| sadoku 通常レビュー  | sadoku PR 説明文       | 「PR文書いて」              | レビュー済 diff + scope |
 | (user)               | sadoku simplify findings | 「整理して」「simplify」  | diff (範囲)           |
 | sadoku 通常レビュー  | sadoku simplify findings | compound (「コードレビュー」) | レビュー後の連結実行 |
 | sadoku simplify findings | kouchiku 計画実行  | simplify finding (high)     | 対象 finding + file:line |
 | (user)               | tansaku                | 「エラー」「動かない」      | バグ症状              |
 | (user)               | teishutsu              | 「PR出す」「PR提出」        | 実装完了 + diff       |
-| sadoku PR 説明文     | teishutsu              | PR 本文 ok                  | レビュー済 本文 + diff |
 | kouchiku 計画実行    | teishutsu              | 完了報告 + 本文準備済       | files changed + body  |
-| teishutsu            | sadoku PR 説明文       | PR 本文未準備               | change intent + files + verification |
+| (user)               | teishutsu              | 「PR文書いて」              | change intent + files + verification |
 
 handoff block の共通形:
 
@@ -269,7 +265,7 @@ flowchart TB
 | kouchiku  | （計画実行モードのみ）verification                               | command + 出力末尾      |
 | tansaku   | Confirmed（fix 前後の挙動差分）/ Tests                           | そのまま引用            |
 | shiken    | RED / GREEN / PRUNE 各 phase                                     | test runner 最終行      |
-| teishutsu | remote state / submodule / parent commit / push / cwd at gh / PR | command + 出力 (`pwd` はそのまま引用) |
+| teishutsu | remote state / submodule / parent commit / push / PR body / cwd at gh / PR | command + 出力 (`pwd` はそのまま引用) |
 
 **禁止:** self-report だけ（「pass しました」「直りました」等）。**必ず command 実行結果を引用**。
 
@@ -280,7 +276,6 @@ flowchart TB
 | 種別                         | パス                                                                              |
 | ---------------------------- | --------------------------------------------------------------------------------- |
 | sadoku                       | `../skills/sadoku/SKILL.md`                                                       |
-| PR テンプレ                  | `../skills/sadoku/references/pr-template.md`                                      |
 | persona                      | `../skills/sadoku/references/persona-catalog.md`                                  |
 | 文脈抽出                     | `../skills/sadoku/references/project-context.md`                                  |
 | subagent                     | `../skills/sadoku/references/agents/reviewer-security.md`, `reviewer-architecture.md` |
@@ -289,9 +284,9 @@ flowchart TB
 | tansaku                      | `../skills/tansaku/SKILL.md`, `../skills/tansaku/references/logging-techniques.md` |
 | shiken                       | `../skills/shiken/SKILL.md`, `../skills/shiken/references/testing-anti-patterns.md` |
 | teishutsu                    | `../skills/teishutsu/SKILL.md`                                                    |
+| PR テンプレ                  | `../skills/teishutsu/references/pr-template.md`                                   |
 | hook 設定 / 停止条件マトリクス | `../hooks/conditions.md`, `../hooks/hooks.json`     |
 | CLAUDE.md テンプレ           | `../templates/CLAUDE.md`                                                          |
-| 記述ルール                   | `../AGENTS.md` §記述ルール |
 
 ---
 

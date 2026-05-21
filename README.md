@@ -11,13 +11,13 @@
 
 | skill | 漢字 | 動詞 | 担当 |
 |---|---|---|---|
-| `sadoku` | 査読 | 見る・書く | code review / PR 説明文 |
+| `sadoku` | 査読 | 見る | code review / simplify findings |
 | `kouchiku` | 構築 | 考える・作る | 設計判断 / 評価 / 計画策定 / 計画実行 |
 | `tansaku` | 探索 | 追う | バグ調査 / root cause investigation |
 | `shiken` | 試験 | 試す | TDD discipline / PRUNE |
-| `teishutsu` | 提出 | 出す | PR 提出フロー (remote / submodule / parent commit / cwd-aware gh) |
+| `teishutsu` | 提出 | 出す | PR 本文ドラフト / PR 提出フロー (remote / submodule / parent commit / cwd-aware gh) |
 
-動詞で 5 分割した役割境界が原則。`kouchiku` は controller として設計から計画実行までを持ち、原因調査は `tansaku`、TDD discipline は `shiken`、レビュー / PR 文ドラフトは `sadoku`、PR 提出プロセスは `teishutsu` に handoff block で渡す。
+動詞で 5 分割した役割境界が原則。`kouchiku` は controller として設計から計画実行までを持ち、原因調査は `tansaku`、TDD discipline は `shiken`、レビューは `sadoku`、PR 本文ドラフト / PR 提出プロセスは `teishutsu` に handoff block で渡す。
 
 ## install (Claude Code plugin)
 
@@ -198,7 +198,7 @@ install 後、各 skill は発話で起動する。
 "レビューして"           → sadoku 通常レビュー
 "整理して" / "simplify"   → sadoku simplify findings
 "コードレビュー"          → sadoku 通常レビュー + simplify (compound)
-"PR文書いて"            → sadoku PR 説明文
+"PR文書いて"            → teishutsu PR 本文ドラフト
 "エラー" / "動かない"     → tansaku 通常追跡
 "TDDで" / "テストから書いて" → shiken
 "PR出す" / "PR提出"     → teishutsu
@@ -224,7 +224,7 @@ install 後、各 skill は発話で起動する。
 ```
 hikizan/
 ├── README.md                    ← この入口 (人間中心、GitHub で最初に表示)
-├── AGENTS.md                    ← AI agent 入口 + routing + 記述ルール
+├── AGENTS.md                    ← AI agent 入口 + routing
 ├── LICENSE                      ← MIT
 ├── .gitignore
 ├── .claude-plugin/              ← Claude Code plugin manifest (CC 経由配布用)
@@ -242,13 +242,11 @@ hikizan/
 ├── templates/
 │   └── CLAUDE.md                ← SessionStart hook が必要なセクションを重複なく追加する
 ├── bin/
-│   ├── check-terms              ← ドキュメントの避けたい表現を検出する軽い確認スクリプト
 │   └── wt                       ← git worktree CLI (bash)
 ├── skills/                      ← skill 本体 (SoT、CC plugin / npx skills add の両経路で読まれる)
 │   ├── sadoku/
 │   │   ├── SKILL.md
 │   │   └── references/
-│   │       ├── pr-template.md
 │   │       ├── project-context.md
 │   │       ├── persona-catalog.md
 │   │       ├── simplify-checklist.md
@@ -265,7 +263,8 @@ hikizan/
 │   │   ├── SKILL.md
 │   │   └── references/testing-anti-patterns.md
 │   └── teishutsu/
-│       └── SKILL.md
+│       ├── SKILL.md
+│       └── references/pr-template.md
 └── docs/
     └── workflow.md              ← 使い方ガイド (利用者向け、mermaid 図入り)
 ```

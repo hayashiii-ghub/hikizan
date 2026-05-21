@@ -62,9 +62,9 @@ kouchiku は controller として次の skill を選ぶが、専門 skill の責
 |---|---|---|
 | 原因未確定の不具合 / 予期しない test failure / 再現不明の挙動 | `tansaku` | root cause を確定してから設計判断する |
 | 純ロジック / API / ビジネスルール / bugfix 実装 | `shiken` | RED → GREEN → PRUNE の discipline を守る |
-| 実装完了後の diff review / PR description | `sadoku` | 実装者視点から離れて diff を見る |
+| 実装完了後の diff review | `sadoku` | 実装者視点から離れて diff を見る |
 | 整理 (重複削除 / 命名統一 / 不要な抽象化除去 / dead code / efficiency) | `sadoku` simplify findings → kouchiku で実装 | 発見は sadoku、実装は controller が responsibility を持つ |
-| PR 提出 (remote 確認 / submodule / parent commit / cwd-aware gh pr create) | `teishutsu` | hook と二段構成、submission 工程の漏れを skill で先制検出 |
+| PR 本文ドラフト / PR 提出 (remote 確認 / submodule / parent commit / cwd-aware gh pr create) | `teishutsu` | hook と二段構成、submission 工程の漏れを skill で先制検出 |
 | 設計判断 / scope 整理 / 計画分解 / 複数案評価 | `kouchiku` | controller が判断を保持する |
 
 handoff 時は以下の block を必ず出す。`evidence` は file:line / command output / logs など、受け手が再確認できるものにする。
@@ -126,10 +126,11 @@ Minimal Approach: 上記 plan を素直な規模と対比、最小版を併記�
 
 **Minimal Approach の判定**:
 
+通常検討モードでは `Minimal Approach:` を書く前に `references/minimal-approach.md` を読む。
+
 - issue 文の動詞 (「追加する」「換装する」等) と名詞句を抽出し、素直な規模 (ファイル数 / 行数 / step 数) を概算する
 - plan が素直な規模の 2 倍以上 → 引き算した最小版を併記し、defer した項目を明示
 - 2 倍未満 → "minimal already" と明記
-- 詳細と例は `references/minimal-approach.md` を参照
 
 **Structure 図 / Interface sketch の指針** (どちらも任意):
 
@@ -160,7 +161,7 @@ If pivot:   [何に方向転換するか、1 段落]
 1. 計画を再読し、不明点があれば確認を投げる
 2. step ごとに inline で実装 (subagent には委譲しない。原因未確定なら `tansaku`、TDD 必要層なら `shiken` に handoff)
 3. 各 step 完了後に検証 (test / lint / type-check / 手動確認)
-4. scope 外の発見は実装せず「実装中に分かったこと」に記録 (後で `sadoku` の PR 説明文モードで参照)
+4. scope 外の発見は実装せず「実装中に分かったこと」に記録 (後で `teishutsu` の PR 本文ドラフトで参照)
 5. 完了報告を出力 → `sadoku` に PR レビュー用 handoff block を渡す
 
 **TDD 必要層を踏むときの分岐**
