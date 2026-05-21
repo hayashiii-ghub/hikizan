@@ -1,4 +1,5 @@
 {
+  "$schema": "https://json.schemastore.org/claude-code-plugin-manifest.json",
   "name": "hikizan",
   "description": "日本語圏チーム開発向け Claude Code plugin。動詞単位の 5 skill (sadoku / kouchiku / tansaku / shiken / teishutsu) と引き算の哲学。",
   "author": {
@@ -6,5 +7,6 @@
   },
   "homepage": "https://github.com/hayashiii-ghub/hikizan",
   "repository": "https://github.com/hayashiii-ghub/hikizan",
-  "license": "MIT"
+  "license": "MIT",
+  "keywords": ["japanese", "code-review", "tdd", "debugging", "git-worktree", "workflow"]
 }
