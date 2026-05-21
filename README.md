@@ -1,8 +1,8 @@
 # hikizan
 
-日本語圏チーム開発向けの Claude Code plugin / Agent Skills 対応 skill pack。動詞単位の **core 4 skill** と **引き算の哲学**を中核に据える。
+日本語圏チーム開発向けの Claude Code plugin / Agent Skills 対応 skill pack。動詞単位で分割した 4 つの主要 skill と、認知負荷を抑える運用方針を提供する。
 
-動詞単位で責務を分けた 4 skill (sadoku / kouchiku / shiken / teishutsu) が、設計・実装・レビュー・提出の流れを担う。
+4 skill (sadoku / kouchiku / shiken / teishutsu) は、設計・実装・レビュー・提出の各工程を担当する。
 
 - repo: <https://github.com/hayashiii-ghub/hikizan>
 - license: MIT
@@ -16,7 +16,7 @@
 | `shiken` | 試験 | 試す | TDD discipline / PRUNE |
 | `teishutsu` | 提出 | 出す | PR 本文ドラフト / PR 提出フロー (remote / submodule / parent commit / cwd-aware gh) |
 
-動詞で 4 分割した役割境界が原則。`kouchiku` は controller として設計から計画実行、原因調査までを持ち、TDD discipline は `shiken`、レビューは `sadoku`、PR 本文ドラフト / PR 提出プロセスは `teishutsu` に handoff block で渡す。
+各 skill は動詞単位で責務を分ける。`kouchiku` は controller として設計、計画実行、原因調査を扱う。TDD discipline は `shiken`、レビューは `sadoku`、PR 本文ドラフト / PR 提出プロセスは `teishutsu` に handoff block で渡す。
 
 ## install (Claude Code plugin)
 
@@ -76,11 +76,11 @@ npx skills add github:hayashiii-ghub/hikizan -g -a codex
 | Claude Code | `~/.claude/skills/` (global) または `./.claude/skills/` (project) |
 | Cline / OpenCode 等 universal | `~/.agents/skills/` または `./.agents/skills/` |
 
-## hooks による安全網
+## hooks
 
-hikizan は `hooks/hooks.json` 経由で CC の Bash ツール呼び出しを監視し、定義済みの条件に該当するときだけ介入します。skill 本文は正常経路で漏れを防ぎ、hook は「skill を経由しない経路でも止める最後の砦」を担当します。
+hikizan は `hooks/hooks.json` 経由で CC の Bash ツール呼び出しを監視し、定義済みの条件に該当するときだけ介入します。skill 本文は通常フローの手順を示し、hook は skill を経由しない操作に対する補完的な検査を担当します。
 
-4 つの hook が動きます: `SessionStart` で `templates/CLAUDE.md` の内容を重複なく追加、`git push` / `gh pr create` の介入条件チェック、`git commit` 後の submodule pointer 整合性 warning。**発火条件マトリクスは `hooks/conditions.md` を参照** (SoT)。
+4 つの hook を定義しています: `SessionStart` で `templates/CLAUDE.md` の内容を重複なく追加、`git push` / `gh pr create` の介入条件チェック、`git commit` 後の submodule pointer 整合性 warning。**発火条件マトリクスは `hooks/conditions.md` を参照** (SoT)。
 
 発火イベントは `~/.hikizan/metrics.jsonl` に 1 行 1 JSON で記録されます (環境変数 `HIKIZAN_METRICS_DIR` で書き込み先変更可)。
 
@@ -90,7 +90,7 @@ hikizan は orchestration 本体を抱え込まない設計。Codex 連携と LS
 
 ### Codex
 
-特定タスクだけ Codex に下請けさせたい場合は、OpenAI 公式の [openai/codex-plugin-cc](https://github.com/openai/codex-plugin-cc) を hikizan と並行で install します。
+特定タスクだけ Codex に委譲したい場合は、OpenAI 公式の [openai/codex-plugin-cc](https://github.com/openai/codex-plugin-cc) を hikizan と並行で install します。
 
 ```bash
 # Claude Code セッション内で実行
@@ -122,9 +122,9 @@ namespace 規約により `/hikizan:*` と `/codex:*` は衝突しません。�
 
 hikizan の skill は **「シンボル系は LSP、テキスト系は grep、LSP 未設定なら grep にフォールバック」** の規約で書かれているため、LSP plugin を入れていない環境でも grep ベースで動作します (精度は落ちる)。
 
-## quick start (30 秒)
+## quick start
 
-install + 最初の発話 1 つで動く状態にする手順。
+install 後に skill 起動を確認する手順。
 
 1. Claude Code セッションで install:
 
@@ -135,19 +135,19 @@ install + 最初の発話 1 つで動く状態にする手順。
 
    別ハーネス (Cursor / Codex) は [install (skill pack)](#install-skill-pack) 参照。
 
-2. 発話してみる:
+2. 入力例:
 
    ```
    コードレビューして
    ```
 
-   → `/hikizan:sadoku` が起動して review が走る。
+   → `/hikizan:sadoku` が起動して review を実行する。
 
 3. 他の trigger は下の [trigger 早見表](#trigger-早見表) を参照。
 
 ## trigger 早見表
 
-install 後、各 skill は発話で起動する。
+install 後、各 skill は以下の入力で起動する。
 
 ```
 "設計どうする"           → kouchiku 通常検討
@@ -170,9 +170,9 @@ install 後、各 skill は発話で起動する。
 3. **inline 既定、subagent は明示 gate**: subagent を使うのは (a) 重い情報取得 / (b) specialist review / (c) 機械的な fan-out の 3 つに限る
 4. **起動と文脈の明示**: announce-at-start / worktree の Step 0 検出 / Hard Rules 冒頭の 1 文ガード
 5. **日本語圏への最適化**: skill 名は短い英語、本文は日本語、固有名詞 (TDD, mock, RED/GREEN/REFACTOR/PRUNE 等) は英語のまま残す
-6. **評価は「環境変化」で見る**: 完了記録のうち機械的に検証できる項目は command の出力をそのまま引用し、自己申告は禁止する
-7. **文章は「伝わりやすさ」だけで判断する**: 4 つのチェック (結論を先に出す / 1 段落 1 主張 / 読み手の語彙 / 儀礼的表現を削る)
-8. **引き算 (認知負荷の削減)**: 選択肢の提示 + 推奨度 N/10 + 1 行根拠 / 構造変更は図・線形手順は箇条書き / 読み手の負荷を最優先する。hikizan の他の原則 (PR 粒度・テスト最小化) と同じ「引き算」の哲学を全 skill で貫く
+6. **評価は「環境変化」で見る**: 完了記録のうち機械的に検証できる項目は command の出力をそのまま引用し、自己申告は不可とする
+7. **文章の可読性**: 4 つのチェック (結論を先に出す / 1 段落 1 主張 / 読み手の語彙 / 儀礼的表現を削る)
+8. **認知負荷の削減**: 選択肢の提示 + 推奨度 N/10 + 1 行根拠 / 構造変更は図・線形手順は箇条書き / 読み手の負荷を優先する。PR 粒度・テスト最小化と同様に、全 skill に適用する
 9. **工数は token 規模で考える**: 重さは「人間の作業時間」ではなく token 消費 / context 占有 / API コストで捉える。行数・ファイル数はその proxy。実行者は AI agent であることを前提とする
 10. **ファクトチェック**: 知識カットオフより後の事実や不確実な情報は、検索・fetch・一次ソースで裏取りしてから断定する
 
@@ -180,7 +180,7 @@ install 後、各 skill は発話で起動する。
 
 ```
 hikizan/
-├── README.md                    ← この入口 (人間中心、GitHub で最初に表示)
+├── README.md                    ← 利用者向けの入口 (GitHub で最初に表示)
 ├── AGENTS.md                    ← AI agent 入口 + routing
 ├── LICENSE                      ← MIT
 ├── .gitignore

@@ -64,7 +64,7 @@ simplify findings は **発見と提案まで**。実装は kouchiku に handoff
 ## 5. efficiency
 
 **判定基準** (いずれか):
-- 明らかな O(n²) → O(n) の改善余地 (linear で書ける箇所が nested loop になっている)
+- 明確な O(n²) → O(n) の改善余地 (linear で書ける箇所が nested loop になっている)
 - 重複 allocate (毎 call で同じ object / array を生成、cache 化可能)
 - 不要な intermediate collection (map → filter → reduce の中間配列が大きい)
 - 同期処理で並列化が自明 (independent な await が serial)

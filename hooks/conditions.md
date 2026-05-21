@@ -14,10 +14,10 @@ Claude Code plugin の hooks で監視する条件 / 挙動 / 終了コードの
 
 ## 設計判断
 
-- **block するのは PreToolUse のみ**。PostToolUse は副作用が完了済みなので block しても巻き戻せず、warning に留める
+- **block 対象は PreToolUse のみ**。PostToolUse は副作用が完了済みのため、warning の出力に留める
 - **選択肢は stderr に文章で出す**。CC は hook stderr を Claude (本体) に error message として渡すので、Claude が次のメッセージでユーザに選択肢を提示する。`permissionDecision: ask` (yes/no ダイアログ) は N 択 (force / merge / abort 等) を表現できないため不採用
-- **判定は local 情報優先**。`git fetch --quiet` は走らせるが失敗時はスルー、ローカル状態だけで判定継続。hook が外部依存で死ぬのを避ける
-- **保護 branch は main / master / develop の 3 つで固定**。プロジェクトごとの拡張は将来 `.claude-plugin/config.json` 等で外出しできるが、現状は YAGNI
+- **判定は local 情報優先**。`git fetch --quiet` は実行するが、失敗時はローカル状態で判定を継続する。hook が外部依存で停止することを避ける
+- **保護 branch は main / master / develop の 3 つで固定**。プロジェクトごとの拡張は将来 `.claude-plugin/config.json` 等で外部設定化できるが、現時点では未対応
 
 ## メトリクス記録
 
@@ -55,7 +55,7 @@ jq -r 'select(.hook == "bootstrap-claude-md") | .condition' ~/.hikizan/metrics.j
 
 - CC plugin に **install lifecycle hook が存在しない**ため、CLAUDE.md の自動追加は SessionStart hook の matcher `startup` で実現
 - 既に「## hikizan Conventions」セクションがあれば何もしない、無ければテンプレを追記、CLAUDE.md 自体が無ければ生成
-- `resume` / `clear` / `compact` では走らない (matcher が `startup` のみ)
+- `resume` / `clear` / `compact` では実行しない (matcher が `startup` のみ)
 
 ## 関連
 
@@ -65,4 +65,4 @@ jq -r 'select(.hook == "bootstrap-claude-md") | .condition' ~/.hikizan/metrics.j
 - `scripts/pre-pr-create.sh` — PreToolUse on `gh pr create*`
 - `scripts/post-commit.sh` — PostToolUse on `git commit*`
 - `templates/CLAUDE.md` — 追加される本文
-- `teishutsu` skill — hook と二重構造の人手側 (skill 本文の停止条件として、hook は最後の砦)
+- `teishutsu` skill — hook と二重構造の通常フロー側 (skill 本文の停止条件に対し、hook は補完検査)

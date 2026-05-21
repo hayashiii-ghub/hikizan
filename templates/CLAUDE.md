@@ -1,6 +1,6 @@
 ## hikizan Conventions
 
-このセクションは hikizan plugin の最小 router / safety です。詳しい判断は skill、強制的な block / warning は hook に従う。
+このセクションは hikizan plugin の基本 routing / safety です。詳細な判断は skill、block / warning は hook に従う。
 
 ### Routing
 

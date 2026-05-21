@@ -1,11 +1,11 @@
 ---
 title: Skill ワークフロー例（v5）
-description: sadoku / kouchiku / shiken / teishutsu の境界と典型フロー、hook 安全網
+description: sadoku / kouchiku / shiken / teishutsu の境界、典型フロー、hook 検査
 ---
 
 # Skill ワークフロー例
 
-> **目的:** 「ユーザーがこう書くと、skill がこう振る舞う」を視覚的に追いやすくする。
+> **目的:** 入力例に対する skill の起動条件と遷移を確認できるようにする。
 
 ---
 
@@ -18,7 +18,7 @@ description: sadoku / kouchiku / shiken / teishutsu の境界と典型フロー�
 5. [典型ワークフロー D: 小さい修正](#5-典型ワークフロー-d-小さい修正-軽量検討)
 6. [各 skill のモード切替](#6-各-skill-のモード切替フロー)
 7. [skill 間 handoff 表](#7-skill-間-handoff-表)
-8. [hook 安全網](#8-hook-安全網)
+8. [hook 検査](#8-hook-検査)
 9. [検証ログ要件](#9-各-skill-の検証ログ要件環境変化評価)
 10. [参照](#10-参照)
 
@@ -26,7 +26,7 @@ description: sadoku / kouchiku / shiken / teishutsu の境界と典型フロー�
 
 ## 1. 役割境界
 
-動詞単位で 4 分割。`kouchiku` は controller として設計 / 計画実行 / 原因診断を持ち、TDD / レビュー / 提出の discipline は各専門 skill に渡す。
+動詞単位で 4 つの責務に分割する。`kouchiku` は controller として設計 / 計画実行 / 原因診断を扱い、TDD / レビュー / 提出は各専門 skill に渡す。
 
 ```mermaid
 flowchart TB
@@ -57,11 +57,11 @@ flowchart TB
 
 ## 2. 典型ワークフロー A: 新機能実装
 
-issue 受領から PR 出荷まで。**kouchiku** が controller として計画を持ち、必要な局面で専門 skill に handoff する。
+issue 受領から PR 提出まで。**kouchiku** が controller として計画を管理し、必要な局面で専門 skill に handoff する。
 
 ```mermaid
 flowchart TB
-  A["issue + DoD"] -->|"設計どうする"| B["kouchiku 通常検討<br/>問題定義・案・前提崩し・攻撃検証・Plan"]
+  A["issue + DoD"] -->|"設計どうする"| B["kouchiku 通常検討<br/>問題定義・案・前提崩し・前提リスク検証・Plan"]
   B -->|"Plan 承認 / 進めて"| C["kouchiku 計画実行<br/>owner skill 付き Plan steps"]
   C -->|"原因未確定"| I["kouchiku diagnosis<br/>root cause 1文 + evidence"]
   I -->|"root cause 確定"| C
@@ -74,10 +74,10 @@ flowchart TB
   H -->|"hook で衝突なし"| J["PR open"]
 ```
 
-> **ポイント**
+> **補足**
 >
-> - 原因未確定の調査は **kouchiku diagnosis** として inline で起こる。
-> - **kouchiku → shiken → kouchiku** の往復は handoff block で起こる。
+> - 原因未確定の調査は **kouchiku diagnosis** として inline で実行する。
+> - **kouchiku → shiken → kouchiku** の往復は handoff block で実行する。
 > - **sadoku** は実装完了後に初めて起動（「見る」専門）。
 > - **専門家レビュー**は Standard 以上のみ。Quick は停止条件中心。
 
@@ -96,17 +96,17 @@ flowchart TB
   B4 --> B5["PR open"]
 ```
 
-> **ポイント**
+> **補足**
 >
 > - **kouchiku diagnosis**: hypothesis を 1 文にできるまでコードに触らない discipline。
-> - **bugfix** は shiken の**強制**層。再現テストを先行。
-> - 「直りました」だけは不可。**fix 前後の挙動差分をそのまま引用**。
+> - **bugfix** は shiken の**必須**層。再現テストを先行。
+> - 「直りました」だけでは完了扱いにしない。**fix 前後の挙動差分をそのまま引用**。
 
 ---
 
 ## 4. 典型ワークフロー C: 設計判断のみ
 
-判断要求 → verdict。**コードは触らない。**
+判断要求 → verdict。**コード変更は行わない。**
 
 ```mermaid
 flowchart TB
@@ -115,14 +115,14 @@ flowchart TB
 
 | ルール                         | 内容                                       |
 | ------------------------------ | ------------------------------------------ |
-| 「保留」は出さない             | 判断回避にならないようにする               |
+| 「保留」は出さない             | 判断回避を避けるため                       |
 | 技術的好みだけで決めない       | user 制約を根拠に含める                    |
 
 ---
 
 ## 5. 典型ワークフロー D: 小さい修正（軽量検討）
 
-**変更対象が概ね 3 ファイル未満**の即決パターン。
+**変更対象が概ね 3 ファイル未満**の軽量検討パターン。
 
 ```mermaid
 flowchart TB
@@ -137,9 +137,9 @@ flowchart TB
 
 ## 6. 各 skill のモード切替フロー
 
-各 skill の mode は発話トリガーで決まる。mode 定義の正本は各 `SKILL.md`、下表はその一覧。
+各 skill の mode は入力トリガーで決まる。mode 定義の正本は各 `SKILL.md`、下表はその一覧。
 
-| skill | mode / 遷移先 | 発話トリガーの例 |
+| skill | mode / 遷移先 | 入力トリガーの例 |
 |---|---|---|
 | sadoku | 通常レビュー | 「レビューして」 |
 | sadoku | simplify findings | 「整理して」「simplify」「スリム化したい」 |
@@ -152,7 +152,7 @@ flowchart TB
 | shiken | 起動 | 「TDDで」「テストから書いて」 |
 | teishutsu | PR 本文ドラフト / 提出 | 「PR文書いて」「PR description」「PR出す」「PR提出」「PR ready」「提出して」 |
 
-> **shiken の強制レイヤー**: 純ロジック / API / バグ修正に触れたら強制、インタラクションは推奨、純スタイル / アニメ / 文言のみはスキップ可 (理由必須)。
+> **shiken の必須レイヤー**: 純ロジック / API / バグ修正に触れる場合は必須、インタラクションは推奨、純スタイル / アニメ / 文言のみはスキップ可 (理由必須)。
 > **状態トリガー** (git diff 検出・計画実行の完了報告直後など) の詳細は各 `SKILL.md` を参照。reviewer コメント対応は skill mode 化しない (通常会話で「返信書いて」)。
 
 ---
@@ -198,13 +198,13 @@ expected return:
 
 ---
 
-## 8. hook 安全網
+## 8. hook 検査
 
-skill 本文は「正常経路で漏れを防ぐ」、hook は「skill を経由しない経路でも止める最後の砦」。実体は `hooks/hooks.json` と `scripts/`。4 つの hook (SessionStart で CLAUDE.md に必要なセクションを重複なく追加、`git push` / `gh pr create` の条件チェック、`git commit` 後の submodule warning) の**発火条件マトリクスは `hooks/conditions.md` を参照** (SoT)。発火イベントは `~/.hikizan/metrics.jsonl` に記録される (`HIKIZAN_METRICS_DIR` で書き込み先変更可)。
+skill 本文は通常フローの手順を示し、hook は skill を経由しない操作に対する補完的な検査を行う。実体は `hooks/hooks.json` と `scripts/`。4 つの hook (SessionStart で CLAUDE.md に必要なセクションを重複なく追加、`git push` / `gh pr create` の条件チェック、`git commit` 後の submodule warning) の**発火条件マトリクスは `hooks/conditions.md` を参照** (SoT)。発火イベントは `~/.hikizan/metrics.jsonl` に記録される (`HIKIZAN_METRICS_DIR` で書き込み先変更可)。
 
 ```mermaid
 flowchart LR
-  T["teishutsu<br/>(正常経路で漏れを防ぐ)"] -->|"想定外に直接 push/PR したい"| H["hook<br/>(最後の砦)"]
+  T["teishutsu<br/>(通常フローの手順)"] -->|"直接 push/PR する場合"| H["hook<br/>(補完検査)"]
   T -.->|"通常は teishutsu の step が hook より先に検出"| OK["正常 path"]
   H -->|"exit 2 + 選択肢"| BACK["呼び出し元 (Claude) に差し戻し"]
 ```
@@ -222,7 +222,7 @@ flowchart LR
 | shiken    | RED / GREEN / PRUNE 各 phase                                     | test runner 最終行      |
 | teishutsu | remote state / submodule / parent commit / push / PR body / cwd at gh / PR | command + 出力 (`pwd` はそのまま引用) |
 
-**禁止:** self-report だけ（「pass しました」「直りました」等）。**必ず command 実行結果を引用**。
+**不可:** self-report だけ（「pass しました」「直りました」等）。**必ず command 実行結果を引用**。
 
 ---
 

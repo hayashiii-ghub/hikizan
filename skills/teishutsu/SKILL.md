@@ -11,7 +11,7 @@ when_to_use: "PR提出, PR出す, PR ready, PR文書いて, PR description, subm
 🌲 Using /teishutsu for [purpose taken from trigger context].
 ```
 
-「PR 本文ドラフト → PR open まで」を運ぶ skill。submission 工程の漏れ (リモート状態未確認 / submodule 順序ミス / cwd ミスでの gh コマンド / reviewer 未指定の本番 PR) を防ぐ。`sadoku` は review / simplify、`teishutsu` は提出に必要な本文と手順を担当する。
+PR 本文ドラフトから PR open までの提出手順を扱う skill。submission 工程の未確認項目 (リモート状態未確認 / submodule 順序ミス / cwd ミスでの gh コマンド / reviewer 未指定の本番 PR) を検出する。`sadoku` は review / simplify、`teishutsu` は提出に必要な本文と手順を担当する。
 
 ## Step 0: worktree 検出
 
@@ -24,13 +24,13 @@ GIT_COMMON=$(cd "$(git rev-parse --git-common-dir)" 2>/dev/null && pwd -P)
 ## 起動トリガー
 
 
-| 発話トリガー                                | 状態トリガー                    | 動作                          |
+| 入力トリガー                                | 状態トリガー                    | 動作                          |
 | ------------------------------------- | ------------------------- | --------------------------- |
 | `PR文書いて` / `PR description`           | PR open 直前                | Step 4 の PR 本文ドラフトだけを実行して終了 |
 | `PR出す` / `PR提出` / `PR ready` / `提出して` | `kouchiku` 計画実行モードの完了報告直後 | 提出フローを実行                    |
 
 
-状態トリガーは誤発火回避のため、検出後に確認 prompt を 1 行挟む (`実装完了です。PR を出しますか?`)。
+状態トリガーは誤起動回避のため、検出後に確認 prompt を 1 行挟む (`実装完了です。PR を出しますか?`)。
 
 ## 提出フロー (6 step、順序を守る)
 
@@ -79,7 +79,7 @@ git push
 
 ### Step 6: PR 作成
 
-**cwd を `gh pr create` 直前で必ず確認** — submodule と親 repo を取り違える事故を防ぐ最重要 step:
+**cwd を `gh pr create` 直前で必ず確認** — submodule と親 repo の取り違えを避けるための step:
 
 ```bash
 pwd
@@ -140,13 +140,13 @@ reviewer:
 
 | 停止条件                 | 本 skill      | hook                   |
 | -------------------- | ------------ | ---------------------- |
-| non-fast-forward     | Step 1 で先制検出 | pre-push が最後の砦 (block) |
+| non-fast-forward     | Step 1 で先制検出 | pre-push が block |
 | force to protected   | Step 5 で警告   | pre-push が block       |
 | reviewer / draft 未指定 | Step 6 で確認   | pre-pr-create が block  |
 | submodule 未 push     | Step 2 で順序遵守 | post-commit が warning  |
 
 
-**役割分担**: skill は「正常経路で漏れを防ぐ」、hook は「skill を経由しない経路でも止める最後の砦」。teishutsu は hook より厳しい (block しないものを skill が積極的に止める / 確認に上げる)。
+**役割分担**: skill は通常フローの手順を扱い、hook は skill を経由しない操作に対する補完的な検査を行う。teishutsu は hook より前の段階で確認項目を検出する。
 
 ## 完了記録
 

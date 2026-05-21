@@ -11,7 +11,7 @@ when_to_use: "設計判断, 方針決め, design decision, kill or keep, 計画�
 🌲 Using /kouchiku for [purpose taken from trigger context].
 ```
 
-「考える」から「作る」までを一貫して担う。設計判断 / 評価 / 計画策定だけでなく、**承認された計画の実行**まで責任を持つ。原因未確定の不具合や予期しない test failure は計画実行内の診断分岐で root cause を確定する。ただし TDD / レビュー / 提出の discipline は内包せず、必要な局面で `shiken` / `sadoku` / `teishutsu` に渡す。
+設計判断、評価、計画策定、承認済み計画の実行を扱う。原因未確定の不具合や予期しない test failure は、計画実行内の診断分岐で root cause を確定する。TDD / レビュー / 提出の discipline は内包せず、必要な局面で `shiken` / `sadoku` / `teishutsu` に渡す。
 
 ## Step 0: worktree 検出
 
@@ -46,15 +46,15 @@ git log --diff-filter=A --name-only -10 | head -30
 ## モード切替
 
 
-| モード  | 発話トリガー                                | 状態トリガー           | 動作                                          |
+| モード  | 入力トリガー                                | 状態トリガー           | 動作                                          |
 | ---- | ------------------------------------- | ---------------- | ------------------------------------------- |
 | 軽量検討 | `どうやって直す` / `やり方どっち`                  | scope が 3 ファイル未満 | 推奨 1 案 (file:line) + brute force 案 + 1 risk |
-| 通常検討 | `設計どうする` / `方針決めたい` / `アーキテクチャ判断`     | 新機能着手前           | 推奨案 + 1 代替 (近接時のみ) + 前提崩し + 攻撃検証 + 計画化      |
+| 通常検討 | `設計どうする` / `方針決めたい` / `アーキテクチャ判断`     | 新機能着手前           | 推奨案 + 1 代替 (近接時のみ) + 前提崩し + 前提リスク検証 + 計画化 |
 | 評価   | `やる価値ある` / `採用すべきか` / `そもそも` / `やめる?` | なし               | Kill / Keep / Pivot 判定 + 3 理由               |
 | 計画実行 | `計画実行` / `進めて` / `着手` / `実装開始`        | 通常検討の出力が承認直後     | 計画を実行、各 step で検証、完了報告まで                     |
 
 
-通常検討 → 計画実行は同じ skill 内で連続して走る。原因未確定なら計画実行内の診断分岐で root cause を確定し、TDD 必要層なら `shiken`、実装完了後は `sadoku` に handoff block で渡す。
+通常検討 → 計画実行は同じ skill 内で連続して実行する。原因未確定なら計画実行内の診断分岐で root cause を確定し、TDD 必要層なら `shiken`、実装完了後は `sadoku` に handoff block で渡す。
 
 ## Handoff Policy
 
@@ -67,7 +67,7 @@ kouchiku は controller として次の skill を選ぶが、専門 skill の責
 | 純ロジック / API / ビジネスルール / bugfix 実装                                                  | `shiken`                                  | RED → GREEN → PRUNE の discipline を守る           |
 | 実装完了後の diff review                                                                 | `sadoku`                                  | 実装者視点から離れて diff を見る                            |
 | 整理 (重複削除 / 命名統一 / 不要な抽象化除去 / dead code / efficiency)                               | `sadoku` simplify findings → kouchiku で実装 | 発見は sadoku、実装は controller が responsibility を持つ |
-| PR 本文ドラフト / PR 提出 (remote 確認 / submodule / parent commit / cwd-aware gh pr create) | `teishutsu`                               | hook と二段構成、submission 工程の漏れを skill で先制検出       |
+| PR 本文ドラフト / PR 提出 (remote 確認 / submodule / parent commit / cwd-aware gh pr create) | `teishutsu`                               | hook と二段構成、submission 工程の未確認項目を skill で先に検出 |
 | 設計判断 / scope 整理 / 計画分解 / 複数案評価                                                     | `kouchiku`                                | controller が判断を保持する                            |
 
 
@@ -93,7 +93,7 @@ brute:   [雑にやるならこれ、N/10 + 1 行根拠]
 risk:    [採用時の最大の懸念 1 つ]
 ```
 
-3 案以上は提示しない (paralysis を避ける)。明らかな case は推奨 1 案で十分。brute はあえて出さなくてもよい (引き算原則)。
+3 案以上は提示しない (選択肢過多を避ける)。明確な case は推奨 1 案で十分。brute は省略してもよい (引き算原則)。
 
 ## 通常検討モード
 
@@ -105,7 +105,7 @@ risk:    [採用時の最大の懸念 1 つ]
 2. **推奨案を 1 つ**: file:line / 関連 module / 影響範囲を具体的に
 3. **代替案は近接時のみ 1 つ**: 推奨と近い (= 議論する価値がある) ものだけ。遠い案は出さない
 4. **前提崩し**: 「この設計が前提としている事実」を 3-5 個列挙し、それぞれが崩れたらどうなるかを評価
-5. **攻撃検証**: 「この案を採用した 6 ヶ月後に最も後悔するシナリオは?」を 1 つ書く
+5. **前提リスク検証**: 「この案を採用した 6 ヶ月後に問題化しうるシナリオ」を 1 つ書く
 6. **計画化**: 計画実行モードに渡せる形 (step / owner skill / file / 検証コマンド) で出力
 
 **出力形式**
@@ -115,14 +115,14 @@ Building:        [何を作る、1 段落]
 Not building:    [out-of-scope、1-3 項目]
 Approach:        [選んだ案、推奨度 N/10 + 1 行根拠]
 Alternatives:    [代替案がある場合のみ、各案に推奨度 N/10 + 1 行根拠]
-                 ※ 明らかなら 1 案でよい、迷うときのみ代替案 1 つ
+                 ※ 明確なら 1 案でよい、迷うときのみ代替案 1 つ
 Structure:       [任意] 構造変更 (module 境界 / 依存 / data flow) を伴う場合のみ
                  before/after を mermaid 1 枚で。線形手順だけなら省略
 Key decisions:   3-5 項目 (それぞれ「ほかの選択肢を採らなかった理由」を 1 行)
 Interface sketch: [任意] 最も load-bearing な interface 1 点を signature / data 形で
                  (実在 symbol を file:line 付きで参照、~5-8 行、logic 本体なし)
 Premises:        この設計が依存している事実 3-5 個
-Worst case:      6 ヶ月後に最も後悔するシナリオ
+Worst case:      6 ヶ月後に問題化しうるシナリオ
 Unknowns:        defer 理由 + 担当明記の項目のみ
 Plan steps:      実装単位 (owner skill / file / 検証コマンド。計画実行モードで使う形)
 Minimal Approach: 上記 plan を要求から直接読める規模と対比、最小版を併記または "minimal already" を明記
@@ -170,7 +170,7 @@ If pivot:   [何に方向転換するか、1 段落]
 
 **TDD 必要層を踏むときの分岐**
 
-純ロジック / API / バグ修正 などの強制レイヤーに触れる場合は、計画実行を一時停止して `shiken` (TDD) のサイクルに入る。GREEN → PRUNE を終えてから次の step に戻る。
+純ロジック / API / バグ修正 などの必須レイヤーに触れる場合は、計画実行を一時停止して `shiken` (TDD) のサイクルに入る。GREEN → PRUNE を終えてから次の step に戻る。
 
 **診断分岐**
 
@@ -205,7 +205,7 @@ expected return:
 ## 停止条件
 
 - 破壊的な自動実行 (`rm -rf`, `git reset --hard`, force push 等) は明示確認なしに走らせない
-- 計画にない変更を勝手にしない (scope 外の発見は記録のみ、実装しない)
+- 計画にない変更を実施しない (scope 外の発見は記録のみ、実装しない)
 - 検証コマンドが失敗したら次の step に進まない。診断分岐で root cause を追跡
 - 計画に無い 5+ ファイル touch が発生したら停止し、scope を再確認
 
@@ -213,7 +213,7 @@ expected return:
 
 - 計画実行モード以外では実装コードを書かない。設計を一意に固定する説明用 snippet (signature / data 形、~5-8 行・logic 本体なし) は可
 - 3 案以上は出さない (paralysis 防止)
-- 前提崩し / 攻撃検証を埋めずに通常検討モードの出力を返さない
+- 前提崩し / 前提リスク検証を埋めずに通常検討モードの出力を返さない
 - 評価モードは user 制約を根拠にする (技術的な好みだけで Kill/Keep を決めない)
 - PR / branch / step を独自連番 (PR-1 等) で呼ばない。issue 名 / 機能名 / branch 名で呼ぶ。重複時のみ -v2, -v3 ... のサフィックスを使う
 
@@ -231,7 +231,7 @@ Plan approved. 次に進む場合は番号で返してください。
 
 ## subagent
 
-本 skill は判断を担うため、対象情報を集める段階で gate (a) に該当する場合のみ subagent を 1 つ起動する (例: 候補 library 3 つの最新動向を比較する Web 横断調査)。判断そのものは inline で controller が行う。計画実行モードでは inline 実行が原則 (gate (c) に該当する機械 fan-out のみ subagent 検討可)。
+本 skill は判断を扱うため、対象情報を集める段階で gate (a) に該当する場合のみ subagent を 1 つ起動する (例: 候補 library 3 つの最新動向を比較する Web 横断調査)。判断そのものは inline で controller が行う。計画実行モードでは inline 実行を原則とする (gate (c) に該当する機械 fan-out のみ subagent 検討可)。
 
 ## 完了記録
 

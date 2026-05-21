@@ -70,7 +70,7 @@ prompt 詳細: `references/agents/reviewer-architecture.md`
 
 **観点**
 
-- 6 ヶ月後に最も後悔するシナリオを 1 つ書く
+- 6 ヶ月後に問題化しうるシナリオを 1 つ書く
 - edge case の見落とし (null / 空配列 / 巨大入力 / 同時実行 / 部分失敗)
 - 悪意ユーザの行動 (= security と重複しない範囲、主に整合性破壊)
 - error path が silent fail にならないか

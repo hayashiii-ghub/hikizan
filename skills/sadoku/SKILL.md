@@ -26,7 +26,7 @@ GIT_COMMON=$(cd "$(git rev-parse --git-common-dir)" 2>/dev/null && pwd -P)
 ## モード切替
 
 
-| モード               | 発話トリガー                                        | 状態トリガー  |
+| モード               | 入力トリガー                                        | 状態トリガー  |
 | ----------------- | --------------------------------------------- | ------- |
 | 通常レビュー            | `レビューして`                                      | diff 検出 |
 | simplify findings | `整理して` / `simplify` / `整理ポイントある?` / `スリム化したい` | —       |
@@ -34,7 +34,7 @@ GIT_COMMON=$(cd "$(git rev-parse --git-common-dir)" 2>/dev/null && pwd -P)
 
 **compound trigger**: `コードレビュー` / `コードレビューして` は **通常レビュー → simplify findings** を順に実行する (それぞれ独立 section として出力)。
 
-状態トリガーは誤発火回避のため、検出後に確認 prompt を 1 行挟む (`diff を検出しました。レビューしますか?`)。複数モードが成立しうる場合は発話トリガーを優先。
+状態トリガーは誤起動回避のため、検出後に確認 prompt を 1 行挟む (`diff を検出しました。レビューしますか?`)。複数モードが成立しうる場合は入力トリガーを優先。
 
 reviewer コメントへの返信文ドラフトは skill mode 化しない。ユーザが必要に応じて agent に直接「返信書いて」「反論したい」と頼む運用にする (= 通常会話)。実装が必要な指摘はユーザが `kouchiku` に振る (`設計どうする` / `計画実行`)。
 
@@ -90,7 +90,7 @@ Standard 以上で security / architecture 観点が必要な場合のみ subage
 
 実装後の production code を「整理」観点 (重複削除 / 命名統一 / 不要な抽象化除去 / dead code 削除 / efficiency 改善) で review し、**findings を出すが実装はしない**。実装は kouchiku に handoff block で委譲する。
 
-- **発話 trigger only** (state trigger を持たない、default の通常レビューに含めない)
+- **入力 trigger only** (state trigger を持たない、default の通常レビューに含めない)
 - **`コードレビュー` 経由の compound 起動時**: 通常レビューの完了後、独立 section として simplify findings を出す (severity 順位で混ざらないようにする)
 - **severity 付き** で出す: high / medium / low、kouchiku に振るのは high severity のみが default
 - **disposition (処置) 必須** で出す: 各 finding に「本 PR で修正 / 『実装中に分かったこと』に記録 / 別 issue 候補 / 据え置き」のいずれかを書く。low severity の default は「記録のみ」、medium / high はユーザに判断を委ねる
@@ -106,7 +106,7 @@ Standard 以上で security / architecture 観点が必要な場合のみ subage
 | 命名         | 同 module 内の命名揺れ、慣用と外れる用語                    |
 | 不要な抽象化     | 1 箇所からしか呼ばれない wrapper、premature な generic   |
 | dead code  | 未使用 export / private function / 到達不能 branch |
-| efficiency | 明らかな改善余地 (O(n²) → O(n) 等、計測不要な範囲)           |
+| efficiency | 明確な改善余地 (O(n²) → O(n) 等、計測不要な範囲)             |
 
 
 ### 出力フォーマット
@@ -155,7 +155,7 @@ medium / low は `teishutsu` の PR 本文ドラフト時に「実装中に分�
 以下のいずれかに該当したら**作業を止めてユーザに確認**:
 
 - 破壊的な自動実行 (例: `rm -rf`, `git reset --hard`, force push 等) を明示確認なしで走らせていないか
-- diff 内の未知の識別子 (識別子が grep でヒットしないなら、勝手に補完せず質問)
+- diff 内の未知の識別子 (識別子が grep でヒットしないなら、補完せず質問)
 - 依存追加の妥当性が不明 (lockfile 変更があれば理由を確認)
 - **review finding / commit / release notes に PII / Secrets が混入している** (email, token, 個人名等)
 - **テスト最小性違反** (いずれか):
@@ -176,12 +176,12 @@ medium / low は `teishutsu` の PR 本文ドラフト時に「実装中に分�
 
 ## 完了記録
 
-機械検証可能項目は検証ログ (command + 出力末尾) を**そのまま引用**する。**要約・自己申告は禁止**。
+機械検証可能項目は検証ログ (command + 出力末尾) を**そのまま引用**する。**要約・自己申告は不可**。
 
 ```
 worktree:         in-worktree / normal-repo
 files changed:    N (+X -Y)
-scope:            on target / drift: [何が漏れているか]
+scope:            on target / drift: [不足事項]
 停止条件:         N found / N fixed
                     検証ログ: [scan command + 出力末尾 / 0件は "0 matches"]
 tests:            N added, M essential

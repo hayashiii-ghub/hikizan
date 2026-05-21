@@ -5,7 +5,7 @@ PRUNE フェーズで検出すべきパターン。いずれかに該当する t
 ## 1. mock の存在 / 呼び出し回数を assert
 
 ```ts
-// 禁止
+// 不可
 expect(mockClient.send).toHaveBeenCalledTimes(1);
 expect(mockLogger.error).toHaveBeenCalled();
 ```
@@ -17,7 +17,7 @@ expect(mockLogger.error).toHaveBeenCalled();
 ## 2. production class への test-only method
 
 ```ts
-// 禁止
+// 不可
 class OrderService {
   // テストからだけ呼ばれる
   __resetForTesting() { ... }
@@ -25,7 +25,7 @@ class OrderService {
 }
 ```
 
-production code に test 専用 API が漏れている = 結合度が高すぎる。
+production code に test 専用 API が含まれている = 結合度が高すぎる。
 
 **書き直し方**: 依存性を constructor / factory で注入、test 側で fake を渡す。
 
@@ -51,7 +51,7 @@ small diff で snapshot が大量更新される = snapshot は仕様を表現�
 ## 5. `.skip` / `xfail` 理由なし放置
 
 ```ts
-// 禁止
+// 不可
 it.skip('handles concurrent updates', () => { ... });
 ```
 
