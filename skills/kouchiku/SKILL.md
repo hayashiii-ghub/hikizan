@@ -125,15 +125,15 @@ Premises:        この設計が依存している事実 3-5 個
 Worst case:      6 ヶ月後に最も後悔するシナリオ
 Unknowns:        defer 理由 + 担当明記の項目のみ
 Plan steps:      実装単位 (owner skill / file / 検証コマンド。計画実行モードで使う形)
-Minimal Approach: 上記 plan を素直な規模と対比、最小版を併記または "minimal already" を明記
+Minimal Approach: 上記 plan を要求から直接読める規模と対比、最小版を併記または "minimal already" を明記
 ```
 
 **Minimal Approach の判定**:
 
 通常検討モードでは `Minimal Approach:` を書く前に `references/minimal-approach.md` を読む。
 
-- issue 文の動詞 (「追加する」「換装する」等) と名詞句を抽出し、素直な規模 (ファイル数 / 行数 / step 数) を概算する
-- plan が素直な規模の 2 倍以上 → 引き算した最小版を併記し、defer した項目を明示
+- issue 文の動詞 (「追加する」「換装する」等) と名詞句を抽出し、要求から直接読める規模 (ファイル数 / 行数 / step 数) を概算する
+- plan が要求から直接読める規模の 2 倍以上 → 引き算した最小版を併記し、defer した項目を明示
 - 2 倍未満 → "minimal already" と明記
 
 **Structure 図 / Interface sketch の指針** (どちらも任意):
@@ -175,6 +175,7 @@ If pivot:   [何に方向転換するか、1 段落]
 **診断分岐**
 
 原因未確定の不具合 / 予期しない test failure / 再現不明の挙動に当たったら、実装変更を止めて root cause を確定する。
+旧 `tansaku` の調査手順は独立 skill としては持たず、`references/diagnosis-techniques.md` に技法だけを残す。
 
 - root cause を 1 文で言語化できるまで実装を変更しない (`I believe the root cause is [X] because [evidence].`)
 - 症状をそのまま列挙する: error message, stack trace, 再現手順, 期待値, 実際の値
@@ -221,7 +222,10 @@ expected return:
 通常検討モードの出力が承認されたら、以下の文言で計画実行モードに移行することを告げる:
 
 ```
-Plan approved. このまま実装する場合は「計画実行」「進めて」「着手」と発話してください。
+Plan approved. 次に進む場合は番号で返してください。
+1. 実装する
+2. 計画を直す
+3. 中止する
 実装完了後は /sadoku に渡してレビューします。
 ```
 

@@ -19,9 +19,8 @@ description: sadoku / kouchiku / shiken / teishutsu の境界と典型フロー�
 6. [各 skill のモード切替](#6-各-skill-のモード切替フロー)
 7. [skill 間 handoff 表](#7-skill-間-handoff-表)
 8. [hook 安全網](#8-hook-安全網)
-9. [NG パターン](#9-ng-パターンやらないことの図解)
-10. [検証ログ要件](#10-各-skill-の検証ログ要件環境変化評価)
-11. [参照](#11-参照)
+9. [検証ログ要件](#9-各-skill-の検証ログ要件環境変化評価)
+10. [参照](#10-参照)
 
 ---
 
@@ -214,46 +213,7 @@ flowchart LR
 
 ---
 
-## 9. NG パターン（やらないことの図解）
-
-### NG-1: 廃止された「レビュー咀嚼モード」を skill で済ませる
-
-```mermaid
-flowchart TB
-  N1["reviewer コメント複数"] --> X1["❌ sadoku に専用 mode がある想定"]
-  X1 --> OK1["✅ 通常会話<br/>返信書いて / 実装は kouchiku へ"]
-```
-
-### NG-2: TDD レイヤーを素通り
-
-```mermaid
-flowchart TB
-  N2["純ロジックに新規実装"] --> X2["❌ kouchiku 計画実行だけで実装"]
-  X2 --> X3["❌ sadoku で未テスト・テスト最小性違反"]
-  N2 --> OK2["✅ shiken 強制層を経由"]
-```
-
-### NG-3: hypothesis なしで diagnosis
-
-```mermaid
-flowchart TB
-  N3["とりあえず試そう"] --> X4["❌ code 先行"]
-  X4 --> BAD["instrument 過多 / root cause 不明 / 再発"]
-  N3 --> OK3["✅ hypothesis 1文 → instrument 1つ"]
-```
-
-### NG-4: teishutsu を skip して直接 gh pr create
-
-```mermaid
-flowchart TB
-  N4["実装完了 → 直 gh pr create"] --> X5["❌ remote 状態未確認 / submodule 順序ミス / cwd ミス"]
-  X5 --> BAD2["pre-pr-create hook で block (二段目で救われるが余計な往復)"]
-  N4 --> OK4["✅ teishutsu 4 step → hook は最後の砦"]
-```
-
----
-
-## 10. 各 skill の検証ログ要件（環境変化評価）
+## 9. 各 skill の検証ログ要件（環境変化評価）
 
 | skill     | 検証ログ必須項目                                                 | 形式                    |
 | --------- | ---------------------------------------------------------------- | ----------------------- |
@@ -266,7 +226,7 @@ flowchart TB
 
 ---
 
-## 11. 参照
+## 10. 参照
 
 | 種別                         | パス                                                                              |
 | ---------------------------- | --------------------------------------------------------------------------------- |
