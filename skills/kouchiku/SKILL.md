@@ -47,9 +47,9 @@ git log --diff-filter=A --name-only -10 | head -30
 
 | モード | 発話トリガー | 状態トリガー | 動作 |
 |---|---|---|---|
-| 軽量検討 | `どうやって直す` / `やり方どっち` | scope < 3 file | 推奨 1 案 (file:line) + brute force 案 + 1 risk |
+| 軽量検討 | `どうやって直す` / `やり方どっち` | scope が 3 ファイル未満 | 推奨 1 案 (file:line) + brute force 案 + 1 risk |
 | 通常検討 | `設計どうする` / `方針決めたい` / `アーキテクチャ判断` | 新機能着手前 | 推奨案 + 1 代替 (近接時のみ) + 前提崩し + 攻撃検証 + 計画化 |
-| 評価 | `やる価値ある` / `採用すべきか` / `kill か keep か` / `やめる?` | — | Kill / Keep / Pivot 判定 + 3 理由 |
+| 評価 | `やる価値ある` / `採用すべきか` / `kill か keep か` / `やめる?` | なし | Kill / Keep / Pivot 判定 + 3 理由 |
 | 計画実行 | `計画実行` / `進めて` / `着手` / `実装開始` | 通常検討の出力が承認直後 | 計画を実行、各 step で検証、完了報告まで |
 
 通常検討 → 計画実行は同じ skill 内で連続して走る。原因未確定なら `tansaku`、TDD 必要層なら `shiken`、実装完了後は `sadoku` に handoff block で渡す。
@@ -81,7 +81,7 @@ expected return:
 
 ## 軽量検討モード
 
-scope < 3 file の修正方法選択。出力は短く:
+scope が 3 ファイル未満の修正方法選択。出力は短く:
 
 ```
 推奨:    [案、file:line で示す、N/10 + 1 行根拠]
@@ -114,7 +114,7 @@ Alternatives:    [代替案がある場合のみ、各案に推奨度 N/10 + 1 �
                  ※ 明らかなら 1 案でよい、迷うときのみ代替案 1 つ
 Structure:       [任意] 構造変更 (module 境界 / 依存 / data flow) を伴う場合のみ
                  before/after を mermaid 1 枚で。線形手順だけなら省略
-Key decisions:   3-5 項目 (それぞれ「なぜ別の選択肢を捨てたか」を 1 行)
+Key decisions:   3-5 項目 (それぞれ「ほかの選択肢を採らなかった理由」を 1 行)
 Interface sketch: [任意] 最も load-bearing な interface 1 点を signature / data 形で
                  (実在 symbol を file:line 付きで参照、~5-8 行、logic 本体なし)
 Premises:        この設計が依存している事実 3-5 個

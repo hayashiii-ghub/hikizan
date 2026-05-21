@@ -42,7 +42,7 @@ GIT_COMMON=$(cd "$(git rev-parse --git-common-dir)" 2>/dev/null && pwd -P)
 - `Never state from memory. Verify with the right tool first.` (識別子・呼び出し関係は実物を確認、記憶で答えない。シンボル系は LSP、テキスト系は grep)
 - シンボル探索 (関数 / クラス / 変数の定義 / 参照) は LSP を優先、テキスト探索 (TODO / FIXME / 設定 / Markdown / エラーメッセージ文字列) は grep を使う。LSP 未設定環境では grep にフォールバック (公式 LSP plugin の install は README「LSP 併用」節)
 - 外部事実 (OSS の現行仕様 / 最新バージョン / 標準) は知識カットオフ後の可能性があるため、利用可能な検索・fetch・一次ソースで裏取りしてから引用する (ファクトチェック原則)
-- PR / branch / step を独自連番 (PR-1 等) で呼ばない。issue 名 / 機能名 / branch 名で呼ぶ。重複時のみ -v2, -v3 ... のサフィックスを使う
+- PR / branch / step の命名は `kouchiku` Hard Rules に従う
 
 ## 通常追跡モード
 

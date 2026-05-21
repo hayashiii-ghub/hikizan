@@ -125,7 +125,7 @@ reviewer:
 
 - 各 step は順序を守る (リモート確認 → submodule → 親 → PR)。途中失敗時は次に進まない
 - `gh pr create` 直前で必ず `pwd` の出力を user に見せて cwd を明示確認する
-- PR / branch / step を独自連番 (PR-1 等) で呼ばない。issue 名 / 機能名 / branch 名で呼ぶ。重複時のみ -v2, -v3 ... のサフィックスを使う
+- PR / branch / step の命名は `kouchiku` Hard Rules に従う
 - commit / PR 本文の生成は inline で 1 段落出して user 承認を仰ぐ。承認なしで commit / push しない
 
 ## hook との二重構造

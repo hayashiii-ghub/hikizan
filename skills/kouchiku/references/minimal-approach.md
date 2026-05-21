@@ -49,5 +49,5 @@ LLM agent は「丁寧に網羅する」方向に偏りやすい。issue 文の�
 
 ## 関連
 
-- AGENTS.md 作業ルール 7 (連番禁止) — 命名規約側の引き算
+- `skills/kouchiku/SKILL.md` Hard Rules — 命名規約側の引き算
 - AGENTS.md §記述ルール — 自然な日本語の引き算

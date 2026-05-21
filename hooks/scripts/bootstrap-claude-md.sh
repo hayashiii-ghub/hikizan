@@ -1,11 +1,11 @@
 #!/usr/bin/env bash
-# SessionStart hook: idempotently bootstrap "## hikizan Conventions" into
-# the project's CLAUDE.md.
+# SessionStart hook: add "## hikizan Conventions" to the project's
+# CLAUDE.md without duplicating it.
 #
 # Three cases:
 #   (a) CLAUDE.md does not exist            -> create it from the template
 #   (b) CLAUDE.md exists, no marker section -> append the template
-#   (c) CLAUDE.md exists, marker present    -> no-op (idempotent)
+#   (c) CLAUDE.md exists, marker present    -> no-op
 #
 # Marker: the literal heading "## hikizan Conventions" at the top of the
 # template. grep -F prevents regex surprises.

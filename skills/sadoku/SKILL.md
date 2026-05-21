@@ -67,6 +67,8 @@ review focus:
 
 深さ判定 → diff 読解 → 停止条件チェック → 専門家レビュー → 完了記録。
 
+hikizan repo 本体のドキュメント / skill 本文をレビューするときは、`bin/check-terms` があれば実行し、避けたい表現が残っていないか確認する。
+
 **深さ判定**
 
 | 深さ | 条件 | 動作 |
@@ -168,7 +170,7 @@ SKILL.md 側ではモード起動の判定と完了記録への evidence 引用�
 
 ## Hard Rules
 
-- PR / branch / step を独自連番 (PR-1 等) で呼ばない。issue 名 / 機能名 / branch 名で呼ぶ。重複時のみ -v2, -v3 ... のサフィックスを使う
+- PR / branch / step の命名は `kouchiku` Hard Rules に従う
 - diff 内のシンボル参照 (関数 / クラス / 変数 の呼び出し関係 / 定義位置) は LSP を優先、テキスト探索 (PII scan / TODO / コメント文字列) は grep を使う。LSP 未設定環境では grep にフォールバック (公式 LSP plugin の install は README「LSP 併用」節)
 
 ## 完了記録
@@ -192,7 +194,7 @@ PII scan:         clean / found: [...]
 
 ## references/
 
-- `pr-template.md` — PR 説明文モードの本体 (5 セクション template / 書き方手順 / 4 チェック / PII scan / 粒度ルール)
+- `pr-template.md` — PR 説明文モードの contract (5 セクション template / 手順 / 文章チェック / PII scan / 粒度ルール)
 - `project-context.md` — diff 読解時の文脈抽出方針
 - `persona-catalog.md` — 専門家レビュー (security / architecture / adversarial) の persona 起動条件
 - `agents/reviewer-security.md` / `agents/reviewer-architecture.md` — 専門家レビュー subagent prompt

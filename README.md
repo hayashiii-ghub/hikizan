@@ -83,7 +83,7 @@ waza の `kakunin` / `kentou` / `tsuiseki` 等とは skill 名が違うので衝
 
 hikizan は `hooks/hooks.json` 経由で CC の Bash ツール呼び出しを監視し、定義済みの条件に該当するときだけ介入します。skill 本文は正常経路で漏れを防ぎ、hook は「skill を経由しない経路でも止める最後の砦」を担当します。
 
-4 つの hook が動きます: `SessionStart` で `templates/CLAUDE.md` を冪等 bootstrap、`git push` / `gh pr create` の介入条件チェック、`git commit` 後の submodule pointer 整合性 warning。**発火条件マトリクスは `hooks/conditions.md` を参照** (SoT)。
+4 つの hook が動きます: `SessionStart` で `templates/CLAUDE.md` の内容を重複なく追加、`git push` / `gh pr create` の介入条件チェック、`git commit` 後の submodule pointer 整合性 warning。**発火条件マトリクスは `hooks/conditions.md` を参照** (SoT)。
 
 発火イベントは `~/.hikizan/metrics.jsonl` に 1 行 1 JSON で記録されます (環境変数 `HIKIZAN_METRICS_DIR` で書き込み先変更可)。
 
@@ -224,7 +224,7 @@ install 後、各 skill は発話で起動する。
 ```
 hikizan/
 ├── README.md                    ← この入口 (人間中心、GitHub で最初に表示)
-├── AGENTS.md                    ← AI agent 入口 + 作業ルール + SoT マップ + 記述ルール
+├── AGENTS.md                    ← AI agent 入口 + routing + 記述ルール
 ├── LICENSE                      ← MIT
 ├── .gitignore
 ├── .claude-plugin/              ← Claude Code plugin manifest (CC 経由配布用)
@@ -240,8 +240,9 @@ hikizan/
 │       ├── pre-pr-create.sh
 │       └── post-commit.sh
 ├── templates/
-│   └── CLAUDE.md                ← SessionStart hook が冪等 bootstrap する
+│   └── CLAUDE.md                ← SessionStart hook が必要なセクションを重複なく追加する
 ├── bin/
+│   ├── check-terms              ← ドキュメントの避けたい表現を検出する軽い確認スクリプト
 │   └── wt                       ← git worktree CLI (bash)
 ├── skills/                      ← skill 本体 (SoT、CC plugin / npx skills add の両経路で読まれる)
 │   ├── sadoku/
@@ -271,7 +272,7 @@ hikizan/
 
 ## version
 
-hikizan は `version` を固定せず、git commit を version として扱う。`/plugin update` で最新 commit に追従する。
+hikizan は `.claude-plugin/plugin.json` に semver を明示する。公開時は変更内容に合わせて `version` を更新する。
 
 ## ライセンス / 出典
 

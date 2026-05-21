@@ -1,5 +1,5 @@
 {
-  "description": "hikizan: condition-driven stops for git push, gh pr create, submodule pointer integrity, and a one-time CLAUDE.md bootstrap at session start.",
+  "description": "hikizan: condition-driven stops for git push, gh pr create, submodule pointer integrity, and CLAUDE.md conventions added at session start without duplicates.",
   "hooks": {
     "SessionStart": [
       {

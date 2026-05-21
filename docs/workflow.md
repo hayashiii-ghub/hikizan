@@ -209,7 +209,7 @@ expected return:
 
 ## 8. hook 安全網
 
-skill 本文は「正常経路で漏れを防ぐ」、hook は「skill を経由しない経路でも止める最後の砦」。実体は `hooks/hooks.json` と `scripts/`。4 つの hook (SessionStart で CLAUDE.md bootstrap、`git push` / `gh pr create` の条件チェック、`git commit` 後の submodule warning) の**発火条件マトリクスは `hooks/conditions.md` を参照** (SoT)。発火イベントは `~/.hikizan/metrics.jsonl` に記録される (`HIKIZAN_METRICS_DIR` で書き込み先変更可)。
+skill 本文は「正常経路で漏れを防ぐ」、hook は「skill を経由しない経路でも止める最後の砦」。実体は `hooks/hooks.json` と `scripts/`。4 つの hook (SessionStart で CLAUDE.md に必要なセクションを重複なく追加、`git push` / `gh pr create` の条件チェック、`git commit` 後の submodule warning) の**発火条件マトリクスは `hooks/conditions.md` を参照** (SoT)。発火イベントは `~/.hikizan/metrics.jsonl` に記録される (`HIKIZAN_METRICS_DIR` で書き込み先変更可)。
 
 ```mermaid
 flowchart LR
