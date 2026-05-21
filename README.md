@@ -1,8 +1,8 @@
 # hikizan
 
-日本語圏チーム開発向けの Claude Code plugin / Agent Skills 対応 skill pack。tw93/Waza を起点に、SP (anthropic/superpowers) から選択的に取り込み、日本語圏 team-dev に最適化した **core 4 skill** を含む。
+日本語圏チーム開発向けの Claude Code plugin / Agent Skills 対応 skill pack。動詞単位の **core 4 skill** と **引き算の哲学**を中核に据える。
 
-動詞単位で責務を分けた 4 skill (sadoku / kouchiku / shiken / teishutsu) と **引き算の哲学**を中核に据える。
+動詞単位で責務を分けた 4 skill (sadoku / kouchiku / shiken / teishutsu) が、設計・実装・レビュー・提出の流れを担う。
 
 - repo: <https://github.com/hayashiii-ghub/hikizan>
 - license: MIT
@@ -75,8 +75,6 @@ npx skills add github:hayashiii-ghub/hikizan -g -a codex
 | Cursor | `~/.cursor/skills/` (global) または `./.cursor/skills/` (project) |
 | Claude Code | `~/.claude/skills/` (global) または `./.claude/skills/` (project) |
 | Cline / OpenCode 等 universal | `~/.agents/skills/` または `./.agents/skills/` |
-
-waza の `kakunin` / `kentou` / `tsuiseki` 等とは skill 名が違うので衝突せず共存可能。
 
 ## hooks による安全網
 
@@ -167,10 +165,10 @@ install 後、各 skill は発話で起動する。
 
 ## 設計原則
 
-1. **waza 哲学の継承**: 1 つの skill に複数 mode / references は分離 / 決定論的な処理は scripts に置く
+1. **skill 構成**: 1 skill に複数 mode / references は分離 / 決定論的な処理は scripts に置く
 2. **Controller Owns Information**: 情報取得だけが目的の subagent はデフォルトで使わない
 3. **inline 既定、subagent は明示 gate**: subagent を使うのは (a) 重い情報取得 / (b) specialist review / (c) 機械的な fan-out の 3 つに限る
-4. **SP からの選択的な取り込み**: announce-at-start / worktree の Step 0 検出 / Hard Rules 冒頭の 1 文ガード を採用。Iron Law / Red Flags / Rationalization 表は採用しない
+4. **起動と文脈の明示**: announce-at-start / worktree の Step 0 検出 / Hard Rules 冒頭の 1 文ガード
 5. **日本語圏への最適化**: skill 名は短い英語、本文は日本語、固有名詞 (TDD, mock, RED/GREEN/REFACTOR/PRUNE 等) は英語のまま残す
 6. **評価は「環境変化」で見る**: 完了記録のうち機械的に検証できる項目は command の出力をそのまま引用し、自己申告は禁止する
 7. **文章は「伝わりやすさ」だけで判断する**: 4 つのチェック (結論を先に出す / 1 段落 1 主張 / 読み手の語彙 / 儀礼的表現を削る)
@@ -229,8 +227,9 @@ hikizan/
 
 hikizan は `.claude-plugin/plugin.json` に semver を明示する。公開時は変更内容に合わせて `version` を更新する。
 
-## ライセンス / 出典
+## ライセンス / acknowledgements
 
 - License: MIT (`LICENSE` 参照)
-- ベース: [tw93/Waza](https://github.com/tw93/Waza)
-- 参考: [anthropic/superpowers](https://github.com/anthropic/superpowers)
+- Inspired by / references:
+  - [tw93/Waza](https://github.com/tw93/Waza)
+  - [anthropic/superpowers](https://github.com/anthropics/superpowers)
