@@ -1,8 +1,8 @@
 ---
 name: teishutsu
-description: "Use this skill when the user wants to submit a pull request — including the phrasings PR出す, PR提出, PR ready, PR open する, submit. Handles the full submission flow: remote state check, submodule-first ordering, parent commit, cwd-aware gh pr create. Activates after implementation is complete and ready to ship, even when the user just says 提出する or 出す without explicit PR wording."
+description: "Use this skill when the user wants to submit a pull request or draft a PR body — including the phrasings PR出す, PR提出, PR ready, PR open する, PR文書いて, PR description, submit. Handles PR body drafting and the full submission flow: remote state check, submodule-first ordering, parent commit, cwd-aware gh pr create. Activates after implementation is complete and ready to ship, even when the user just says 提出する or 出す without explicit PR wording."
 license: MIT
-when_to_use: "PR提出, PR出す, PR ready, submission, PR open"
+when_to_use: "PR提出, PR出す, PR ready, PR文書いて, PR description, submission, PR open"
 ---
 
 # teishutsu (提出)
@@ -11,7 +11,7 @@ when_to_use: "PR提出, PR出す, PR ready, submission, PR open"
 🌲 Using /teishutsu for [purpose taken from trigger context].
 ```
 
-「実装完了 → PR open まで」を運ぶ skill。submission 工程の漏れ (リモート状態未確認 / submodule 順序ミス / cwd ミスでの gh コマンド / reviewer 未指定の本番 PR) を防ぐ。本文は `sadoku` の PR 説明文 mode と handoff 関係: 本 skill は提出プロセス、`sadoku` は本文ドラフトを担当する。
+「PR 本文ドラフト → PR open まで」を運ぶ skill。submission 工程の漏れ (リモート状態未確認 / submodule 順序ミス / cwd ミスでの gh コマンド / reviewer 未指定の本番 PR) を防ぐ。`sadoku` は review / simplify、`teishutsu` は提出に必要な本文と手順を担当する。
 
 ## Step 0: worktree 検出
 
@@ -25,11 +25,12 @@ GIT_COMMON=$(cd "$(git rev-parse --git-common-dir)" 2>/dev/null && pwd -P)
 
 | 発話トリガー | 状態トリガー |
 |---|---|
+| `PR文書いて` / `PR description` | PR open 直前 |
 | `PR出す` / `PR提出` / `PR ready` / `提出して` | `kouchiku` 計画実行モードの完了報告直後 |
 
 状態トリガーは誤発火回避のため、検出後に確認 prompt を 1 行挟む (`実装完了です。PR を出しますか?`)。
 
-## 提出フロー (4 step、順序を守る)
+## 提出フロー (5 step、順序を守る)
 
 ### Step 1: リモート状態確認
 
@@ -59,7 +60,13 @@ git submodule status --recursive
 - 親 repo で `git add` (submodule pointer 更新含む) → commit message ドラフト → user 承認 → commit
 - push (pre-push hook が non-ff / force-to-protected を block する。block 時は Step 1 に戻って原因解消)
 
-### Step 4: PR 作成
+### Step 4: PR 本文ドラフト
+
+PR 本文が未準備なら、`references/pr-template.md` を読み、5 セクション本文をドラフトする。必須 intake は change intent / files changed / verification。足りない場合は推測で埋めず、欠けている項目だけ user に確認する。
+
+PII / Secrets scan を本文ドラフトに対して実行し、混入があれば PR 作成に進まない。
+
+### Step 5: PR 作成
 
 **cwd を `gh pr create` 直前で必ず確認** — submodule と親 repo を取り違える事故を防ぐ最重要 step:
 
@@ -71,26 +78,12 @@ git rev-parse --show-toplevel
 - 出力を user に見せ、対象 repo を明示確認させる
 - `gh pr create --repo <owner>/<repo>` で対象を固定するのが安全
 - default: `--draft --reviewer @user` (pre-pr-create hook が両方無いと block する)
-- PR 本文が未準備なら下記の `sadoku` handoff で取得
 
-## Handoff to sadoku (PR 本文未準備時)
+## PR 本文ドラフトのみの起動
 
-Step 4 に入る前に、PR 本文がまだなければ `sadoku` の PR 説明文 mode に handoff:
+`PR文書いて` / `PR description` で呼ばれた場合は、Step 4 の本文ドラフトだけを実行し、PR 作成には進まない。提出まで進める場合は user に `PR出す` / `PR提出` を促す。
 
-```
-handoff: sadoku
-mode: PR 説明文
-reason: teishutsu の Step 4 に入る前に本文ドラフトが必要
-change intent: [何を解決したか]
-files changed:
-  - [path]
-verification:
-  - [command] -> pass / fail
-expected return:
-  - 5-section PR 本文ドラフト (sadoku references/pr-template.md に準拠)
-```
-
-戻ってきた本文を `gh pr create --body "$(cat ...)"` に渡す。
+Step 4 で作った本文を `gh pr create --body "$(cat ...)"` に渡す。
 
 ## Handoff Intake
 
@@ -104,7 +97,7 @@ files changed:
 submodule status:
   - [触れた submodule / 無ければ none]
 PR body:
-  - [既にあるなら本文、無ければ sadoku に内部 handoff する]
+  - [既にあるなら本文、無ければ Step 4 でドラフトする]
 target repo:
   - [owner/repo、submodule なら明示]
 reviewer:
@@ -115,6 +108,8 @@ reviewer:
 
 ## 停止条件
 
+- **PR 本文 intake 不足**: 本文未準備なのに change intent / files changed / verification のいずれかが欠けている
+- **PII / Secrets 混入**: PR 本文 / commit / release notes に email, token, 個人名等が混入している
 - **cwd 不整合**: cwd が submodule 側なのに親 repo の PR を作ろうとしている (or 逆)
 - **未確認の force push**: `--force` / `--force-with-lease` が main / master / develop に対して指定されている (pre-push hook と二重)
 - **reviewer 未指定 + 非 draft**: pre-pr-create hook と二重、teishutsu 側でも先に検出
@@ -123,10 +118,10 @@ reviewer:
 
 ## Hard Rules
 
-- 各 step は順序を守る (リモート確認 → submodule → 親 → PR)。途中失敗時は次に進まない
+- 各 step は順序を守る (リモート確認 → submodule → 親 → PR 本文 → PR 作成)。途中失敗時は次に進まない
 - `gh pr create` 直前で必ず `pwd` の出力を user に見せて cwd を明示確認する
 - PR / branch / step の命名は `kouchiku` Hard Rules に従う
-- commit / PR 本文の生成は inline で 1 段落出して user 承認を仰ぐ。承認なしで commit / push しない
+- commit / PR 本文の生成は inline で出して user 承認を仰ぐ。承認なしで commit / push / PR 作成しない
 
 ## hook との二重構造
 
@@ -134,7 +129,7 @@ reviewer:
 |---|---|---|
 | non-fast-forward | Step 1 で先制検出 | pre-push が最後の砦 (block) |
 | force to protected | Step 3 で警告 | pre-push が block |
-| reviewer / draft 未指定 | Step 4 で確認 | pre-pr-create が block |
+| reviewer / draft 未指定 | Step 5 で確認 | pre-pr-create が block |
 | submodule 未 push | Step 2 で順序遵守 | post-commit が warning |
 
 **役割分担**: skill は「正常経路で漏れを防ぐ」、hook は「skill を経由しない経路でも止める最後の砦」。teishutsu は hook より厳しい (block しないものを skill が積極的に止める / 確認に上げる)。
@@ -152,6 +147,8 @@ submodule:       none / [path] commit [hash] pushed
 parent commit:   [hash] - [message 1 行]
 push result:     pushed to origin/[branch] / hook blocked: [reason]
                    検証ログ: [push command 最終行]
+PR body:         drafted / provided / skipped
+                   PII scan: clean / found: [...]
 cwd at gh:       [pwd 出力]
                    検証ログ: [pwd 実出力]
 PR:              [url] / draft / reviewers: [@user]
@@ -159,4 +156,8 @@ PR:              [url] / draft / reviewers: [@user]
 
 ## subagent
 
-本 skill は判断と git/gh 操作が中心、subagent gate に該当しない (inline 実行)。`sadoku` への handoff は通常 skill 切り替えで行い、subagent 委譲はしない。
+本 skill は PR 本文ドラフトと git/gh 操作が中心、subagent gate に該当しない (inline 実行)。
+
+## references/
+
+- `pr-template.md` — PR 本文ドラフトの contract (5 セクション template / 手順 / 文章チェック / PII scan / 粒度ルール)

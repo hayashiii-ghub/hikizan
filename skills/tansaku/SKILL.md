@@ -48,7 +48,7 @@ GIT_COMMON=$(cd "$(git rev-parse --git-common-dir)" 2>/dev/null && pwd -P)
 
 1. **症状をそのまま列挙**: error message, stack trace, 再現手順, 期待値, 実際の値
 2. **hypothesis を 1 文**: `I believe the root cause is [X] because [evidence].`
-3. **証拠 1 つで confirm / discard**: instrument (log, breakpoint, grep) を 1 つだけ走らせる
+3. **証拠 1 つで confirm / discard**: `references/logging-techniques.md` を読み、instrument (log, breakpoint, grep) を 1 つだけ走らせる
 4. confirm → fix へ。discard → hypothesis を再構築
 5. fix 後、**fix 前後の同 input での挙動 diff** を完了記録に記載 (要約禁止)
 

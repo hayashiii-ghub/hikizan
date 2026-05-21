@@ -92,6 +92,8 @@ verification:
 
 ### PRUNE 評価基準
 
+PRUNE に入る前に `references/testing-anti-patterns.md` を読む。
+
 1. この test が落ちたら、本当の挙動破壊が起きているか? → No なら**削除** (実装ロック疑い)
 2. mock の存在・呼び出し回数を assert していないか? → Yes なら書き直し or 削除
 3. 同じ assertion を別 setup で重複していないか? → 1 つに統合

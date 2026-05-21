@@ -1,6 +1,6 @@
-# PR 説明文モード
+# PR 本文ドラフト
 
-`sadoku` の PR 説明文モードが読む reference。出力は 5 セクション固定。
+`teishutsu` が PR 作成前に読む reference。出力は 5 セクション固定。
 
 ## Intake
 
