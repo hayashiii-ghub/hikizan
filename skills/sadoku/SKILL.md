@@ -21,7 +21,7 @@ GIT_COMMON=$(cd "$(git rev-parse --git-common-dir)" 2>/dev/null && pwd -P)
 [ "$GIT_DIR" != "$GIT_COMMON" ] && echo "(worktree内: $(git branch --show-current))"
 ```
 
-検出結果は完了記録の `worktree` 行に出力。worktree の作成・削除は `wt` (別 shell tool) の責務であり、この skill では行わない。
+検出結果は完了記録の `worktree` 行に出力。worktree の作成・削除はこの skill では行わない。
 
 ## モード切替
 

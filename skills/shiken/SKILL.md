@@ -23,7 +23,7 @@ GIT_COMMON=$(cd "$(git rev-parse --git-common-dir)" 2>/dev/null && pwd -P)
 [ "$GIT_DIR" != "$GIT_COMMON" ] && echo "(worktree内: $(git branch --show-current))"
 ```
 
-shiken は test を「書いて捨てる」局面が多いため、`wt` で隔離 worktree を切ると本流 branch を汚さない (詳細は後段「worktree 推奨ワークフロー」)。
+test を「書いて捨てる」局面が大きい場合のみ、利用環境の標準機能で隔離 worktree / sandbox を使ってよい。通常は現在の working tree で進める。
 
 ## 起動トリガー
 
@@ -147,16 +147,11 @@ fail しない test は「実装ロック」または「scaffold」のいずれ�
 - 「style 扱いの変更が他レイヤーに波及」も強制復帰
 - PR 集計: `tdd: skip × N / enforced × M` を完了記録に出力
 
-## worktree 推奨ワークフロー (`wt` 利用時)
+## 隔離 worktree / sandbox 利用時
 
-```bash
-wt new shiken-experiment    # 隔離 worktree でアグレッシブに test を書く・捨てる
-# RED → GREEN → REFACTOR → PRUNE
-# PRUNE 後、対象実装を一時的に壊して test fail 目視 (上記「PRUNE 検証手順」)
-# sadoku レビュー → main へ merge
-```
+隔離環境を使うのは、本流 branch を汚さず aggressive に test を書く・捨てる価値がある場合だけに限る。作成・削除は利用中のハーネスや VCS の標準機能に従う。
 
-worktree 内では「捨てる」コストがゼロ。実装をロックする test を書いても `delete = delete` で問題ない。本流 branch を汚さない。
+隔離環境内でも RED → GREEN → REFACTOR → PRUNE の順序と、PRUNE 後の temporary break → fail → restore → pass の確認は省略しない。
 
 ## 完了記録
 

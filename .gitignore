@@ -1,6 +1,3 @@
-# wt が作る worktree (この repo を試験台にしたとき用)
-.worktrees/
-
 # macOS
 .DS_Store
 

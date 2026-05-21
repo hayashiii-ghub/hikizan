@@ -27,5 +27,4 @@
 
 ## Notes
 
-- `bin/wt` は hikizan 同梱の git worktree CLI。
 - reviewer コメントへの返信文ドラフトは skill mode 化していない。実装が必要な指摘は `kouchiku` の計画実行モードに渡す。

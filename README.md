@@ -1,6 +1,6 @@
 # hikizan
 
-日本語圏チーム開発向けの Claude Code plugin / Agent Skills 対応 skill pack + git worktree CLI。tw93/Waza を起点に、SP (anthropic/superpowers) から選択的に取り込み、日本語圏 team-dev に最適化した **core 4 skill** と、並列開発を支える **`wt`** (worktree manager) を含む。
+日本語圏チーム開発向けの Claude Code plugin / Agent Skills 対応 skill pack。tw93/Waza を起点に、SP (anthropic/superpowers) から選択的に取り込み、日本語圏 team-dev に最適化した **core 4 skill** を含む。
 
 動詞単位で責務を分けた 4 skill (sadoku / kouchiku / shiken / teishutsu) と **引き算の哲学**を中核に据える。
 
@@ -124,46 +124,6 @@ namespace 規約により `/hikizan:*` と `/codex:*` は衝突しません。�
 
 hikizan の skill は **「シンボル系は LSP、テキスト系は grep、LSP 未設定なら grep にフォールバック」** の規約で書かれているため、LSP plugin を入れていない環境でも grep ベースで動作します (精度は落ちる)。
 
-## install (wt — git worktree CLI)
-
-並列開発で worktree を扱うための CLI。skill とは独立、bash 単体。
-
-### Claude Code plugin 経由 (推奨)
-
-`/plugin install hikizan@hikizan` を実行している場合、`bin/wt` は CC plugin の `bin/` 機構によりセッション中の Bash ツールの `PATH` に自動追加されます。追加手順は不要、Claude Code 内で直接呼び出せます:
-
-```bash
-wt help
-```
-
-### skill pack 単独利用 / shell から直接使いたい場合
-
-`npx skills add` 経由で skill だけ入れている、または CC 外の shell から `wt` を叩きたい場合は、手動で symlink:
-
-```bash
-mkdir -p ~/.local/bin
-ln -s "$(pwd)/bin/wt" ~/.local/bin/wt
-
-# PATH に ~/.local/bin が無ければ追加
-export PATH="$HOME/.local/bin:$PATH"
-
-wt help
-```
-
-### 使い方の例
-
-```bash
-wt new feat-A             # .worktrees/feat-A/ 作成 + branch 切り
-wt ls                     # 全 worktree 一覧
-wt status feat-A          # 詳細
-wt rm feat-A              # 削除 (未 commit / 未 push があると拒否)
-wt cleanup --dry-run      # merged 済 worktree の削除候補
-cd "$(wt enter feat-A)"   # worktree に cd
-wt new feat-B --launch claude  # 作成して Claude を起動
-```
-
-`.worktrees/` は repo 内に作られるので、 `.gitignore` に追加するのを推奨 (hikizan 自身は既に追加済)。
-
 ## quick start (30 秒)
 
 install + 最初の発話 1 つで動く状態にする手順。
@@ -240,8 +200,6 @@ hikizan/
 │       └── post-commit.sh
 ├── templates/
 │   └── CLAUDE.md                ← SessionStart hook が必要なセクションを重複なく追加する
-├── bin/
-│   └── wt                       ← git worktree CLI (bash)
 ├── skills/                      ← skill 本体 (SoT、CC plugin / npx skills add の両経路で読まれる)
 │   ├── sadoku/
 │   │   ├── SKILL.md
