@@ -1,23 +1,22 @@
 # hikizan
 
-日本語圏チーム開発向けの Claude Code plugin / Agent Skills 対応 skill pack + git worktree CLI。tw93/Waza を起点に、SP (anthropic/superpowers) から選択的に取り込み、日本語圏 team-dev に最適化した **core 5 skill** と、並列開発を支える **`wt`** (worktree manager) を含む。
+日本語圏チーム開発向けの Claude Code plugin / Agent Skills 対応 skill pack + git worktree CLI。tw93/Waza を起点に、SP (anthropic/superpowers) から選択的に取り込み、日本語圏 team-dev に最適化した **core 4 skill** と、並列開発を支える **`wt`** (worktree manager) を含む。
 
-動詞単位で責務を分けた 5 skill (sadoku / kouchiku / tansaku / shiken / teishutsu) と **引き算の哲学**を中核に据える。
+動詞単位で責務を分けた 4 skill (sadoku / kouchiku / shiken / teishutsu) と **引き算の哲学**を中核に据える。
 
 - repo: <https://github.com/hayashiii-ghub/hikizan>
 - license: MIT
 
-## core 5 skill
+## core 4 skill
 
 | skill | 漢字 | 動詞 | 担当 |
 |---|---|---|---|
 | `sadoku` | 査読 | 見る | code review / simplify findings |
-| `kouchiku` | 構築 | 考える・作る | 設計判断 / 評価 / 計画策定 / 計画実行 |
-| `tansaku` | 探索 | 追う | バグ調査 / root cause investigation |
+| `kouchiku` | 構築 | 考える・作る | 設計判断 / 評価 / 計画策定 / 計画実行 / root cause diagnosis |
 | `shiken` | 試験 | 試す | TDD discipline / PRUNE |
 | `teishutsu` | 提出 | 出す | PR 本文ドラフト / PR 提出フロー (remote / submodule / parent commit / cwd-aware gh) |
 
-動詞で 5 分割した役割境界が原則。`kouchiku` は controller として設計から計画実行までを持ち、原因調査は `tansaku`、TDD discipline は `shiken`、レビューは `sadoku`、PR 本文ドラフト / PR 提出プロセスは `teishutsu` に handoff block で渡す。
+動詞で 4 分割した役割境界が原則。`kouchiku` は controller として設計から計画実行、原因調査までを持ち、TDD discipline は `shiken`、レビューは `sadoku`、PR 本文ドラフト / PR 提出プロセスは `teishutsu` に handoff block で渡す。
 
 ## install (Claude Code plugin)
 
@@ -38,7 +37,7 @@ git clone https://github.com/hayashiii-ghub/hikizan
 claude --plugin-dir ./hikizan
 ```
 
-skill 名は namespace 規約により `/hikizan:sadoku` / `/hikizan:kouchiku` / `/hikizan:tansaku` / `/hikizan:shiken` / `/hikizan:teishutsu` で呼ばれる。
+skill 名は namespace 規約により `/hikizan:sadoku` / `/hikizan:kouchiku` / `/hikizan:shiken` / `/hikizan:teishutsu` で呼ばれる。
 
 ## install (skill pack)
 
@@ -199,7 +198,7 @@ install 後、各 skill は発話で起動する。
 "整理して" / "simplify"   → sadoku simplify findings
 "コードレビュー"          → sadoku 通常レビュー + simplify (compound)
 "PR文書いて"            → teishutsu PR 本文ドラフト
-"エラー" / "動かない"     → tansaku 通常追跡
+"エラー" / "動かない"     → kouchiku diagnosis
 "TDDで" / "テストから書いて" → shiken
 "PR出す" / "PR提出"     → teishutsu
 ```
@@ -255,10 +254,9 @@ hikizan/
 │   │           └── reviewer-architecture.md
 │   ├── kouchiku/
 │   │   ├── SKILL.md
-│   │   └── references/minimal-approach.md
-│   ├── tansaku/
-│   │   ├── SKILL.md
-│   │   └── references/logging-techniques.md
+│   │   └── references/
+│   │       ├── diagnosis-techniques.md
+│   │       └── minimal-approach.md
 │   ├── shiken/
 │   │   ├── SKILL.md
 │   │   └── references/testing-anti-patterns.md
