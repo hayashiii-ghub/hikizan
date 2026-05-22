@@ -64,11 +64,31 @@ review focus:
 
 ## 通常レビューモード
 
-深さ判定 → diff 読解 → 停止条件チェック → 専門家レビュー → 完了記録。
+深さ判定 → diff 読解 → Skeptical Review Lens → 停止条件チェック → 専門家レビュー → 完了記録。
 
 diff 読解に入る前に `references/project-context.md` を読み、変更ファイルの依存関係 / テスト構造 / 命名規則 / touch ファイル数を確認する。
 
 `shiken` の return がある場合は、残った test が vertical slice の observable output を守っているかを review evidence として確認する。`coverage gap` は `kouchiku` が受け入れたか、後続 slice に切ったかを見る。`sadoku` は新しい slice を実装せず、必要なら finding として返す。
+
+### Skeptical Review Lens
+
+実装者の説明・PR 本文・handoff context は仮説として読む。review finding の根拠には、diff / tests / verification log / surrounding code を使う。
+
+**Evidence hierarchy**
+
+1. failing / passing test output
+2. diff
+3. surrounding code
+4. verification logs
+5. implementation notes / PR description
+
+通常レビューでは次の 3 点を確認する:
+
+1. この変更が正しいために必要な前提は何か?
+2. その前提は diff / tests / verification log / surrounding code で確認できるか?
+3. merge 後に壊れる最も現実的なシナリオは何か?
+
+`failure scenario` は Standard / Deep では必ず 1 つ書く。Quick は明確な挙動変更がなければ `not applicable` でよい。bugfix / behavior change / business rule / API contract / security-sensitive change では深さに関係なく必須。
 
 **深さ判定**
 
@@ -167,6 +187,8 @@ medium / low は `teishutsu` の PR 本文ドラフト時に「実装中に分�
 - **PR 粒度違反**: diff が複数 issue にまたがっている (= 1 issue = 1 PR ルール違反)
 - **未確認の外部事実引用**: 「最新の X バージョン」「Y 標準」のような外部事実が裏取りなしで review finding / コメントに混入している (ファクトチェック原則、URL 引用必須)
 - **root cause 証跡不足**: bugfix / diagnosis を含む diff で root cause 1 文、evidence、同 input の before / after diff が無い
+- **前提未証明**: 仕様 / 既存挙動 / 外部制約 / データ形状 / 権限 / 時系列に依存し、その前提が崩れると挙動破壊・security issue・data loss・誤請求などにつながるのに、diff / tests / verification log / surrounding code で確認できない。単なる命名好み、軽微な文言好み、将来拡張の不安、既存設計への不満だけでは止めない
+- **反証不足**: bugfix / behavior change / business rule / API contract / security-sensitive change で、壊れていた入力・守るべき出力・回帰防止 test または verification がつながっていない
 - **debug instrument 残留**: `console.log` / `debugger` / `dump()` / 一時 log tag など、調査用 instrument が production code に残っている
 
 ## Hard Rules
@@ -190,6 +212,7 @@ verification:     [command] -> pass / fail
                     検証ログ: [出力末尾 3-5 行、失敗時は full error]
 root cause:       present / missing / not applicable
                     検証ログ: [handoff の root cause / before-after diff]
+failure scenario: [1 つ / not applicable]
 PII scan:         clean / found: [...]
                     検証ログ: [grep command + 出力 / 0件は "0 matches"]
 文章:             伝わる / 伝わらない (伝わらない場合: 何が伝わらないか)    ※ 自己申告
