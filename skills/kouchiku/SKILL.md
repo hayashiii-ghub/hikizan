@@ -33,7 +33,12 @@ git log --diff-filter=A --name-only -10 | head -30
 ```
 周辺コードから推測される追加情報:
 - [推測項目] (確度: NN%) — [根拠: file:line / commit / TODO 等]
+
+用語衝突 (衝突があるときだけ出力):
+- [ユーザ語] ↔ [コード上の語 file:line] — 同一概念か計画前に確認
 ```
+
+用語衝突は、ユーザ (や issue 文) の語が既存シンボル (class / 関数 / module 名) と同一概念を指すか曖昧なときだけ挙げる。単なる訳語 (ログイン ↔ auth) は対象外。Phase 0 で既に読んだコードから判定するため追加コストはほぼない。
 
 シンボル探索 (関数 / クラス / 変数の定義 / 参照) は LSP を優先、テキスト探索 (TODO / FIXME / 設定 / Markdown / コメント内文字列) は grep を使う。LSP 未設定環境では grep にフォールバック (公式 LSP plugin の install は README「LSP 併用」節)。
 
@@ -117,7 +122,7 @@ Structure:       [任意] 構造変更 (module 境界 / 依存 / data flow) を�
 Key decisions:   3-5 項目 (それぞれ「ほかの選択肢を採らなかった理由」を 1 行)
 Interface sketch: [任意] 最も load-bearing な interface 1 点を signature / data 形で
                  (実在 symbol を file:line 付きで参照、~5-8 行、logic 本体なし)
-Premises:        この設計が依存している事実 3-5 個
+Premises:        この設計が依存している事実 3-5 個 (各項目に ✓ file:line で確認済 / ⚠ 未検証 を注記)
 Worst case:      6 ヶ月後に問題化しうるシナリオ
 Unknowns:        defer 理由 + 担当明記の項目のみ
 Plan steps:      実装単位 (owner skill / file / 検証コマンド。TDD 必要層は next slice / candidate follow-up slices を分ける)
