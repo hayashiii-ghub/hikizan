@@ -36,8 +36,6 @@ GIT_COMMON=$(cd "$(git rev-parse --git-common-dir)" 2>/dev/null && pwd -P)
 
 状態トリガーは誤起動回避のため、検出後に確認 prompt を 1 行挟む (`diff を検出しました。レビューしますか?`)。複数モードが成立しうる場合は入力トリガーを優先。
 
-reviewer コメントへの返信文ドラフトは skill mode 化しない。ユーザが必要に応じて agent に直接「返信書いて」「反論したい」と頼む運用にする (= 通常会話)。実装が必要な指摘はユーザが `kouchiku` に振る (`設計どうする` / `計画実行`)。
-
 ## Handoff Intake
 
 `kouchiku` / `shiken` からの handoff block がある場合は、diff だけでなく前段の判断と検証ログも review evidence として読む。足りない場合は推測で補完せず、通常レビューの停止条件として扱う。
@@ -106,7 +104,7 @@ Standard 以上で security / architecture 観点が必要な場合のみ subage
 | 命名         | 同 module 内の命名揺れ、慣用と外れる用語                    |
 | 不要な抽象化     | 1 箇所からしか呼ばれない wrapper、premature な generic   |
 | dead code  | 未使用 export / private function / 到達不能 branch |
-| efficiency | 明確な改善余地 (O(n²) → O(n) 等、計測不要な範囲)             |
+| efficiency | 明確な改善余地 (O(n²) → O(n) 等、計測不要な範囲)            |
 
 
 ### 出力フォーマット
@@ -201,3 +199,4 @@ PII scan:         clean / found: [...]
 - `persona-catalog.md` — 専門家レビュー (security / architecture / adversarial) の persona 起動条件
 - `agents/reviewer-security.md` / `agents/reviewer-architecture.md` — 専門家レビュー subagent prompt
 - `simplify-checklist.md` — simplify findings モードの 5 観点判定基準と書き直し方
+
