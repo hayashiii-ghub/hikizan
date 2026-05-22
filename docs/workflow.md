@@ -26,7 +26,7 @@ description: sadoku / kouchiku / shiken / teishutsu の境界、典型フロー�
 
 ## 1. 役割境界
 
-動詞単位で 4 つの責務に分割する。`kouchiku` は controller として設計 / 計画実行 / 原因診断を扱い、TDD / レビュー / 提出は各専門 skill に渡す。
+動詞単位で 4 つの責務に分割する。`kouchiku` は controller として設計 / 計画実行 / 原因診断を扱い、TDD / レビュー / 提出は各専門 skill に渡す。TDD 必要層では `kouchiku` が vertical behavior slice を切り、`shiken` は 1 slice ごとに RED → GREEN → PRUNE を実行する。
 
 ```mermaid
 flowchart TB
@@ -65,7 +65,7 @@ flowchart TB
   B -->|"Plan 承認 / 進めて"| C["kouchiku 計画実行<br/>owner skill 付き Plan steps"]
   C -->|"原因未確定"| I["kouchiku diagnosis<br/>root cause 1文 + evidence"]
   I -->|"root cause 確定"| C
-  C -->|"TDD 必要層"| D["shiken<br/>RED → GREEN → REFACTOR → PRUNE"]
+  C -->|"TDD 必要層<br/>1 vertical slice"| D["shiken<br/>RED → GREEN → REFACTOR → PRUNE"]
   D -->|"検証ログ付き return"| C
   C -->|"handoff block"| E["sadoku 通常レビュー<br/>深さ・停止条件・完了記録"]
   E -->|"Standard 以上"| F["専門家レビュー<br/>subagent 並列最大3<br/>security / arch / adversarial は inline"]
@@ -77,7 +77,7 @@ flowchart TB
 > **補足**
 >
 > - 原因未確定の調査は **kouchiku diagnosis** として inline で実行する。
-> - **kouchiku → shiken → kouchiku** の往復は handoff block で実行する。
+> - **kouchiku → shiken → kouchiku** の往復は handoff block で実行する。1 往復は原則 1 vertical behavior slice。
 > - **sadoku** は実装完了後に初めて起動（「見る」専門）。
 > - **専門家レビュー**は Standard 以上のみ。Quick は停止条件中心。
 
@@ -90,7 +90,7 @@ flowchart TB
 ```mermaid
 flowchart TB
   B0["バグ報告 / error / 動かない"] --> B1["kouchiku diagnosis<br/>症状列挙・hypothesis 1文・instrument 1つ・confirm/fix"]
-  B1 -->|"root cause 確定<br/>fix 前"| B2["shiken regression guard<br/>RED: 実装前は fail<br/>GREEN: fix 後 pass<br/>PRUNE: revert で fail 目視"]
+  B1 -->|"root cause 確定<br/>fix 前"| B2["shiken regression guard<br/>RED: 実装前は fail<br/>GREEN: fix 後 pass<br/>PRUNE: observable output break で fail 目視"]
   B2 --> B3["sadoku 通常レビュー"]
   B3 --> B4["teishutsu PR 本文 + 提出"]
   B4 --> B5["PR open"]
@@ -152,7 +152,7 @@ flowchart TB
 | shiken | 起動 | 「TDDで」「テストから書いて」 |
 | teishutsu | PR 本文ドラフト / 提出 | 「PR文書いて」「PR description」「PR出す」「PR提出」「PR ready」「提出して」 |
 
-> **shiken の必須レイヤー**: 純ロジック / API / バグ修正に触れる場合は必須、インタラクションは推奨、純スタイル / アニメ / 文言のみはスキップ可 (理由必須)。
+> **shiken の必須レイヤー**: 純ロジック / API / バグ修正に触れる場合は必須、インタラクションは推奨、純スタイル / アニメ / 文言のみはスキップ可 (理由必須)。`shiken` 直接起動で 1 つの vertical slice に言語化できない場合は `kouchiku` に戻す。
 > **状態トリガー** (git diff 検出・計画実行の完了報告直後など) の詳細は各 `SKILL.md` を参照。reviewer コメント対応は skill mode 化しない (通常会話で「返信書いて」)。
 
 ---
@@ -170,9 +170,9 @@ flowchart TB
 | kouchiku 通常検討    | kouchiku 計画実行      | 「計画実行」「進めて」      | owner skill 付き Plan steps |
 | kouchiku 計画実行    | kouchiku diagnosis     | 原因未確定 / test failure   | 症状 + evidence |
 | kouchiku diagnosis   | kouchiku 計画実行      | root cause 確定             | root cause 1 文 + fix 候補 |
-| kouchiku 計画実行    | shiken                 | TDD 必要層に触れた          | spec / edge case / non-goals |
-| kouchiku diagnosis   | shiken                 | bugfix 確定                 | root cause + failing behavior + test target |
-| shiken               | kouchiku 計画実行      | サイクル完了                | RED/GREEN/PRUNE log + files changed |
+| kouchiku 計画実行    | shiken                 | TDD 必要層に触れた          | vertical slice + spec / edge case / non-goals |
+| kouchiku diagnosis   | shiken                 | bugfix 確定                 | root cause + vertical slice + failing behavior + test target |
+| shiken               | kouchiku 計画実行      | サイクル完了                | RED/GREEN/PRUNE log + test level + coverage gap + files changed |
 | kouchiku 計画実行    | sadoku 通常レビュー    | 実装完了                    | handoff block + 完成 diff |
 | (user)               | sadoku 通常レビュー    | 「レビューして」            | diff                  |
 | sadoku 通常レビュー  | subagent (reviewer-*)  | gate (b)                    | diff + 範囲           |
@@ -219,7 +219,7 @@ flowchart LR
 | --------- | ---------------------------------------------------------------- | ----------------------- |
 | sadoku    | 停止条件 scan / tests / verification / PII scan                  | command + 出力末尾      |
 | kouchiku  | （計画実行 / diagnosis のみ）verification / Confirmed（fix 前後の挙動差分） | command + 出力末尾 / そのまま引用 |
-| shiken    | RED / GREEN / PRUNE 各 phase                                     | test runner 最終行      |
+| shiken    | RED / GREEN / PRUNE 各 phase、test level、coverage gap、PRUNE witness | test runner 最終行 + return log |
 | teishutsu | remote state / submodule / parent commit / push / PR body / cwd at gh / PR | command + 出力 (`pwd` はそのまま引用) |
 
 **不可:** self-report だけ（「pass しました」「直りました」等）。**必ず command 実行結果を引用**。

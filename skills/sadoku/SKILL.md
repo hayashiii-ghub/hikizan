@@ -51,9 +51,13 @@ files changed:
 verification:
   - [command] -> pass / fail
 tdd:
+  - vertical slice: [entry / behavior / observable output / excluded layers]
+  - test level: [unit / integration / component / e2e] + reason
+  - coverage gap: [accepted gap / returned decision / none]
   - RED: [...]
   - GREEN: [...]
   - PRUNE: [...]
+  - prune witness: [どの observable output を壊して fail を確認したか]
 root cause:
   - [bugfix / diagnosis があれば kouchiku の root cause 1 文 + evidence]
 confirmed:
@@ -69,6 +73,8 @@ review focus:
 深さ判定 → diff 読解 → 停止条件チェック → 専門家レビュー → 完了記録。
 
 diff 読解に入る前に `references/project-context.md` を読み、変更ファイルの依存関係 / テスト構造 / 命名規則 / touch ファイル数を確認する。
+
+`shiken` の return がある場合は、残った test が vertical slice の observable output を守っているかを review evidence として確認する。`coverage gap` は `kouchiku` が受け入れたか、後続 slice に切ったかを見る。`sadoku` は新しい slice を実装せず、必要なら finding として返す。
 
 **深さ判定**
 
@@ -162,6 +168,8 @@ medium / low は `teishutsu` の PR 本文ドラフト時に「実装中に分�
   - 部分 mock (実 API の一部 field だけ) で structural assumption が隠れている
   - snapshot test の濫用 (small diff で全更新)
   - `.skip` / `xfail` が理由コメントなしで残っている
+  - `shiken` return があるのに vertical slice / test level / coverage gap / prune witness が欠けている
+  - kept test が observable output ではなく private helper 形状や mock call count を守っている
 - **PR 粒度違反**: diff が複数 issue にまたがっている (= 1 issue = 1 PR ルール違反)
 - **未確認の外部事実引用**: 「最新の X バージョン」「Y 標準」のような外部事実が裏取りなしで review finding / コメントに混入している (ファクトチェック原則、URL 引用必須)
 - **root cause 証跡不足**: bugfix / diagnosis を含む diff で root cause 1 文、evidence、同 input の before / after diff が無い
@@ -199,4 +207,3 @@ PII scan:         clean / found: [...]
 - `persona-catalog.md` — 専門家レビュー (security / architecture / adversarial) の persona 起動条件
 - `agents/reviewer-security.md` / `agents/reviewer-architecture.md` — 専門家レビュー subagent prompt
 - `simplify-checklist.md` — simplify findings モードの 5 観点判定基準と書き直し方
-

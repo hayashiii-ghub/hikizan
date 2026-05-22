@@ -64,7 +64,7 @@ kouchiku は controller として次の skill を選ぶが、専門 skill の責
 | 条件                                                                                 | handoff 先                                 | 理由                                             |
 | ---------------------------------------------------------------------------------- | ----------------------------------------- | ---------------------------------------------- |
 | 原因未確定の不具合 / 予期しない test failure / 再現不明の挙動                                           | `kouchiku` 診断分岐                         | root cause を確定してから設計判断する                       |
-| 純ロジック / API / ビジネスルール / bugfix 実装                                                  | `shiken`                                  | RED → GREEN → PRUNE の discipline を守る           |
+| 純ロジック / API / ビジネスルール / bugfix 実装                                                  | `shiken`                                  | 1 vertical behavior slice ごとに RED → GREEN → PRUNE の discipline を守る |
 | 実装完了後の diff review                                                                 | `sadoku`                                  | 実装者視点から離れて diff を見る                            |
 | 整理 (重複削除 / 命名統一 / 不要な抽象化除去 / dead code / efficiency)                               | `sadoku` simplify findings → kouchiku で実装 | 発見は sadoku、実装は controller が responsibility を持つ |
 | PR 本文ドラフト / PR 提出 (remote 確認 / submodule / parent commit / cwd-aware gh pr create) | `teishutsu`                               | hook と二段構成、submission 工程の未確認項目を skill で先に検出 |
@@ -124,7 +124,7 @@ Interface sketch: [任意] 最も load-bearing な interface 1 点を signature 
 Premises:        この設計が依存している事実 3-5 個
 Worst case:      6 ヶ月後に問題化しうるシナリオ
 Unknowns:        defer 理由 + 担当明記の項目のみ
-Plan steps:      実装単位 (owner skill / file / 検証コマンド。計画実行モードで使う形)
+Plan steps:      実装単位 (owner skill / file / 検証コマンド。TDD 必要層は next slice / candidate follow-up slices を分ける)
 Minimal Approach: 上記 plan を要求から直接読める規模と対比、最小版を併記または "minimal already" を明記
 ```
 
@@ -170,7 +170,11 @@ If pivot:   [何に方向転換するか、1 段落]
 
 **TDD 必要層を踏むときの分岐**
 
-純ロジック / API / バグ修正 などの必須レイヤーに触れる場合は、計画実行を一時停止して `shiken` (TDD) のサイクルに入る。GREEN → PRUNE を終えてから次の step に戻る。
+純ロジック / API / バグ修正 などの必須レイヤーに触れる場合は、計画実行を一時停止して `shiken` (TDD) のサイクルに入る。`kouchiku` は実装計画を vertical behavior slice に分解し、`shiken` には次に閉じる 1 slice だけを渡す。GREEN → PRUNE を終えてから次の step に戻る。
+
+- Plan steps には候補 slice を列挙してよいが、確定扱いは次に実行する 1 slice のみ
+- `shiken` return の `coverage gap` を読んで、gap を受け入れる / 次 slice にする / test level を変える、の判断を `kouchiku` が行う
+- `shiken` に後続 slice の設計や追加実装を任せない
 
 **診断分岐**
 
@@ -193,12 +197,18 @@ If pivot:   [何に方向転換するか、1 段落]
 handoff: shiken
 reason: API の挙動に触れる実装のため
 context: [仕様 / edge case / non-goals]
+vertical slice:
+  entry: [user action / API call / public function]
+  behavior: [観測したい振る舞い]
+  observable output: [UI / response / return value / state change / persisted data]
+  excluded layers: [この cycle で通さない層]
 evidence:
   - [関連 file:line]
 expected return:
   - RED log
   - GREEN log
   - PRUNE result
+  - test level / coverage gap / prune witness
   - verification command
 ```
 

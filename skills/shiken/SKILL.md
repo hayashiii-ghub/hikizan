@@ -13,7 +13,7 @@ when_to_use: "TDD, テスト先行, テストから書く"
 
 > **テストが先。fail を目視するまで実装に手を付けない。「あとで書く」「手で確認した」は理由にならない。**
 
-TDD discipline。失敗するテストを先に書き、fail を**目視**してから実装する。GREEN 後に PRUNE で test を最小化する。
+TDD discipline。失敗するテストを先に書き、fail を**目視**してから実装する。GREEN 後に PRUNE で test を最小化する。1 cycle は原則 1 vertical behavior slice とし、slice の分解は `kouchiku` が担う。
 
 ## Step 0: worktree 検出
 
@@ -31,7 +31,7 @@ GIT_COMMON=$(cd "$(git rev-parse --git-common-dir)" 2>/dev/null && pwd -P)
 |---|---|
 | `TDDで` / `テストから書いて` | 後段の「起動条件 (層分け)」表で判定 |
 
-入力トリガーは明示 opt-in 用で、kouchiku 計画実行モードとの競合を避ける。
+入力トリガーは明示 opt-in 用で、kouchiku 計画実行モードとの競合を避ける。直接起動時は user request から vertical slice を 1 文で明示し、scope 分割 / 設計判断 / root cause diagnosis / 複数 slice が必要なら RED に入らず `kouchiku` へ handoff する。
 
 ## Handoff Intake
 
@@ -41,7 +41,12 @@ GIT_COMMON=$(cd "$(git rev-parse --git-common-dir)" 2>/dev/null && pwd -P)
 handoff: shiken
 reason: [TDD 必要層 (純ロジック / API / ビジネスルール) または regression guard]
 spec: [testable な粒度に分解した仕様]
-edge cases: [想定する境界 / 例外]
+vertical slice:
+  entry: [user action / API call / public function]
+  behavior: [観測したい振る舞い]
+  observable output: [UI / response / return value / state change / persisted data]
+  excluded layers: [この cycle で通さない層]
+edge cases: [この cycle に含める最小代表ケース / 後続 slice 候補]
 non-goals: [この cycle で扱わない範囲]
 root cause: [bugfix なら kouchiku 診断分岐の出力、新機能なら省略可]
 test target:
@@ -50,7 +55,7 @@ test target:
 constraints:
   - [mock 呼び出し回数 assert 不可 等]
 expected return:
-  - RED log / GREEN log / PRUNE result / verification command
+  - RED log / GREEN log / PRUNE result / test level / coverage gap / prune witness / verification command
 ```
 
 ## Handoff Return
@@ -60,10 +65,21 @@ RED → GREEN → PRUNE の単位に落としきり、GREEN 後は実装判断�
 ```
 handoff return: kouchiku / sadoku
 implemented behavior: [何を満たしたか]
+vertical slice:
+  entry: [...]
+  behavior: [...]
+  observable output: [...]
+  excluded layers: [...]
+test level:
+  chosen: unit / integration / component / e2e
+  reason: [なぜこの level で slice behavior を十分に保証できるか]
+coverage gap:
+  - [入口から通していない層 / 未検証の連携 / accepted gap or returned decision]
 tests:
   - RED: [test runner output]
   - GREEN: [test runner output]
-  - PRUNE: [temporary break -> fail -> restore -> pass]
+  - PRUNE: [observable output break -> fail -> restore -> pass]
+prune witness: [どの observable output を壊して fail を確認したか]
 files changed:
   - [path]
 verification:
@@ -73,7 +89,10 @@ verification:
 ## Hard Rules
 
 - **書く側**: 失敗するテストを先に書き、本セッション内で fail を**目視**するまで実装コードを書かない
-- **検証側**: PRUNE 後に残った各 test は、対応する実装を一時的に revert/破壊したときに必ず失敗することを目視確認する。失敗しない test = 何も検証していない (= 削除対象)
+- **検証側**: PRUNE 後に残った各 test は、vertical slice の observable output を一時的に壊したときに必ず失敗することを目視確認する。失敗しない test = 何も検証していない (= 削除対象)
+- `kouchiku` からの handoff に `vertical slice` が無い場合、RED に入らず呼び出し元へ差し戻す
+- 直接起動で request を 1 つの vertical slice に言語化できない場合、scope を自分で分割せず `kouchiku` へ handoff する
+- `coverage gap` を検出しても追加 slice を勝手に実装しない。gap を return に残し、次の slice 判断は `kouchiku` に戻す
 - TDD RED-GREEN サイクルは **inline 必須**、subagent 委譲不可 (目視必須)
 - スキップ時は完了記録に理由 1 行必須 (`tdd: skip — CSS-only layout adjustment, no logic touched`)
 - ロジック行に 1 行でも触れたらスキップ判定から必須扱いに戻す
@@ -81,23 +100,34 @@ verification:
 
 ## サイクル: RED → GREEN → REFACTOR → PRUNE
 
+1 cycle は 1 vertical behavior slice を閉じる単位。既存 test 構造に合わせて unit / integration / component / e2e を選んでよいが、assert は private helper 形状ではなく slice の observable output に向ける。
+
 | Phase | 動作 |
 |---|---|
 | RED | 失敗する test を 1 つ書く、test runner で fail を目視 |
 | GREEN | test を pass させる最小実装、test runner で pass を目視 |
 | REFACTOR | duplication 除去、命名改善、テストは green のまま |
-| **PRUNE** | 各 test を以下の基準で評価し、不要なものを削除 |
+| **PRUNE** | 各 test を slice behavior 基準で評価し、不要なものを削除 |
 
 各 phase の遷移は test runner の出力 (最終 summary 行) で確認し、完了記録に検証ログとして引用する (「目視した」だけの自己申告は不可)。
+
+### Slice 粒度
+
+- 1 vertical slice は原則 1 kept test とする
+- distinct な observable behavior を持つ edge case は別 slice として扱う
+- 同じ cycle に含める edge case は、現在の behavior を代表する最小ケースに限る
+- 1 slice に複数 test を残す場合は PRUNE result に理由を書く
+- entry point から離れた test level を選ぶ場合は `reason` と `coverage gap` を return に残す
 
 ### PRUNE 評価基準
 
 PRUNE に入る前に `references/testing-anti-patterns.md` を読む。
 
-1. この test が落ちたら、本当の挙動破壊が起きているか? → No なら**削除** (実装ロック疑い)
+1. この test が落ちたら、vertical slice の observable output が壊れているか? → No なら**削除** (実装ロック疑い)
 2. mock の存在・呼び出し回数を assert していないか? → Yes なら書き直し or 削除
 3. 同じ assertion を別 setup で重複していないか? → 1 つに統合
 4. 探索中に書いた scaffold か、spec を表現する test か? → scaffold なら削除
+5. private helper 形状 / 内部分岐 / mock call count を壊した時だけ落ちていないか? → Yes なら observable output へ書き直し or 削除
 
 PRUNE 後の test 数 = 残った仕様の数。
 
@@ -105,13 +135,13 @@ PRUNE 後の test 数 = 残った仕様の数。
 
 推奨順:
 
-1. 隔離 worktree で、対象実装だけを一時的に壊して test failure を確認する
-2. 同一 worktree なら、対象 file の現在状態を `/tmp` に保存し、対象挙動だけを最小変更で壊す
+1. 隔離 worktree で、vertical slice の observable output を一時的に壊して test failure を確認する
+2. 同一 worktree なら、対象 file の現在状態を `/tmp` に保存し、observable output だけを最小変更で壊す
 3. unrelated な dirty file がある場合、作業全体を `git stash` しない。scope を確認する
 
 ```bash
 cp path/to/impl /tmp/hikizan-prune.impl
-# 対象挙動だけを一時的に壊す
+# vertical slice の observable output だけを一時的に壊す
 <test runner> <test>    # → fail を確認 (= test が機能している)
 cp /tmp/hikizan-prune.impl path/to/impl
 <test runner> <test>    # → pass を再確認
@@ -151,7 +181,7 @@ fail しない test は「実装ロック」または「scaffold」のいずれ�
 
 隔離環境は、通常の working tree から分離して test 変更を扱う必要がある場合に限って使う。作成・削除は利用中のハーネスや VCS の標準機能に従う。
 
-隔離環境内でも RED → GREEN → REFACTOR → PRUNE の順序と、PRUNE 後の temporary break → fail → restore → pass の確認は省略しない。
+隔離環境内でも RED → GREEN → REFACTOR → PRUNE の順序と、PRUNE 後の observable output break → fail → restore → pass の確認は省略しない。
 
 ## 完了記録
 
@@ -159,10 +189,14 @@ fail しない test は「実装ロック」または「scaffold」のいずれ�
 
 ```
 worktree:          in-worktree / normal-repo
+vertical slice:    [entry / behavior / observable output / excluded layers]
+test level:        [unit / integration / component / e2e] + reason
+coverage gap:      [accepted gap / returned decision / none]
 cycle:             RED -> GREEN -> REFACTOR -> PRUNE 各 phase 完了確認
                      検証ログ (RED):     [test runner output 最終行、fail を含む]
                      検証ログ (GREEN):   [test runner output 最終行、pass]
-                     検証ログ (PRUNE):   各 test に対する temporary break → fail → restore → pass の出力
+                     検証ログ (PRUNE):   observable output break → fail → restore → pass の出力
+prune witness:     [どの observable output を壊して fail を確認したか]
 tests:             N kept (after PRUNE), M removed
 tdd layer:         [必須 / 推奨 / スキップ可]
 skip reason:       [スキップ時のみ、1 行]

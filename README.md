@@ -18,6 +18,8 @@
 
 各 skill は動詞単位で責務を分ける。`kouchiku` は controller として設計、計画実行、原因調査を扱う。TDD discipline は `shiken`、レビューは `sadoku`、PR 本文ドラフト / PR 提出プロセスは `teishutsu` に handoff block で渡す。
 
+TDD 必要層では、`kouchiku` が実装を vertical behavior slice に分解し、`shiken` が 1 slice ごとに RED → GREEN → PRUNE を実行する。test level / coverage gap / PRUNE witness は `shiken` の return log に残す。
+
 ## install (Claude Code plugin)
 
 Claude Code 利用者は `/plugin` 経由が推奨経路。
@@ -173,8 +175,9 @@ install 後、各 skill は以下の入力で起動する。
 6. **評価は「環境変化」で見る**: 完了記録のうち機械的に検証できる項目は command の出力をそのまま引用し、自己申告は不可とする
 7. **文章の可読性**: 4 つのチェック (結論を先に出す / 1 段落 1 主張 / 読み手の語彙 / 儀礼的表現を削る)
 8. **認知負荷の削減**: 選択肢の提示 + 推奨度 N/10 + 1 行根拠 / 構造変更は図・線形手順は箇条書き / 読み手の負荷を優先する。PR 粒度・テスト最小化と同様に、全 skill に適用する
-9. **工数は token 規模で考える**: 重さは「人間の作業時間」ではなく token 消費 / context 占有 / API コストで捉える。行数・ファイル数はその proxy。実行者は AI agent であることを前提とする
-10. **ファクトチェック**: 知識カットオフより後の事実や不確実な情報は、検索・fetch・一次ソースで裏取りしてから断定する
+9. **Vertical TDD**: `kouchiku` は次に閉じる 1 つの observable behavior を slice として切り、`shiken` はその slice の output が壊れた時に落ちる test だけを残す
+10. **工数は token 規模で考える**: 重さは「人間の作業時間」ではなく token 消費 / context 占有 / API コストで捉える。行数・ファイル数はその proxy。実行者は AI agent であることを前提とする
+11. **ファクトチェック**: 知識カットオフより後の事実や不確実な情報は、検索・fetch・一次ソースで裏取りしてから断定する
 
 ## ディレクトリ構成
 
