@@ -239,3 +239,4 @@ hikizan は `.claude-plugin/plugin.json` に semver を明示する。公開時�
 - Inspired by / references:
   - [tw93/Waza](https://github.com/tw93/Waza)
   - [obra/superpowers](https://github.com/obra/superpowers)
+  - [mattpocock/skills](https://github.com/mattpocock/skills)
