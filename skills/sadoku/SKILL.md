@@ -15,13 +15,7 @@ when_to_use: "PR確認, レビュー, code review, 整理, simplify"
 
 ## Step 0: worktree 検出
 
-```bash
-GIT_DIR=$(cd "$(git rev-parse --git-dir)" 2>/dev/null && pwd -P)
-GIT_COMMON=$(cd "$(git rev-parse --git-common-dir)" 2>/dev/null && pwd -P)
-[ "$GIT_DIR" != "$GIT_COMMON" ] && echo "(worktree内: $(git branch --show-current))"
-```
-
-検出結果は完了記録の `worktree` 行に出力。worktree の作成・削除はこの skill では行わない。
+`git rev-parse --git-dir` と `--git-common-dir` を `pwd -P` で正規化して比較する。異なれば worktree 内 — branch 名とともに表示し、完了記録の `worktree` 行に記録する。worktree の作成・削除はこの skill では行わない。
 
 ## モード切替
 
@@ -86,7 +80,7 @@ diff 読解に入る前に `references/project-context.md` を読み、変更フ
 | Deep     | 500 行超、または security 接触 | Standard に加えて adversarial レビュー           |
 
 
-**専門家レビューの起動 — gate (b)**
+**専門家レビューの起動**
 
 Standard 以上で security / architecture 観点が必要な場合のみ subagent 起動。条件と persona は `references/persona-catalog.md`。subagent 成果物は必ず main 側で git diff / file 読み / test 再実行で裏取り。
 
@@ -161,7 +155,7 @@ medium / low は `teishutsu` の PR 本文ドラフト時に「実装中に分�
 - 破壊的な自動実行 (例: `rm -rf`, `git reset --hard`, force push 等) を明示確認なしで走らせていないか
 - diff 内の未知の識別子 (識別子が grep でヒットしないなら、補完せず質問)
 - 依存追加の妥当性が不明 (lockfile 変更があれば理由を確認)
-- **review finding / commit / release notes に PII / Secrets が混入している** (email, token, 個人名等)
+- **review finding / commit / release notes に PII / Secrets が混入している** (email, token, 個人名等)。grep recipe は `skills/teishutsu/references/pr-template.md`「PII / Secrets scan」節を共通 SoT とする
 - **テスト最小性違反** (いずれか):
   - mock の存在・呼び出し回数を assert している test
   - production class に test-only method が追加されている

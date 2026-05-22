@@ -104,7 +104,7 @@
 
 ## PII / Secrets scan
 
-出力前に最低限以下を grep:
+`teishutsu` と `sadoku` が共通で参照する recipe。出力前に最低限以下を grep:
 
 ```bash
 # email

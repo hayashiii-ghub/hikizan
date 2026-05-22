@@ -17,13 +17,9 @@ TDD discipline。失敗するテストを先に書き、fail を**目視**して
 
 ## Step 0: worktree 検出
 
-```bash
-GIT_DIR=$(cd "$(git rev-parse --git-dir)" 2>/dev/null && pwd -P)
-GIT_COMMON=$(cd "$(git rev-parse --git-common-dir)" 2>/dev/null && pwd -P)
-[ "$GIT_DIR" != "$GIT_COMMON" ] && echo "(worktree内: $(git branch --show-current))"
-```
+`git rev-parse --git-dir` と `--git-common-dir` を `pwd -P` で正規化して比較する。異なれば worktree 内 — branch 名とともに表示し、完了記録の `worktree` 行に記録する。
 
-一時的な test 変更が大きい場合のみ、利用環境の標準機能で隔離 worktree / sandbox を使ってよい。通常は現在の working tree で進める。
+一時的な test 変更が大きい場合のみ、利用環境の標準機能で隔離 worktree / sandbox を使ってよい (作成・削除はその標準機能に従い、本 skill では行わない)。通常は現在の working tree で進める。隔離環境でも RED → GREEN → REFACTOR → PRUNE の順序と PRUNE 検証は省略しない。
 
 ## 起動トリガー
 
@@ -94,8 +90,7 @@ verification:
 - 直接起動で request を 1 つの vertical slice に言語化できない場合、scope を自分で分割せず `kouchiku` へ handoff する
 - `coverage gap` を検出しても追加 slice を勝手に実装しない。gap を return に残し、次の slice 判断は `kouchiku` に戻す
 - TDD RED-GREEN サイクルは **inline 必須**、subagent 委譲不可 (目視必須)
-- スキップ時は完了記録に理由 1 行必須 (`tdd: skip — CSS-only layout adjustment, no logic touched`)
-- ロジック行に 1 行でも触れたらスキップ判定から必須扱いに戻す
+- スキップ判定 / スキップ時の記録 / セーフティ復帰は「スキップガード」section に従う
 - PR / branch / step の命名は `kouchiku` Hard Rules に従う
 
 ## サイクル: RED → GREEN → REFACTOR → PRUNE
@@ -176,12 +171,6 @@ fail しない test は「実装ロック」または「scaffold」のいずれ�
 - セーフティ復帰: ロジック行に 1 行でも触れたら必須扱いに戻す
 - 「style 扱いの変更が他レイヤーに波及」も必須扱いに戻す
 - PR 集計: `tdd: skip × N / enforced × M` を完了記録に出力
-
-## 隔離 worktree / sandbox 利用時
-
-隔離環境は、通常の working tree から分離して test 変更を扱う必要がある場合に限って使う。作成・削除は利用中のハーネスや VCS の標準機能に従う。
-
-隔離環境内でも RED → GREEN → REFACTOR → PRUNE の順序と、PRUNE 後の observable output break → fail → restore → pass の確認は省略しない。
 
 ## 完了記録
 

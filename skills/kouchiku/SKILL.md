@@ -15,11 +15,7 @@ when_to_use: "設計判断, 方針決め, design decision, kill or keep, 計画�
 
 ## Step 0: worktree 検出
 
-```bash
-GIT_DIR=$(cd "$(git rev-parse --git-dir)" 2>/dev/null && pwd -P)
-GIT_COMMON=$(cd "$(git rev-parse --git-common-dir)" 2>/dev/null && pwd -P)
-[ "$GIT_DIR" != "$GIT_COMMON" ] && echo "(worktree内: $(git branch --show-current))"
-```
+`git rev-parse --git-dir` と `--git-common-dir` を `pwd -P` で正規化して比較する。異なれば worktree 内 — branch 名とともに表示し、完了記録の `worktree` 行に記録する。
 
 ## Phase 0: 周辺コード自動走査
 
@@ -39,7 +35,7 @@ git log --diff-filter=A --name-only -10 | head -30
 - [推測項目] (確度: NN%) — [根拠: file:line / commit / TODO 等]
 ```
 
-シンボル探索 (関数 / クラス / 変数の定義 / 参照) が必要な場合は LSP を優先、テキスト探索 (TODO / FIXME / 設定 / Markdown / コメント内文字列) は grep を使う。LSP 未設定環境では grep にフォールバックする (LSP 環境構築は本 plugin の責務ではなく、公式 LSP plugin = `typescript-lsp` / `pyright-lsp` / `rust-analyzer-lsp` 等を別途 install する設計、詳細は README「LSP 併用」節)。
+シンボル探索 (関数 / クラス / 変数の定義 / 参照) は LSP を優先、テキスト探索 (TODO / FIXME / 設定 / Markdown / コメント内文字列) は grep を使う。LSP 未設定環境では grep にフォールバック (公式 LSP plugin の install は README「LSP 併用」節)。
 
 軽量検討モード / 評価モードでは Phase 0 は省略可。通常検討モード / 計画実行モードでは原則実行。
 
@@ -179,7 +175,7 @@ If pivot:   [何に方向転換するか、1 段落]
 **診断分岐**
 
 原因未確定の不具合 / 予期しない test failure / 再現不明の挙動に当たったら、実装変更を止めて root cause を確定する。
-旧 `tansaku` の調査手順は独立 skill としては持たず、`references/diagnosis-techniques.md` に技法だけを残す。
+調査技法は `references/diagnosis-techniques.md` に置く。
 
 - root cause を 1 文で言語化できるまで実装を変更しない (`I believe the root cause is [X] because [evidence].`)
 - 症状をそのまま列挙する: error message, stack trace, 再現手順, 期待値, 実際の値
@@ -241,7 +237,7 @@ Plan approved. 次に進む場合は番号で返してください。
 
 ## subagent
 
-本 skill は判断を扱うため、対象情報を集める段階で gate (a) に該当する場合のみ subagent を 1 つ起動する (例: 候補 library 3 つの最新動向を比較する Web 横断調査)。判断そのものは inline で controller が行う。計画実行モードでは inline 実行を原則とする (gate (c) に該当する機械 fan-out のみ subagent 検討可)。
+本 skill は判断を扱うため、対象情報を集める段階 (例: 候補 library 3 つの最新動向を比較する Web 横断調査) でのみ subagent を 1 つ起動する。判断そのものは inline で controller が行う。計画実行モードは inline 実行を原則とし、機械的な fan-out のみ subagent を検討する。
 
 ## 完了記録
 
@@ -260,3 +256,8 @@ verification:      [command] -> pass / fail
                      検証ログ: [出力末尾 3-5 行、失敗時は full error]
 scope drift:       on target / drift: [何を別 issue に切り出したか]
 ```
+
+## references/
+
+- `minimal-approach.md` — 引き算プロトコル本体 (`Minimal Approach:` セクションと推奨度 N/10 の付け方)
+- `diagnosis-techniques.md` — 診断分岐で hypothesis を confirm / discard する instrument 集

@@ -68,7 +68,7 @@ flowchart TB
   C -->|"TDD 必要層<br/>1 vertical slice"| D["shiken<br/>RED → GREEN → REFACTOR → PRUNE"]
   D -->|"検証ログ付き return"| C
   C -->|"handoff block"| E["sadoku 通常レビュー<br/>深さ・停止条件・完了記録"]
-  E -->|"Standard 以上"| F["専門家レビュー<br/>subagent 並列最大3<br/>security / arch / adversarial は inline"]
+  E -->|"Standard 以上"| F["専門家レビュー<br/>security / arch は subagent (並列最大3)<br/>adversarial は inline"]
   F -->|"裏取り済み反映"| G["teishutsu PR 本文<br/>pr-template 8 step"]
   G -->|"PII scan / 4 チェック"| H["teishutsu<br/>remote / submodule / parent / cwd-aware gh"]
   H -->|"hook で衝突なし"| J["PR open"]
@@ -175,7 +175,7 @@ flowchart TB
 | shiken               | kouchiku 計画実行      | サイクル完了                | RED/GREEN/PRUNE log + test level + coverage gap + files changed |
 | kouchiku 計画実行    | sadoku 通常レビュー    | 実装完了                    | handoff block + 完成 diff |
 | (user)               | sadoku 通常レビュー    | 「レビューして」            | diff                  |
-| sadoku 通常レビュー  | subagent (reviewer-*)  | gate (b)                    | diff + 範囲           |
+| sadoku 通常レビュー  | subagent (reviewer-*)  | Standard 以上 + 専門観点該当 | diff + 範囲           |
 | subagent             | sadoku                 | 評価完了                    | findings（要裏取り）  |
 | (user)               | sadoku simplify findings | 「整理して」「simplify」  | diff (範囲)           |
 | sadoku 通常レビュー  | sadoku simplify findings | compound (「コードレビュー」) | レビュー後の連結実行 |

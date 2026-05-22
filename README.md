@@ -1,20 +1,24 @@
 # hikizan
 
-日本語圏チーム開発向けの Claude Code plugin / Agent Skills 対応 skill pack。動詞単位で分割した 4 つの主要 skill と、認知負荷を抑える運用方針を提供する。
+hikizan は Claude Code plugin / Agent Skills 対応の skill pack。動詞単位で分割した 4 つの主要 skill と、認知負荷を抑える運用方針を提供する。
+
+設計の出発点は「AI agent が長く自走しすぎても、逐一確認を挟まれすぎても作業のテンポが落ちる」という不満。hikizan はその塩梅を、リスクに応じて振る舞いを切り替えることで取る — 低リスクで推測可能なことは自律で進め、計画の分岐点では確認を取り、不可逆・破壊的な操作では必ず止まる。固定の折衷点ではなく、場面ごとに自律と確認のバランスを変える設計。
 
 4 skill (sadoku / kouchiku / shiken / teishutsu) は、設計・実装・レビュー・提出の各工程を担当する。
 
-- repo: <https://github.com/hayashiii-ghub/hikizan>
+- repo: [https://github.com/hayashiii-ghub/hikizan](https://github.com/hayashiii-ghub/hikizan)
 - license: MIT
 
 ## core 4 skill
 
-| skill | 漢字 | 動詞 | 担当 |
-|---|---|---|---|
-| `sadoku` | 査読 | 見る | code review / simplify findings |
-| `kouchiku` | 構築 | 考える・作る | 設計判断 / 評価 / 計画策定 / 計画実行 / root cause diagnosis |
-| `shiken` | 試験 | 試す | TDD discipline / PRUNE |
-| `teishutsu` | 提出 | 出す | PR 本文ドラフト / PR 提出フロー (remote / submodule / parent commit / cwd-aware gh) |
+
+| skill       | 漢字  | 動詞     | 担当                                                                       |
+| ----------- | --- | ------ | ------------------------------------------------------------------------ |
+| `sadoku`    | 査読  | 見る     | code review / simplify findings                                          |
+| `kouchiku`  | 構築  | 考える・作る | 設計判断 / 評価 / 計画策定 / 計画実行 / root cause diagnosis                           |
+| `shiken`    | 試験  | 試す     | TDD discipline / PRUNE                                                   |
+| `teishutsu` | 提出  | 出す     | PR 本文ドラフト / PR 提出フロー (remote / submodule / parent commit / cwd-aware gh) |
+
 
 各 skill は動詞単位で責務を分ける。`kouchiku` は controller として設計、計画実行、原因調査を扱う。TDD discipline は `shiken`、レビューは `sadoku`、PR 本文ドラフト / PR 提出プロセスは `teishutsu` に handoff block で渡す。
 
@@ -72,11 +76,13 @@ npx skills add github:hayashiii-ghub/hikizan -g -a codex
 
 `skills/<name>/` を各ツールの skills dir にコピー or symlink:
 
-| ツール | path |
-|---|---|
-| Cursor | `~/.cursor/skills/` (global) または `./.cursor/skills/` (project) |
-| Claude Code | `~/.claude/skills/` (global) または `./.claude/skills/` (project) |
-| Cline / OpenCode 等 universal | `~/.agents/skills/` または `./.agents/skills/` |
+
+| ツール                          | path                                                           |
+| ---------------------------- | -------------------------------------------------------------- |
+| Cursor                       | `~/.cursor/skills/` (global) または `./.cursor/skills/` (project) |
+| Claude Code                  | `~/.claude/skills/` (global) または `./.claude/skills/` (project) |
+| Cline / OpenCode 等 universal | `~/.agents/skills/` または `./.agents/skills/`                    |
+
 
 ## hooks
 
@@ -116,11 +122,13 @@ namespace 規約により `/hikizan:*` と `/codex:*` は衝突しません。�
 
 各 LSP plugin は **language server バイナリを別途要求**します:
 
-| LSP plugin | 言語 | バイナリ install |
-|---|---|---|
-| `typescript-lsp` | TypeScript / JavaScript | `npm install -g typescript-language-server typescript` |
-| `pyright-lsp` | Python | `pip install pyright` (または `npm install -g pyright`) |
-| `rust-analyzer-lsp` | Rust | [rust-analyzer 公式手順](https://rust-analyzer.github.io/manual.html#installation) |
+
+| LSP plugin          | 言語                      | バイナリ install                                                                   |
+| ------------------- | ----------------------- | ------------------------------------------------------------------------------ |
+| `typescript-lsp`    | TypeScript / JavaScript | `npm install -g typescript-language-server typescript`                         |
+| `pyright-lsp`       | Python                  | `pip install pyright` (または `npm install -g pyright`)                           |
+| `rust-analyzer-lsp` | Rust                    | [rust-analyzer 公式手順](https://rust-analyzer.github.io/manual.html#installation) |
+
 
 hikizan の skill は **「シンボル系は LSP、テキスト系は grep、LSP 未設定なら grep にフォールバック」** の規約で書かれているため、LSP plugin を入れていない環境でも grep ベースで動作します (精度は落ちる)。
 
@@ -129,22 +137,16 @@ hikizan の skill は **「シンボル系は LSP、テキスト系は grep、LS
 install 後に skill 起動を確認する手順。
 
 1. Claude Code セッションで install:
-
-   ```
+  ```
    /plugin marketplace add https://github.com/hayashiii-ghub/hikizan.git
    /plugin install hikizan@hikizan
-   ```
-
+  ```
    別ハーネス (Cursor / Codex) は [install (skill pack)](#install-skill-pack) 参照。
-
 2. 入力例:
-
-   ```
+  ```
    コードレビューして
-   ```
-
+  ```
    → `/hikizan:sadoku` が起動して review を実行する。
-
 3. 他の trigger は下の [trigger 早見表](#trigger-早見表) を参照。
 
 ## trigger 早見表
@@ -235,4 +237,5 @@ hikizan は `.claude-plugin/plugin.json` に semver を明示する。公開時�
 - License: MIT (`LICENSE` 参照)
 - Inspired by / references:
   - [tw93/Waza](https://github.com/tw93/Waza)
-  - [anthropic/superpowers](https://github.com/anthropics/superpowers)
+  - [obra/superpowers](https://github.com/obra/superpowers)
+

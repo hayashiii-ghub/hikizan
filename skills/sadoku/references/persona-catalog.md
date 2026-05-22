@@ -1,6 +1,6 @@
 # 専門家レビュー persona の起動条件
 
-`sadoku` の通常レビューモードで深さ Standard 以上のときに subagent gate (b) として起動する 3 persona。**全 diff に起動するのではなく、起動条件にヒットした persona のみ**。
+`sadoku` の通常レビューモードで深さ Standard 以上のときに subagent として起動する 3 persona。**全 diff に起動するのではなく、起動条件にヒットした persona のみ**。
 
 ## 起動の流れ
 
