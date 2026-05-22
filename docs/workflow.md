@@ -18,9 +18,10 @@ description: sadoku / kouchiku / shiken / teishutsu の境界、典型フロー�
 5. [典型ワークフロー D: 小さい修正](#5-典型ワークフロー-d-小さい修正-軽量検討)
 6. [各 skill のモード切替](#6-各-skill-のモード切替フロー)
 7. [skill 間 handoff 表](#7-skill-間-handoff-表)
-8. [hook 検査](#8-hook-検査)
-9. [検証ログ要件](#9-各-skill-の検証ログ要件環境変化評価)
-10. [参照](#10-参照)
+8. [Goal loop で使う場合](#8-goal-loop-で使う場合)
+9. [hook 検査](#9-hook-検査)
+10. [検証ログ要件](#10-各-skill-の検証ログ要件環境変化評価)
+11. [参照](#11-参照)
 
 ---
 
@@ -79,7 +80,7 @@ flowchart TB
 > - 原因未確定の調査は **kouchiku diagnosis** として inline で実行する。
 > - **kouchiku → shiken → kouchiku** の往復は handoff block で実行する。1 往復は原則 1 vertical behavior slice。
 > - **sadoku** は実装完了後に初めて起動（「見る」専門）。
-> - **専門家レビュー**は Standard 以上のみ。Quick は停止条件中心。
+> - **専門家レビュー**は Standard 以上のみ。Quick は停止条件 + 最小 skeptical lens 中心。
 
 ---
 
@@ -128,7 +129,7 @@ flowchart TB
 flowchart TB
   D0["どうやって直す / やり方どっち"] --> D1["kouchiku 軽量検討<br/>推奨案・brute 案・risk"]
   D1 -->|"案選択 / 計画実行"| D2["kouchiku 計画実行<br/>（TDD 必要なら shiken）"]
-  D2 --> D3["sadoku 通常レビュー Quick<br/>停止条件のみ・〜50行想定"]
+  D2 --> D3["sadoku 通常レビュー Quick<br/>停止条件 + 最小 skeptical lens<br/>〜50行想定"]
   D3 --> D4["teishutsu PR 本文 + 提出"]
   D4 --> D5["PR open"]
 ```
@@ -198,7 +199,26 @@ expected return:
 
 ---
 
-## 8. hook 検査
+## 8. Goal loop で使う場合
+
+Claude Code / Codex などの runtime が `/goal` 相当の継続実行機能を持つ場合、hikizan は loop engine ではなく loop 内の判断規約として使う。hikizan の skill / hook は次 turn を自動発火しない。
+
+- `kouchiku` を controller にする
+- TDD 必要層は `shiken` に 1 vertical behavior slice だけ渡す
+- `shiken` は coverage gap / failure / PRUNE witness を return し、次 slice を自分で増やさない
+- 実装完了後は `sadoku` に渡す
+- 提出時は `teishutsu` に渡す
+- 失敗時は `kouchiku diagnosis` に戻り、root cause を 1 文で固定してから進む
+
+Example goal:
+
+```text
+この issue を完了まで進める。hikizan の `kouchiku` を controller として使い、TDD 必要層は `shiken`、実装後レビューは `sadoku`、提出は `teishutsu` に渡す。各 step で検証ログを残し、失敗時は `kouchiku diagnosis` に戻る。
+```
+
+---
+
+## 9. hook 検査
 
 skill 本文は通常フローの手順を示し、hook は skill を経由しない操作に対する補完的な検査を行う。実体は `hooks/hooks.json` と `scripts/`。4 つの hook (SessionStart で CLAUDE.md に必要なセクションを重複なく追加、`git push` / `gh pr create` の条件チェック、`git commit` 後の submodule warning) の**発火条件マトリクスは `hooks/conditions.md` を参照** (SoT)。発火イベントは `~/.hikizan/metrics.jsonl` に記録される (`HIKIZAN_METRICS_DIR` で書き込み先変更可)。
 
@@ -213,7 +233,7 @@ flowchart LR
 
 ---
 
-## 9. 各 skill の検証ログ要件（環境変化評価）
+## 10. 各 skill の検証ログ要件（環境変化評価）
 
 | skill     | 検証ログ必須項目                                                 | 形式                    |
 | --------- | ---------------------------------------------------------------- | ----------------------- |
@@ -226,7 +246,7 @@ flowchart LR
 
 ---
 
-## 10. 参照
+## 11. 参照
 
 | 種別                         | パス                                                                              |
 | ---------------------------- | --------------------------------------------------------------------------------- |

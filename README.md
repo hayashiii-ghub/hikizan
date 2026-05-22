@@ -167,6 +167,8 @@ install 後、各 skill は以下の入力で起動する。
 
 詳しい trigger 一覧と mode 切替は `docs/workflow.md` (mermaid 図入り) を参照。
 
+Claude Code / Codex の `/goal` 相当機能で継続実行する場合の運用例も `docs/workflow.md` を参照。hikizan は loop engine ではなく、loop 内の判断規約として使う。
+
 ## 設計原則
 
 1. **skill 構成**: 1 skill に複数 mode / references は分離 / 決定論的な処理は scripts に置く
@@ -238,4 +240,3 @@ hikizan は `.claude-plugin/plugin.json` に semver を明示する。公開時�
 - Inspired by / references:
   - [tw93/Waza](https://github.com/tw93/Waza)
   - [obra/superpowers](https://github.com/obra/superpowers)
-
