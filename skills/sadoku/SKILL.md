@@ -11,7 +11,7 @@ when_to_use: "PR確認, レビュー, code review, 整理, simplify"
 🌲 Using /sadoku for [purpose taken from trigger context].
 ```
 
-「diff を見る」ための skill。通常レビュー / simplify findings の 2 モード。実装行為 (計画実行) と原因調査は `kouchiku`、TDD は `shiken`、PR 本文ドラフトと提出フローは `teishutsu` に分離。reviewer コメントへの返信文ドラフトや個別対応は skill mode 化せず通常会話で対応する (分類・咀嚼工程は人間判断のままにする)。
+「diff を見る」ための skill。通常レビュー / simplify findings の 2 モード。実装行為 (計画実行) と原因調査は `kouchiku`、TDD は `shiken`、PR 本文ドラフトと提出フローは `teishutsu` に分離。
 
 ## Step 0: worktree 検出
 
