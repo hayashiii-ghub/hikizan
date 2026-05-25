@@ -5,6 +5,7 @@
 ### Routing
 
 - 設計判断 / 計画 / 実装 / バグ調査は `kouchiku`
+- 情報取得 / 全体像把握 / 影響範囲調査 / 用語すり合わせは `tansakun`
 - TDD / 回帰テストが必要な実装は `shiken`
 - code review / 整理観点の確認は `sadoku`
 - PR 本文ドラフト / PR 提出は `teishutsu`

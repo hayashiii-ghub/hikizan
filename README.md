@@ -1,26 +1,27 @@
 # hikizan
 
-hikizan は Claude Code plugin / Agent Skills 対応の skill pack。動詞単位で分割した 4 つの主要 skill と、認知負荷を抑える運用方針を提供する。
+hikizan は Claude Code plugin / Agent Skills 対応の skill pack。動詞単位で分割した 5 つの主要 skill と、認知負荷を抑える運用方針を提供する。
 
 設計の出発点は「AI agent が長く自走しすぎても、逐一確認を挟まれすぎても作業のテンポが落ちる」という不満。hikizan はその塩梅を、リスクに応じて振る舞いを切り替えることで取る — 低リスクで推測可能なことは自律で進め、計画の分岐点では確認を取り、不可逆・破壊的な操作では必ず止まる。固定の折衷点ではなく、場面ごとに自律と確認のバランスを変える設計。
 
-4 skill (sadoku / kouchiku / shiken / teishutsu) は、設計・実装・レビュー・提出の各工程を担当する。
+5 skill (tansakun / sadoku / kouchiku / shiken / teishutsu) は、探索・設計・実装・レビュー・提出の各工程を担当する。
 
 - repo: [https://github.com/hayashiii-ghub/hikizan](https://github.com/hayashiii-ghub/hikizan)
 - license: MIT
 
-## core 4 skill
+## core 5 skill
 
 
 | skill       | 漢字  | 動詞     | 担当                                                                       |
 | ----------- | --- | ------ | ------------------------------------------------------------------------ |
+| `tansakun`  | 探索  | 探す     | code map / impact scope / terminology scan / すり合わせ                         |
 | `sadoku`    | 査読  | 見る     | code review / simplify findings                                          |
 | `kouchiku`  | 構築  | 考える・作る | 設計判断 / 評価 / 計画策定 / 計画実行 / root cause diagnosis                           |
 | `shiken`    | 試験  | 試す     | TDD discipline / PRUNE                                                   |
 | `teishutsu` | 提出  | 出す     | PR 本文ドラフト / PR 提出フロー (remote / submodule / parent commit / cwd-aware gh) |
 
 
-各 skill は動詞単位で責務を分ける。`kouchiku` は controller として設計、計画実行、原因調査を扱う。TDD discipline は `shiken`、レビューは `sadoku`、PR 本文ドラフト / PR 提出プロセスは `teishutsu` に handoff block で渡す。
+各 skill は動詞単位で責務を分ける。`tansakun` は情報取得、構造把握、用語整理、すり合わせを扱う。`kouchiku` は controller として設計、計画実行、原因調査を扱う。TDD discipline は `shiken`、レビューは `sadoku`、PR 本文ドラフト / PR 提出プロセスは `teishutsu` に handoff block で渡す。
 
 TDD 必要層では、`kouchiku` が実装を vertical behavior slice に分解し、`shiken` が 1 slice ごとに RED → GREEN → PRUNE を実行する。test level / coverage gap / PRUNE witness は `shiken` の return log に残す。
 
@@ -43,7 +44,7 @@ git clone https://github.com/hayashiii-ghub/hikizan
 claude --plugin-dir ./hikizan
 ```
 
-skill 名は namespace 規約により `/hikizan:sadoku` / `/hikizan:kouchiku` / `/hikizan:shiken` / `/hikizan:teishutsu` で呼ばれる。
+skill 名は namespace 規約により `/hikizan:tansakun` / `/hikizan:sadoku` / `/hikizan:kouchiku` / `/hikizan:shiken` / `/hikizan:teishutsu` で呼ばれる。
 
 ## install (skill pack)
 
@@ -155,6 +156,8 @@ install 後、各 skill は以下の入力で起動する。
 
 ```
 "設計どうする"           → kouchiku 通常検討
+"探索して" / "全体像を掴んで" → tansakun 探索
+"すり合わせ" / "仕様を詰めたい" → tansakun すり合わせ
 "計画実行" / "進めて"     → kouchiku 計画実行
 "レビューして"           → sadoku 通常レビュー
 "整理して" / "simplify"   → sadoku simplify findings
@@ -205,6 +208,8 @@ hikizan/
 ├── templates/
 │   └── CLAUDE.md                ← SessionStart hook が必要なセクションを重複なく追加する
 ├── skills/                      ← skill 本体 (SoT、CC plugin / npx skills add の両経路で読まれる)
+│   ├── tansakun/
+│   │   └── SKILL.md
 │   ├── sadoku/
 │   │   ├── SKILL.md
 │   │   └── references/

@@ -10,6 +10,7 @@
 | skill の trigger / mode / 出力形式 / 停止条件を変える | `skills/<name>/SKILL.md`                               |
 | skill discovery の条件を変える                  | 各 `skills/<name>/SKILL.md` の frontmatter `description` |
 | skill 間 handoff を変える                     | `docs/workflow.md` §7                                  |
+| 探索 / すり合わせ / 影響範囲把握を変える              | `skills/tansakun/SKILL.md`                             |
 | PR / branch / step の命名規約を変える             | `skills/kouchiku/SKILL.md` Hard Rules                  |
 | 引き算原則を変える                                | `skills/kouchiku/references/minimal-approach.md`       |
 | review / 整理観点を変える                        | `skills/sadoku/SKILL.md`                               |
@@ -27,4 +28,3 @@
 - skill の frontmatter `description` (trigger) を変えたら、それを転記している箇所 (`templates/CLAUDE.md` Routing、`docs/workflow.md` §6 / §7、`README.md` trigger 早見表) が古くないか確認する。
 - 破壊的操作や force push は、ユーザの明示確認なしに進めない。
 - 設計原則を skill 本文から参照するときは番号でなく名前で書く。
-

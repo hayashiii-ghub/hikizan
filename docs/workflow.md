@@ -1,6 +1,6 @@
 ---
-title: Skill ワークフロー例（v5）
-description: sadoku / kouchiku / shiken / teishutsu の境界、典型フロー、hook 検査
+title: Skill ワークフロー例（v6）
+description: tansakun / sadoku / kouchiku / shiken / teishutsu の境界、典型フロー、hook 検査
 ---
 
 # Skill ワークフロー例
@@ -27,10 +27,14 @@ description: sadoku / kouchiku / shiken / teishutsu の境界、典型フロー�
 
 ## 1. 役割境界
 
-動詞単位で 4 つの責務に分割する。`kouchiku` は controller として設計 / 計画実行 / 原因診断を扱い、TDD / レビュー / 提出は各専門 skill に渡す。TDD 必要層では `kouchiku` が vertical behavior slice を切り、`shiken` は 1 slice ごとに RED → GREEN → PRUNE を実行する。
+動詞単位で 5 つの責務に分割する。`tansakun` は情報取得 / 構造把握 / 用語すり合わせを扱う。`kouchiku` は controller として設計 / 計画実行 / 原因診断を扱い、TDD / レビュー / 提出は各専門 skill に渡す。TDD 必要層では `kouchiku` が vertical behavior slice を切り、`shiken` は 1 slice ごとに RED → GREEN → PRUNE を実行する。
 
 ```mermaid
 flowchart TB
+  subgraph EXPLORE["tansakun（探索）"]
+    T["探す<br/>code map / impact scope / terminology"]
+    TS["すり合わせる<br/>spec gap / docs update candidate"]
+  end
   subgraph BUILD["kouchiku（構築）"]
     K["考える・作る<br/>設計 / 評価 / 計画 + 計画実行"]
     KD["診る<br/>diagnosis / root cause"]
@@ -45,6 +49,9 @@ flowchart TB
     M["出す<br/>PR 本文 / remote / submodule / parent / cwd-aware gh"]
   end
 
+  T -->|"曖昧さ検出"| TS
+  TS -->|"brief"| K
+  T -->|"brief"| K
   K -->|"原因未確定"| KD
   KD -->|"root cause 確定"| K
   K -->|"TDD 必要層"| TEST
@@ -62,7 +69,11 @@ issue 受領から PR 提出まで。**kouchiku** が controller として計画
 
 ```mermaid
 flowchart TB
-  A["issue + DoD"] -->|"設計どうする"| B["kouchiku 通常検討<br/>問題定義・案・前提崩し・前提リスク検証・Plan"]
+  A["issue + DoD"] -->|"未知領域 / 用語ズレ / DoD曖昧"| A1["tansakun 探索<br/>Map・Terminology・Unknowns"]
+  A1 -->|"必要時"| A2["tansakun すり合わせ<br/>一問ずつ確認・docs候補"]
+  A2 -->|"brief"| B["kouchiku 通常検討<br/>問題定義・案・前提崩し・前提リスク検証・Plan"]
+  A1 -->|"明確なら brief"| B
+  A -->|"文脈が十分"| B
   B -->|"Plan 承認 / 進めて"| C["kouchiku 計画実行<br/>owner skill 付き Plan steps"]
   C -->|"原因未確定"| I["kouchiku diagnosis<br/>root cause 1文 + evidence"]
   I -->|"root cause 確定"| C
@@ -77,6 +88,7 @@ flowchart TB
 
 > **補足**
 >
+> - 未知領域や用語ズレがある場合は、設計前に **tansakun** で Map / Terminology / Unknowns を作る。
 > - 原因未確定の調査は **kouchiku diagnosis** として inline で実行する。
 > - **kouchiku → shiken → kouchiku** の往復は handoff block で実行する。1 往復は原則 1 vertical behavior slice。
 > - **sadoku** は実装完了後に初めて起動（「見る」専門）。
@@ -142,6 +154,9 @@ flowchart TB
 
 | skill | mode / 遷移先 | 入力トリガーの例 |
 |---|---|---|
+| tansakun | 探索 | 「探索して」「全体像を掴んで」「この辺り見て」「影響範囲を調べて」「zoom-out」 |
+| tansakun | すり合わせ | 「すり合わせ」「仕様を詰めたい」「用語を整理したい」 |
+| tansakun | 探索 → すり合わせ (auto) | 用語ズレ / DoD 曖昧 / docs・ADR 不足 / 手戻りが大きい未決事項を検出 |
 | sadoku | 通常レビュー | 「レビューして」 |
 | sadoku | simplify findings | 「整理して」「simplify」「スリム化したい」 |
 | sadoku | 通常レビュー → simplify (compound) | 「コードレビュー」 |
@@ -164,7 +179,11 @@ flowchart TB
 
 | from                 | to                     | きっかけ                    | 何を渡す              |
 | -------------------- | ---------------------- | --------------------------- | --------------------- |
-| (user)               | kouchiku 通常検討      | 「設計どうする」            | issue + DoD           |
+| (user)               | tansakun 探索          | 「探索して」「全体像を掴んで」 | 対象 file / dir / issue |
+| tansakun 探索         | tansakun すり合わせ     | 用語ズレ / DoD 曖昧 / docs 不足 | Map + Terminology + Unknowns |
+| tansakun 探索/すり合わせ | kouchiku 通常検討      | 設計判断に進める              | Map + Terminology + Unknowns + Evidence |
+| kouchiku 通常検討     | tansakun 探索          | 判断前の情報不足              | 要望 / 対象 file / 既知 evidence |
+| (user)               | kouchiku 通常検討      | 「設計どうする」            | issue + DoD / tansakun brief |
 | (user)               | kouchiku 軽量検討      | 「どうやって直す」          | 修正対象              |
 | (user)               | kouchiku 評価          | 「やる価値ある」            | 判断対象              |
 | (user)               | kouchiku diagnosis     | 「エラー」「動かない」      | バグ症状              |
@@ -203,6 +222,7 @@ expected return:
 
 Claude Code / Codex などの runtime が `/goal` 相当の継続実行機能を持つ場合、hikizan は loop engine ではなく loop 内の判断規約として使う。hikizan の skill / hook は次 turn を自動発火しない。
 
+- 未知領域や用語ズレがあれば `tansakun` で Map / Terminology / Unknowns を作る
 - `kouchiku` を controller にする
 - TDD 必要層は `shiken` に 1 vertical behavior slice だけ渡す
 - `shiken` は coverage gap / failure / PRUNE witness を return し、次 slice を自分で増やさない
@@ -213,7 +233,7 @@ Claude Code / Codex などの runtime が `/goal` 相当の継続実行機能を
 Example goal:
 
 ```text
-この issue を完了まで進める。hikizan の `kouchiku` を controller として使い、TDD 必要層は `shiken`、実装後レビューは `sadoku`、提出は `teishutsu` に渡す。各 step で検証ログを残し、失敗時は `kouchiku diagnosis` に戻る。
+この issue を完了まで進める。未知領域や用語ズレがあれば `tansakun`、設計と実装 controller は `kouchiku`、TDD 必要層は `shiken`、実装後レビューは `sadoku`、提出は `teishutsu` に渡す。各 step で検証ログを残し、失敗時は `kouchiku diagnosis` に戻る。
 ```
 
 ---
@@ -237,6 +257,7 @@ flowchart LR
 
 | skill     | 検証ログ必須項目                                                 | 形式                    |
 | --------- | ---------------------------------------------------------------- | ----------------------- |
+| tansakun  | Map / Terminology / Unknowns の evidence                         | file:line / command output |
 | sadoku    | 停止条件 scan / tests / verification / PII scan                  | command + 出力末尾      |
 | kouchiku  | （計画実行 / diagnosis のみ）verification / Confirmed（fix 前後の挙動差分） | command + 出力末尾 / そのまま引用 |
 | shiken    | RED / GREEN / PRUNE 各 phase、test level、coverage gap、PRUNE witness | test runner 最終行 + return log |
@@ -250,6 +271,7 @@ flowchart LR
 
 | 種別                         | パス                                                                              |
 | ---------------------------- | --------------------------------------------------------------------------------- |
+| tansakun                     | `../skills/tansakun/SKILL.md`                                                     |
 | sadoku                       | `../skills/sadoku/SKILL.md`                                                       |
 | persona                      | `../skills/sadoku/references/persona-catalog.md`                                  |
 | 文脈抽出                     | `../skills/sadoku/references/project-context.md`                                  |
