@@ -11,38 +11,43 @@ when_to_use: "設計判断, 方針決め, design decision, kill or keep, 計画�
 🌲 Using /kouchiku for [purpose taken from trigger context].
 ```
 
-設計判断、評価、計画策定、承認済み計画の実行を扱う。原因未確定の不具合や予期しない test failure は、計画実行内の診断分岐で root cause を確定する。TDD / レビュー / 提出の discipline は内包せず、必要な局面で `shiken` / `sadoku` / `teishutsu` に渡す。
+設計判断、評価、計画策定、承認済み計画の実行を扱う。原因未確定の不具合や予期しない test failure は、計画実行内の診断分岐で root cause を確定する。情報取得 / 文脈整理 / 用語すり合わせ、TDD / レビュー / 提出の discipline は内包せず、必要な局面で `tansakun` / `shiken` / `sadoku` / `teishutsu` に渡す。
 
 ## Step 0: worktree 検出
 
 `git rev-parse --git-dir` と `--git-common-dir` を `pwd -P` で正規化して比較する。異なれば worktree 内 — branch 名とともに表示し、完了記録の `worktree` 行に記録する。
 
-## Phase 0: 周辺コード自動走査
+## Phase 0: 必要に応じて tansakun
 
-通常検討モードに入る前に、以下の 4 コマンドを実行して「周辺コードから推測される追加情報」を確度% 付きで出力する。これにより「推測して」というユーザ介入を不要にする。
+通常検討 / 計画実行の前提情報が足りない場合は、判断に入る前に `tansakun` へ handoff する。`kouchiku` 自身は広域探索を再実行しない。`tansakun` return の `Map` / `Terminology` / `Unknowns` / `Evidence` を前提として、設計判断と計画化に集中する。
 
-```bash
-git log --oneline -20
-git submodule foreach 'git log --oneline -5' 2>/dev/null
-grep -rn "TODO\|FIXME" <関連 dir> | head -20
-git log --diff-filter=A --name-only -10 | head -30
+`tansakun` に渡す条件:
+
+- 未知の code area / module boundary に触れる
+- 影響範囲、呼び出し元、依存先が不明
+- ユーザーの用語とコード上の用語がズレている疑いがある
+- `CONTEXT.md` / ADR / docs の確認が必要
+- issue / 要望の DoD が曖昧
+- 実装前に決めないと手戻りが大きい未決事項がある
+
+`tansakun` を呼ばずに進めてよい条件:
+
+- 変更が小さく、対象ファイルと期待挙動が明確
+- 既存テストや実装から仕様が十分に読める
+- ユーザーが設計判断だけを求めており、追加探索のコストが判断価値を上回る
+
+handoff 例:
+
 ```
-
-出力テンプレ:
-
+handoff: tansakun
+reason: 設計判断前に影響範囲と用語を整理する必要がある
+context: [要望 / issue / 対象 file]
+evidence:
+  - [既に分かっている file:line / docs]
+expected return:
+  - Map / Terminology / Unknowns / Evidence
+  - すり合わせが必要なら first question + recommended answer
 ```
-周辺コードから推測される追加情報:
-- [推測項目] (確度: NN%) — [根拠: file:line / commit / TODO 等]
-
-用語衝突 (衝突があるときだけ出力):
-- [ユーザ語] ↔ [コード上の語 file:line] — 同一概念か計画前に確認
-```
-
-用語衝突は、ユーザ (や issue 文) の語が既存シンボル (class / 関数 / module 名) と同一概念を指すか曖昧なときだけ挙げる。単なる訳語 (ログイン ↔ auth) は対象外。Phase 0 で既に読んだコードから判定するため追加コストはほぼない。
-
-シンボル探索 (関数 / クラス / 変数の定義 / 参照) は LSP を優先、テキスト探索 (TODO / FIXME / 設定 / Markdown / コメント内文字列) は grep を使う。LSP 未設定環境では grep にフォールバック (公式 LSP plugin の install は README「LSP 併用」節)。
-
-軽量検討モード / 評価モードでは Phase 0 は省略可。通常検討モード / 計画実行モードでは原則実行。
 
 ## モード切替
 
@@ -69,6 +74,7 @@ kouchiku は controller として次の skill を選ぶが、専門 skill の責
 | 実装完了後の diff review                                                                 | `sadoku`                                  | 実装者視点から離れて diff を見る                            |
 | 整理 (重複削除 / 命名統一 / 不要な抽象化除去 / dead code / efficiency)                               | `sadoku` simplify findings → kouchiku で実装 | 発見は sadoku、実装は controller が responsibility を持つ |
 | PR 本文ドラフト / PR 提出 (remote 確認 / submodule / parent commit / cwd-aware gh pr create) | `teishutsu`                               | hook と二段構成、submission 工程の未確認項目を skill で先に検出 |
+| 情報取得 / 影響範囲把握 / 用語すり合わせ / docs・ADR 確認                                             | `tansakun`                                | 判断前の文脈整理を分離し、kouchiku は設計判断に集中する |
 | 設計判断 / scope 整理 / 計画分解 / 複数案評価                                                     | `kouchiku`                                | controller が判断を保持する                            |
 
 

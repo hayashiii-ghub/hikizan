@@ -4,7 +4,7 @@
   "owner": {
     "name": "hayashiii-ghub"
   },
-  "description": "日本語圏チーム開発向けの Claude Code plugin。動詞単位の 4 skill と引き算の哲学。",
+  "description": "日本語圏チーム開発向けの Claude Code plugin。動詞単位の 5 skill と引き算の哲学。",
   "plugins": [
     {
       "name": "hikizan",
