@@ -10,7 +10,7 @@
 | skill の trigger / mode / 出力形式 / 停止条件を変える | `skills/<name>/SKILL.md`                               |
 | skill discovery の条件を変える                  | 各 `skills/<name>/SKILL.md` の frontmatter `description` |
 | skill 間 handoff を変える                     | `docs/workflow.md` §7                                  |
-| 探索 / すり合わせ / 影響範囲把握を変える              | `skills/tansakun/SKILL.md`                             |
+| 探索 / すり合わせ / 影響範囲把握を変える              | `skills/tansaku/SKILL.md`                             |
 | PR / branch / step の命名規約を変える             | `skills/kouchiku/SKILL.md` Hard Rules                  |
 | 引き算原則を変える                                | `skills/kouchiku/references/minimal-approach.md`       |
 | review / 整理観点を変える                        | `skills/sadoku/SKILL.md`                               |

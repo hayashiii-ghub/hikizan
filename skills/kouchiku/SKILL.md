@@ -11,17 +11,17 @@ when_to_use: "設計判断, 方針決め, design decision, kill or keep, 計画�
 🌲 Using /kouchiku for [purpose taken from trigger context].
 ```
 
-設計判断、評価、計画策定、承認済み計画の実行を扱う。原因未確定の不具合や予期しない test failure は、計画実行内の診断分岐で root cause を確定する。情報取得 / 文脈整理 / 用語すり合わせ、TDD / レビュー / 提出の discipline は内包せず、必要な局面で `tansakun` / `shiken` / `sadoku` / `teishutsu` に渡す。
+設計判断、評価、計画策定、承認済み計画の実行を扱う。原因未確定の不具合や予期しない test failure は、計画実行内の診断分岐で root cause を確定する。情報取得 / 文脈整理 / 用語すり合わせ、TDD / レビュー / 提出の discipline は内包せず、必要な局面で `tansaku` / `shiken` / `sadoku` / `teishutsu` に渡す。
 
 ## Step 0: worktree 検出
 
 `git rev-parse --git-dir` と `--git-common-dir` を `pwd -P` で正規化して比較する。異なれば worktree 内 — branch 名とともに表示し、完了記録の `worktree` 行に記録する。
 
-## Phase 0: 必要に応じて tansakun
+## Phase 0: 必要に応じて tansaku
 
-通常検討 / 計画実行の前提情報が足りない場合は、判断に入る前に `tansakun` へ handoff する。`kouchiku` 自身は広域探索を再実行しない。`tansakun` return の `Map` / `Terminology` / `Unknowns` / `Evidence` を前提として、設計判断と計画化に集中する。
+通常検討 / 計画実行の前提情報が足りない場合は、判断に入る前に `tansaku` へ handoff する。`kouchiku` 自身は広域探索を再実行しない。`tansaku` return の `Map` / `Terminology` / `Unknowns` / `Evidence` を前提として、設計判断と計画化に集中する。
 
-`tansakun` に渡す条件:
+`tansaku` に渡す条件:
 
 - 未知の code area / module boundary に触れる
 - 影響範囲、呼び出し元、依存先が不明
@@ -30,7 +30,7 @@ when_to_use: "設計判断, 方針決め, design decision, kill or keep, 計画�
 - issue / 要望の DoD が曖昧
 - 実装前に決めないと手戻りが大きい未決事項がある
 
-`tansakun` を呼ばずに進めてよい条件:
+`tansaku` を呼ばずに進めてよい条件:
 
 - 変更が小さく、対象ファイルと期待挙動が明確
 - 既存テストや実装から仕様が十分に読める
@@ -39,7 +39,7 @@ when_to_use: "設計判断, 方針決め, design decision, kill or keep, 計画�
 handoff 例:
 
 ```
-handoff: tansakun
+handoff: tansaku
 reason: 設計判断前に影響範囲と用語を整理する必要がある
 context: [要望 / issue / 対象 file]
 evidence:
@@ -74,7 +74,7 @@ kouchiku は controller として次の skill を選ぶが、専門 skill の責
 | 実装完了後の diff review                                                                 | `sadoku`                                  | 実装者視点から離れて diff を見る                            |
 | 整理 (重複削除 / 命名統一 / 不要な抽象化除去 / dead code / efficiency)                               | `sadoku` simplify findings → kouchiku で実装 | 発見は sadoku、実装は controller が responsibility を持つ |
 | PR 本文ドラフト / PR 提出 (remote 確認 / submodule / parent commit / cwd-aware gh pr create) | `teishutsu`                               | hook と二段構成、submission 工程の未確認項目を skill で先に検出 |
-| 情報取得 / 影響範囲把握 / 用語すり合わせ / docs・ADR 確認                                             | `tansakun`                                | 判断前の文脈整理を分離し、kouchiku は設計判断に集中する |
+| 情報取得 / 影響範囲把握 / 用語すり合わせ / docs・ADR 確認                                             | `tansaku`                                | 判断前の文脈整理を分離し、kouchiku は設計判断に集中する |
 | 設計判断 / scope 整理 / 計画分解 / 複数案評価                                                     | `kouchiku`                                | controller が判断を保持する                            |
 
 

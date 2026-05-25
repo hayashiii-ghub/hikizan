@@ -1,19 +1,19 @@
 ---
-name: tansakun
+name: tansaku
 description: "Use this skill when the user wants to understand an unfamiliar code area, gather context before design, map impact scope, inspect related files, or clarify terminology/spec gaps before implementation — including phrasings 探索して, 全体像を掴んで, この辺り見て, 影響範囲を調べて, 関連ファイルを洗って, zoom-out, すり合わせ, 仕様を詰めたい. Activate before kouchiku when the request depends on unknown code structure, domain terminology, docs/ADR context, or ambiguous acceptance criteria."
 license: MIT
 when_to_use: "探索, 全体像把握, 影響範囲調査, 用語整理, すり合わせ"
 ---
 
-# tansakun (探索)
+# tansaku (探索)
 
 ```
-🌲 Using /tansakun for [purpose taken from trigger context].
+🌲 Using /tansaku for [purpose taken from trigger context].
 ```
 
-情報取得、構造把握、用語整理、未決事項の確認を扱う。`tansakun` は判断と実装をしない。設計判断 / 計画化 / 実装は `kouchiku`、TDD は `shiken`、レビューは `sadoku`、提出は `teishutsu` に渡す。
+情報取得、構造把握、用語整理、未決事項の確認を扱う。`tansaku` は判断と実装をしない。設計判断 / 計画化 / 実装は `kouchiku`、TDD は `shiken`、レビューは `sadoku`、提出は `teishutsu` に渡す。
 
-`tansakun` は `zoom-out` と `grill-with-docs` 相当を 1 skill 内の mode として扱う。まず探索で事実を集め、実装前に決めないと手戻りが大きい曖昧さが見つかった場合だけ、すり合わせ mode に自動遷移する。
+`tansaku` は `zoom-out` と `grill-with-docs` 相当を 1 skill 内の mode として扱う。まず探索で事実を集め、実装前に決めないと手戻りが大きい曖昧さが見つかった場合だけ、すり合わせ mode に自動遷移する。
 
 ## Step 0: worktree 検出
 
@@ -138,7 +138,7 @@ Reason: [1-2 行根拠。Evidence があれば path:line を含める]
 
 ## Handoff Policy
 
-`tansakun` は探索結果を次の skill に渡す。判断や実装を自分で引き受けない。
+`tansaku` は探索結果を次の skill に渡す。判断や実装を自分で引き受けない。
 
 | 条件 | handoff 先 | 理由 |
 | --- | --- | --- |
