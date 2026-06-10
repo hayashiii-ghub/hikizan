@@ -6,7 +6,7 @@ Claude Code plugin の hooks で監視する条件 / 挙動 / 決定の一覧。
 
 | event | matcher / if | 条件 | 決定 | reason 伝達 |
 |---|---|---|---|---|
-| SessionStart | matcher `startup` | プロジェクト直下に `CLAUDE.md` が無い、または「## hikizan Conventions」が無い | テンプレを生成または追記。既にあれば何もしない | stderr (情報) |
+| SessionStart | matcher `startup` | セッション開始 (startup) | `templates/CLAUDE.md` の routing / safety と active tier を stdout に出力し context 注入。host repo は書き換えない | stdout (context) |
 | PreToolUse | `Bash(git push*)` | local が remote から N コミット遅れている (non-fast-forward) | `permissionDecision: "deny"` + 選択肢 (pull --rebase / 別 branch / abort) | JSON reason |
 | PreToolUse | `Bash(git push*)` | force 系 (`--force` / `--force-with-lease` / `-f` / `-fv` 等) が main / master / develop を対象にする | `permissionDecision: "deny"` + 確認要求 | JSON reason |
 | PreToolUse | `Bash(rm -*)` / `Bash(git reset*)` / `Bash(git clean*)` / `Bash(git checkout*)` | 不可逆操作 (`rm -rf` / `git reset --hard` / `git clean -f` / `git checkout` discard) | `permissionDecision: "ask"` (block でなく確認) | JSON reason |
@@ -58,7 +58,7 @@ force push の対象 branch は `scripts/lib/push-parse.sh` の `hikizan_push_ta
 |---|---|
 | `ts` | RFC3339 UTC タイムスタンプ |
 | `event` | `hook_fired` (将来拡張余地) |
-| `hook` | `pre-push` / `pre-pr-create` / `pre-destructive` / `post-commit` / `bootstrap-claude-md` |
+| `hook` | `pre-push` / `pre-pr-create` / `pre-destructive` / `post-commit` / `session-context` |
 | `condition` | `nff` / `force_protected` / `no_draft_no_reviewer` / `destructive` / `submodule_unpushed` / `create` / `append` / `noop` / `none` |
 | `decision` | `allow` / `block` (= deny) / `ask` / `warn` |
 | `session_id` | CC session id (stdin JSON より取得)、無ければ空文字 |
@@ -77,7 +77,8 @@ jq -r 'select(.condition == "destructive")' ~/.hikizan/metrics.jsonl | wc -l
 
 ## SessionStart の補足
 
-- CC plugin に **install lifecycle hook が存在しない**ため、CLAUDE.md 系の処理は SessionStart hook の matcher `startup` で実現 (Phase 3 で stdout context 注入へ移行)。
+- SessionStart(startup) hook の **stdout を CC が context 注入**する仕組みを使う。host repo の `CLAUDE.md` は書き換えない (常に installed version と同期、汚染なし)。ファイルとして残したいユーザは `/hikizan:init`。
+- 注入内容の単一ソースは `templates/CLAUDE.md` + active tier (`HIKIZAN_TIER`、既定 `standard`)。
 - `resume` / `clear` / `compact` では実行しない (matcher が `startup` のみ)。
 
 ## テスト
@@ -100,7 +101,7 @@ bash hooks/tests/run.sh push-parse # 特定テストのみ
 ## 関連
 
 - `hooks.json` — 実体の hook 設定 (matcher / if / script 紐付け)
-- `scripts/bootstrap-claude-md.sh` — SessionStart on `startup`
+- `scripts/session-context.sh` — SessionStart on `startup` (routing / tier を stdout で context 注入)
 - `scripts/pre-push.sh` — PreToolUse on `git push*`
 - `scripts/pre-destructive.sh` — PreToolUse on `rm` / `git reset` / `git clean` / `git checkout`
 - `scripts/pre-pr-create.sh` — PreToolUse on `gh pr create*`

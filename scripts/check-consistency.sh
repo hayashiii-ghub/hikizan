@@ -17,6 +17,10 @@ END='<!-- hikizan:contract:end -->'
 
 extract() { awk -v s="$START" -v e="$END" '$0==s{f=1;next} $0==e{f=0} f' "$1"; }
 
+# Core workflow skills carry the shared contract. Utility skills (e.g. init)
+# are exempt — they have no contract block.
+CORE="kouchiku tansaku sadoku shiken teishutsu"
+
 fail=0
 ref=""
 ref_file=""
@@ -24,8 +28,9 @@ count=0
 
 for f in "$ROOT"/skills/*/SKILL.md; do
   [ -e "$f" ] || continue
-  count=$((count + 1))
   name="$(basename "$(dirname "$f")")"
+  case " $CORE " in *" $name "*) ;; *) continue ;; esac
+  count=$((count + 1))
 
   # exactly one contract block
   starts=$(grep -cF "$START" "$f")

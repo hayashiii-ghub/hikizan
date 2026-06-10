@@ -4,7 +4,7 @@
   "owner": {
     "name": "hayashiii-ghub"
   },
-  "description": "日本語圏チーム開発向けの Claude Code plugin。動詞単位の 5 skill と引き算の哲学。",
+  "description": "動詞単位の 5 skill を invariant / 既定手順 / hooks floors の 3 層で構成する Claude Code plugin / Agent Skills skill pack。",
   "plugins": [
     {
       "name": "hikizan",
