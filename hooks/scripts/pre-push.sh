@@ -39,6 +39,7 @@ if hikizan_push_has_force "$COMMAND"; then
   HIT=""
   while IFS= read -r t; do
     [ -z "$t" ] && continue
+    case "$t" in *[\*\?\[]*) HIT="$t (wildcard refspec could match a protected branch)"; break ;; esac
     if printf '%s' "$t" | grep -qE "$PROTECTED"; then HIT="$t"; break; fi
   done <<EOF
 $(hikizan_push_targets "$COMMAND" "$BRANCH")

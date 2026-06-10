@@ -33,6 +33,10 @@ assert_eq "force omitted-ref on main -> deny" "deny" "$(hz_decision_of "$HZ_OUT"
 hz_run_hook "$HOOK" "git -C $REPO_MAIN push --force origin HEAD:develop" "/tmp"
 assert_eq "git -C force HEAD:develop -> deny" "deny" "$(hz_decision_of "$HZ_OUT")"
 
+# A-3: a wildcard refspec force push could expand to a protected branch -> deny
+hz_run_hook "$HOOK" "git push --force origin refs/heads/*:refs/heads/*" "$REPO_MAIN"
+assert_eq "wildcard refspec force -> deny" "deny" "$(hz_decision_of "$HZ_OUT")"
+
 # force-with-lease to a protected branch is still a force push -> deny
 hz_run_hook "$HOOK" "git push --force-with-lease origin main" "$REPO_MAIN"
 assert_eq "force-with-lease main -> deny" "deny" "$(hz_decision_of "$HZ_OUT")"

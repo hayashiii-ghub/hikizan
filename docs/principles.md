@@ -1,6 +1,6 @@
 # hikizan 設計原則
 
-skill / hook / docs が従う 10 原則。各 skill 本文から参照するときは番号でなく名前で書く。
+skill / hook / docs が従う 12 原則。各 skill 本文から参照するときは番号でなく名前で書く。
 
 1. **3 層構造**: invariant (全 tier 必須の保証) / 既定手順 (guided 向け、standard は圧縮可) / floors (hooks の決定論的下限) を分ける。自律度は「環境が宣言する tier × 操作の不可逆度」で決まり、モデル検知には依存しない。
 2. **skill 構成**: 1 skill に複数 mode、手順詳細は references に分離、決定論的な処理は `scripts/` / `hooks/` に置く。SKILL.md は mode router + invariant + 出力契約に絞る。

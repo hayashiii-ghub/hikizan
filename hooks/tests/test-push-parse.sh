@@ -40,4 +40,10 @@ assert_eq "refs/heads/ stripped"                 "main"          "$(tgt 'git pus
 assert_eq "multiple refspecs"                    "main,develop"  "$(tgt 'git push origin main develop' x)"
 assert_eq "--repo value not treated as ref"      "main"          "$(tgt 'git push --repo origin main' x)"
 
+# A-2: target resolution must be deterministic — never glob-expand against cwd.
+GDIR="$(mktemp -d)"; : > "$GDIR/main"
+assert_eq "no glob expansion (cwd has file 'main')" "ma*n" \
+  "$(cd "$GDIR" && hikizan_push_targets 'git push origin ma*n' feat)"
+rm -rf "$GDIR"
+
 hz_test_summary

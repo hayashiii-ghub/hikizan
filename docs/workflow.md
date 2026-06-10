@@ -254,7 +254,7 @@ Example goal:
 
 ## 9. hook 検査
 
-skill 本文は通常フローの手順を示し、hook は skill を経由しない操作に対する補完的な検査を行う。実体は `hooks/hooks.json` と `hooks/scripts/`。5 つの hook (SessionStart で routing / safety / tier を context 注入、`git push` の non-ff / 保護 branch force を deny、`rm` / `git reset` / `clean` / `checkout` の不可逆操作を ask、`gh pr create` の draft / reviewer 未指定を deny、`git commit` 後の submodule warning)。決定は公式 JSON `permissionDecision`。**発火条件マトリクスと既知の限界は `hooks/conditions.md` を参照** (SoT)。決定論ロジックは `hooks/tests/` で回帰検査。発火イベントは `~/.hikizan/metrics.jsonl` に記録される (`HIKIZAN_METRICS_DIR` で書き込み先変更可)。
+skill 本文は通常フローの手順を示し、hook は skill を経由しない操作に対する補完的な検査を行う。実体は `hooks/hooks.json` と `hooks/scripts/`。6 つの hook (SessionStart で routing / safety / tier を context 注入、`git push` の non-ff / 保護 branch force を deny、`rm` / `git reset` / `clean` / `checkout` の不可逆操作を ask、`gh pr create` の draft / reviewer 未指定を deny、`git commit` 後の submodule warning、`Skill` 起動を metrics に記録)。決定は公式 JSON `permissionDecision`。**発火条件マトリクスと既知の限界は `hooks/conditions.md` を参照** (SoT)。決定論ロジックは `hooks/tests/` で回帰検査。発火イベントは `~/.hikizan/metrics.jsonl` に記録される (`HIKIZAN_METRICS_DIR` で書き込み先変更可)。
 
 ```mermaid
 flowchart LR

@@ -19,9 +19,11 @@ assert_eq "git clean -f"        "yes" "$(hit 'git clean -fd')"
 assert_eq "git checkout -- ."   "yes" "$(hit 'git checkout -- .')"
 assert_eq "git checkout ."      "yes" "$(hit 'git checkout .')"
 assert_eq "git checkout -f"     "yes" "$(hit 'git checkout -f')"
+assert_eq "git checkout <tree> -- path" "yes" "$(hit 'git checkout HEAD -- src/a.ts')"
 
 # Benign -> not labelled
 assert_eq "rm without recurse"  "no"  "$(hit 'rm file.txt')"
+assert_eq "rm --force (non-recursive)" "no" "$(hit 'rm --force notes.txt')"
 assert_eq "rmdir not rm"        "no"  "$(hit 'rmdir emptydir')"
 assert_eq "git status"          "no"  "$(hit 'git status')"
 assert_eq "git reset soft"      "no"  "$(hit 'git reset --soft HEAD~1')"

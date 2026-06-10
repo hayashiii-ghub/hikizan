@@ -34,6 +34,13 @@ force push の対象 branch は `scripts/lib/push-parse.sh` の `hikizan_push_ta
 - `git push --force origin` — ref 省略時は current branch に fallback
 - `git -C <dir> push --force origin HEAD:develop` — `-C <dir>` を解決し、その repo の branch を見る
 - `command git push ...` / 複数 refspec / `+HEAD:main` / `:main` (削除) / `refs/heads/main`
+- **glob を含む refspec** (例 `git push --force origin refs/heads/*:refs/heads/*`) は解決先が `*` 等のメタ文字を含むため、保護 branch にマッチしうると見なして保守的に **deny** する
+- ターゲット解決とコマンドのトークン化は `set -f` (noglob) 下で行い、cwd のファイル名に依存しない (決定論)
+
+破壊的コマンドの分類規約:
+
+- **rm**: 再帰 (`-r`/`-R`/`--recursive`) **かつ** 強制 (`-f`/`--force`) の両方を持つ時だけ ask。`rm --force file` (再帰なし) や `rm -f file` 単体は対象外
+- **checkout**: `git checkout -- <path>` / `git checkout <tree-ish> -- <path>` / `git checkout .` / `git checkout -f` を ask。`git checkout <branch>` (ブランチ切替) は対象外
 
 ## 既知の限界
 

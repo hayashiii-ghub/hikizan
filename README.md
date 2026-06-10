@@ -78,6 +78,7 @@ Cursor には `beforeShellExecution` hook で CC と同じ floors (force push / 
 | `pre-destructive` | PreToolUse `rm` / `git reset` / `clean` / `checkout` | 不可逆操作を `ask` (確認要求) |
 | `pre-pr-create` | PreToolUse `gh pr create` | draft / reviewer 未指定を `deny` |
 | `post-commit` | PostToolUse `git commit` | submodule 未 push を warning |
+| `skill-metrics` | PreToolUse `Skill` | 起動された hikizan skill 名を metrics に記録 (block しない) |
 
 決定は公式の JSON `permissionDecision` 形式 (`deny` / `ask`)。発火条件マトリクスと既知の限界は `hooks/conditions.md` (SoT)。決定論ロジックは `hooks/tests/` で回帰検査する (`bash hooks/tests/run.sh`)。発火イベントは `~/.hikizan/metrics.jsonl` に記録 (`HIKIZAN_METRICS_DIR` で変更可)。
 

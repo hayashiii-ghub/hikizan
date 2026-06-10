@@ -18,7 +18,7 @@ when_to_use: "PR確認, レビュー, code review, 整理, simplify"
 
 全 hikizan skill 共通。ここを変えたら `scripts/check-consistency.sh` が 5 skill の同一性を検査する。
 
-- **tier**: 環境が宣言する自律度に従う。`hikizan-tier: standard` (Claude Code = hooks の floors あり) は invariant を満たす限り「既定手順」を圧縮してよい。`guided` (既定 / Cursor 等 floors なし) は「既定手順」を遵守する。未宣言なら `guided` 扱い。
+- **tier**: 環境が宣言する自律度に従う。`hikizan-tier: standard` (floors=hooks のある環境: Claude Code の /plugin、floors 導入済み Cursor 等) は invariant を満たす限り「既定手順」を圧縮してよい。`guided` (既定 / floors 未導入) は「既定手順」を遵守する。未宣言なら `guided` 扱い。
 - **risk dial**: 可逆で推測可能 → 自律で進める / 計画の分岐点 → 確認を取る / 不可逆・破壊的 → 止めてユーザ確認。tier に関わらず不可逆操作は止める。
 - **必須 (invariant)**: 「必須」と記す項目は全 tier で省略不可 — 検証ログは command 出力を引用し自己申告にしない / PII・Secrets scan / 命名規約 / 破壊的操作の明示確認。
 - **既定手順 (procedure)**: 「既定手順」と記す節は guided では遵守、standard では invariant を満たす限り圧縮・省略してよい。

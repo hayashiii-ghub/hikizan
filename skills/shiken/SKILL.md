@@ -20,7 +20,7 @@ TDD discipline。失敗するテストを先に書き fail を**目視**して�
 
 全 hikizan skill 共通。ここを変えたら `scripts/check-consistency.sh` が 5 skill の同一性を検査する。
 
-- **tier**: 環境が宣言する自律度に従う。`hikizan-tier: standard` (Claude Code = hooks の floors あり) は invariant を満たす限り「既定手順」を圧縮してよい。`guided` (既定 / Cursor 等 floors なし) は「既定手順」を遵守する。未宣言なら `guided` 扱い。
+- **tier**: 環境が宣言する自律度に従う。`hikizan-tier: standard` (floors=hooks のある環境: Claude Code の /plugin、floors 導入済み Cursor 等) は invariant を満たす限り「既定手順」を圧縮してよい。`guided` (既定 / floors 未導入) は「既定手順」を遵守する。未宣言なら `guided` 扱い。
 - **risk dial**: 可逆で推測可能 → 自律で進める / 計画の分岐点 → 確認を取る / 不可逆・破壊的 → 止めてユーザ確認。tier に関わらず不可逆操作は止める。
 - **必須 (invariant)**: 「必須」と記す項目は全 tier で省略不可 — 検証ログは command 出力を引用し自己申告にしない / PII・Secrets scan / 命名規約 / 破壊的操作の明示確認。
 - **既定手順 (procedure)**: 「既定手順」と記す節は guided では遵守、standard では invariant を満たす限り圧縮・省略してよい。
@@ -70,7 +70,7 @@ TDD discipline。失敗するテストを先に書き fail を**目視**して�
 | REFACTOR | duplication 除去 / 命名改善、テストは green のまま |
 | **PRUNE** | 各 test を slice behavior 基準で評価し不要を削除 |
 
-各 phase 遷移は test runner の出力 (最終 summary 行) で確認し完了記録に引用する (「目視した」だけの自己申告は不可)。**Slice 粒度**: 原則 1 vertical slice = 1 kept test。distinct な observable behavior の edge case は別 slice。PRUNE 評価基準と検証手順は `references/testing-anti-patterns.md`。
+各 phase 遷移は test runner の出力 (最終 summary 行) で確認し完了記録に引用する (「目視した」だけの自己申告は不可)。**Slice 粒度**: 原則 1 vertical slice = 1 kept test。distinct な observable behavior の edge case は別 slice。PRUNE 評価基準 (5 問) と anti-pattern は `references/testing-anti-patterns.md`、検証手順は下記。
 
 **PRUNE 検証 (各 test 必須)**: vertical slice の observable output を一時的に壊して test failure を確認 → 元に戻して pass を再確認 → `git status` clean を確認。隔離 worktree を使うか、対象 file の現在状態を退避して最小変更で壊す (unrelated な dirty file があれば作業全体を stash せず scope を確認)。
 
