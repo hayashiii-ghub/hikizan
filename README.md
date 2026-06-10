@@ -59,6 +59,8 @@ npx skills add github:hayashiii-ghub/hikizan -g -a codex    # Codex
 
 `-g` で global、省略時は project local。配置先は Cursor `~/.cursor/skills/`、universal `~/.agents/skills/`。詳細は [vercel-labs/skills](https://github.com/vercel-labs/skills)。
 
+Cursor には `beforeShellExecution` hook で CC と同じ floors (force push / 破壊的操作の停止) を移植できる。手順は `docs/cursor-floors.md`。floors を入れた環境は `HIKIZAN_TIER=standard` を宣言してよい。
+
 ## tier
 
 - Claude Code (`/plugin`): SessionStart hook (`session-context.sh`) が routing / safety / `hikizan-tier: standard` を毎セッション context に注入する。host repo の CLAUDE.md は書き換えない (常に installed version と同期、汚染なし)。

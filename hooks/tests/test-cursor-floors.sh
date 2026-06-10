@@ -1,0 +1,46 @@
+#!/usr/bin/env bash
+# Tests for the Cursor floors adapter (cursor/scripts/before-shell.sh). Feeds
+# Cursor-format input ({command, cwd}) and asserts the Cursor permission output.
+# Exercises the same pure logic as the CC hooks, through the Cursor I/O glue.
+
+DIR="$(cd "$(dirname "$0")" && pwd)"
+. "$DIR/lib/harness.sh"
+HOOK="$DIR/../../cursor/scripts/before-shell.sh"
+
+hz_mkrepo() { local b="$1" d; d="$(mktemp -d)"; git -C "$d" init -q
+  git -C "$d" config user.email t@example.com; git -C "$d" config user.name t
+  git -C "$d" commit -q --allow-empty -m init; git -C "$d" branch -M "$b"; printf '%s' "$d"; }
+
+run_cursor() { # <command> <cwd> -> sets HZ_OUT
+  HZ_OUT=$(jq -nc --arg c "$1" --arg w "$2" '{command:$c, cwd:$w, conversation_id:"t"}' | bash "$HOOK" 2>/dev/null)
+}
+perm_of() { if [ -z "$1" ]; then echo allow; return; fi
+  printf '%s' "$1" | jq -r '.permission // "allow"' 2>/dev/null || echo allow; }
+
+REPO_MAIN="$(hz_mkrepo main)"
+REPO_FEAT="$(hz_mkrepo feature)"
+
+run_cursor "rm -rf build" "/tmp"
+assert_eq "rm -rf -> ask" "ask" "$(perm_of "$HZ_OUT")"
+
+run_cursor "git reset --hard HEAD~1" "/tmp"
+assert_eq "reset --hard -> ask" "ask" "$(perm_of "$HZ_OUT")"
+
+run_cursor "git push --force origin HEAD:main" "$REPO_MAIN"
+assert_eq "force HEAD:main -> deny" "deny" "$(perm_of "$HZ_OUT")"
+
+run_cursor "git push --force origin" "$REPO_MAIN"
+assert_eq "force omitted-ref on main -> deny" "deny" "$(perm_of "$HZ_OUT")"
+
+run_cursor "git push --force origin HEAD:feature" "$REPO_FEAT"
+assert_eq "force to feature -> allow" "allow" "$(perm_of "$HZ_OUT")"
+
+run_cursor "ls -la" "/tmp"
+assert_eq "benign -> allow" "allow" "$(perm_of "$HZ_OUT")"
+
+run_cursor "rm -rf x" "/tmp"
+assert_contains "ask carries message" "irreversible" \
+  "$(printf '%s' "$HZ_OUT" | jq -r '.agent_message // ""')"
+
+rm -rf "$REPO_MAIN" "$REPO_FEAT"
+hz_test_summary
