@@ -10,5 +10,8 @@
 # Claude Code session artifacts (if any are accidentally created here)
 .claude/
 
+# Cursor hook state / local artifacts
+.cursor/
+
 # 一時テスト出力
 /tmp/
