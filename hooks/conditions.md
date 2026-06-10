@@ -11,6 +11,7 @@ Claude Code plugin の hooks で監視する条件 / 挙動 / 決定の一覧。
 | PreToolUse | `Bash(git push*)` | force 系 (`--force` / `--force-with-lease` / `-f` / `-fv` 等) が main / master / develop を対象にする | `permissionDecision: "deny"` + 確認要求 | JSON reason |
 | PreToolUse | `Bash(rm -*)` / `Bash(git reset*)` / `Bash(git clean*)` / `Bash(git checkout*)` | 不可逆操作 (`rm -rf` / `git reset --hard` / `git clean -f` / `git checkout` discard) | `permissionDecision: "ask"` (block でなく確認) | JSON reason |
 | PreToolUse | `Bash(gh pr create*)` | `--draft` / `-d` も `--reviewer` / `-r` も無い | `permissionDecision: "deny"` + 選択肢 | JSON reason |
+| PreToolUse | matcher `Skill` | hikizan skill が起動された | skill 名を metrics に記録するだけ (block/ask しない) | — (記録のみ) |
 | PostToolUse | `Bash(git commit*)` | submodule pointer 変更ありで submodule 側が未 push | warning を出力 (block しない) | stderr (warn) |
 
 ## 決定の出し方
@@ -57,10 +58,10 @@ force push の対象 branch は `scripts/lib/push-parse.sh` の `hikizan_push_ta
 | field | 値 |
 |---|---|
 | `ts` | RFC3339 UTC タイムスタンプ |
-| `event` | `hook_fired` (将来拡張余地) |
+| `event` | `hook_fired` / `skill_invoked` |
 | `hook` | `pre-push` / `pre-pr-create` / `pre-destructive` / `post-commit` / `session-context` |
 | `condition` | `nff` / `force_protected` / `no_draft_no_reviewer` / `destructive` / `submodule_unpushed` / `create` / `append` / `noop` / `none` |
-| `decision` | `allow` / `block` (= deny) / `ask` / `warn` |
+| `decision` | `allow` / `block` (= deny) / `ask` / `warn` / `invoke` (skill 起動記録) |
 | `session_id` | CC session id (stdin JSON より取得)、無ければ空文字 |
 
 ### 集計例
