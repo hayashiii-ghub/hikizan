@@ -11,165 +11,99 @@ when_to_use: "PR提出, PR出す, PR ready, PR文書いて, PR description, subm
 🌲 Using /teishutsu for [purpose taken from trigger context].
 ```
 
-PR 本文ドラフトから PR open までの提出手順を扱う skill。submission 工程の未確認項目 (リモート状態未確認 / submodule 順序ミス / cwd ミスでの gh コマンド / reviewer 未指定の本番 PR) を検出する。`sadoku` は review / simplify、`teishutsu` は提出に必要な本文と手順を担当する。
+PR 本文ドラフトから PR open までの提出手順を扱う。submission の未確認項目 (リモート状態 / submodule 順序 / cwd ミス / reviewer 未指定の本番 PR) を hook より前に検出する。`sadoku` は review、`teishutsu` は提出に必要な本文と手順を担当する。
 
-## Step 0: worktree 検出
+<!-- hikizan:contract:start -->
+## 共通契約
 
-`git rev-parse --git-dir` と `--git-common-dir` を `pwd -P` で正規化して比較する。異なれば worktree 内 — branch 名とともに表示し、完了記録の `worktree` 行に記録する。
+全 hikizan skill 共通。ここを変えたら `scripts/check-consistency.sh` が 5 skill の同一性を検査する。
 
-## 起動トリガー
+- **tier**: 環境が宣言する自律度に従う。`hikizan-tier: standard` (floors=hooks のある環境: Claude Code の /plugin、floors 導入済み Cursor 等) は invariant を満たす限り「既定手順」を圧縮してよい。`guided` (既定 / floors 未導入) は「既定手順」を遵守する。未宣言なら `guided` 扱い。
+- **risk dial**: 可逆で推測可能 → 自律で進める / 計画の分岐点 → 確認を取る / 不可逆・破壊的 → 止めてユーザ確認。tier に関わらず不可逆操作は止める。
+- **必須 (invariant)**: 「必須」と記す項目は全 tier で省略不可 — 検証ログは command 出力を引用し自己申告にしない / PII・Secrets scan / 命名規約 / 破壊的操作の明示確認。
+- **既定手順 (procedure)**: 「既定手順」と記す節は guided では遵守、standard では invariant を満たす限り圧縮・省略してよい。
+- **handoff**: skill 間遷移は次の block を出す。
+  ```
+  handoff: [skill]
+  reason: [なぜ今渡すか]
+  context: [症状 / 仕様 / 設計判断]
+  evidence:
+    - [file:line / command output / logs]
+  expected return:
+    - [戻してほしい成果物]
+  ```
+- **命名**: PR / branch / step は issue 名 / 機能名 / branch 名で呼ぶ。独自連番 (PR-1 等) 不可、重複時のみ -v2, -v3。
+<!-- hikizan:contract:end -->
 
+## worktree 検出 (必須)
 
-| 入力トリガー                                | 状態トリガー                    | 動作                          |
-| ------------------------------------- | ------------------------- | --------------------------- |
-| `PR文書いて` / `PR description`           | PR open 直前                | Step 4 の PR 本文ドラフトだけを実行して終了 |
-| `PR出す` / `PR提出` / `PR ready` / `提出して` | `kouchiku` 計画実行モードの完了報告直後 | 提出フローを実行                    |
+`git rev-parse --git-dir` と `--git-common-dir` を `pwd -P` で正規化して比較。異なれば worktree 内 — branch 名を完了記録の `worktree` 行に記録する。
 
+## 起動 (router)
 
-状態トリガーは誤起動回避のため、検出後に確認 prompt を 1 行挟む (`実装完了です。PR を出しますか?`)。
+| 入力トリガー | 動作 |
+| --- | --- |
+| `PR文書いて` / `PR description` | Step 4 の PR 本文ドラフトだけを実行して終了 |
+| `PR出す` / `PR提出` / `PR ready` / `提出して` | 提出フロー (6 step) を実行 |
 
-## 提出フロー (6 step、順序を守る)
+`kouchiku` 計画実行の完了報告直後など状態からの起動は、誤起動回避のため 1 行確認 (`実装完了です。PR を出しますか?`) を挟む。
 
-### Step 1: リモート状態確認
+## 提出フロー (必須: 順序を守る)
 
-```bash
-git fetch --all
-BRANCH=$(git branch --show-current)
-git log "HEAD..origin/$BRANCH" --oneline 2>/dev/null
-```
+不可逆・外向きの操作のため、6 step の順序と確認は全 tier で省略しない。
 
-- リモート先行 (= 別経路で commit されている) があれば「別実装の存在」を警告して両案残すか確認
-- non-fast-forward は pre-push hook が最終的に block するが、teishutsu は先に検出してユーザに選択肢 (pull --rebase / 別 branch / abort) を提示する
-- 失敗時は次に進まない
-
-### Step 2: submodule に変更があれば submodule 側から処理
-
-```bash
-git submodule status --recursive
-```
-
-- submodule に未 commit / 未 push がある場合:
-  1. submodule 内で commit message ドラフトを teishutsu 内で 1 段落生成 → user 承認
-  2. submodule で commit + push
-- 親 commit より submodule push を **必ず先**にする (post-commit hook が submodule 未 push を警告するが、warning では巻き戻せないため teishutsu 側で事前解消する)
-
-### Step 3: parent commit
-
-- 親 repo で `git add` (submodule pointer 更新含む) → commit message ドラフト → PII / Secrets scan → user 承認 → commit
-- この step では push しない
-
-### Step 4: PR 本文ドラフト
-
-PR 本文が未準備なら、`references/pr-template.md` を読み、5 セクション本文をドラフトする。必須 intake は issue / 計画 / change intent のいずれか、diff または変更ファイル一覧、検証コマンドまたは手動確認内容。足りない場合は推測で埋めず、欠けている項目だけ user に確認する。
-
-PII / Secrets scan を本文ドラフトに対して実行し、混入があれば push / PR 作成に進まない。`PR文書いて` / `PR description` で呼ばれた場合は、この step の出力で終了する。
-
-### Step 5: push
-
-```bash
-git push
-```
-
-- pre-push hook が non-ff / force-to-protected を block する。block 時は Step 1 に戻って原因解消する
-- push が失敗したら PR 作成に進まない
-
-### Step 6: PR 作成
-
-**cwd を `gh pr create` 直前で必ず確認** — submodule と親 repo の取り違えを避けるための step:
-
-```bash
-pwd
-git rev-parse --show-toplevel
-```
-
-- 出力を user に見せ、対象 repo を明示確認させる
-- `gh pr create --repo <owner>/<repo>` で対象を固定するのが安全
-- default: `--draft --reviewer @user` (pre-pr-create hook が両方無いと block する)
-- Step 4 で作った本文を `gh pr create --body "$(cat ...)"` に渡す
+1. **リモート状態確認** — `git fetch --all` → `git log HEAD..origin/$BRANCH --oneline`。リモート先行があれば別実装の存在を警告し両案残すか確認。non-fast-forward は pre-push hook が最終 block するが、teishutsu が先に選択肢 (pull --rebase / 別 branch / abort) を提示。失敗時は次に進まない
+2. **submodule 先行** — `git submodule status --recursive`。未 commit / 未 push があれば submodule 内で commit message ドラフト → user 承認 → commit + push を**親 commit より必ず先**に
+3. **parent commit** — 親 repo で `git add` (submodule pointer 含む) → commit message ドラフト → PII / Secrets scan → user 承認 → commit。push はしない
+4. **PR 本文ドラフト** — `references/pr-template.md` を読み 5 セクション本文を作る。必須 intake は (issue / 計画 / change intent のいずれか) + (diff または変更ファイル一覧) + (検証コマンドまたは手動確認)。足りなければ推測で埋めず欠落だけ確認。PII / Secrets scan を本文に実行。`PR文書いて` 経由はここで終了
+5. **push** — `git push`。pre-push hook が non-ff / force-to-protected を block。block 時は Step 1 に戻る。失敗時は PR 作成に進まない
+6. **PR 作成** — `gh pr create` 直前で必ず `pwd` と `git rev-parse --show-toplevel` を user に見せ対象 repo を明示確認 (submodule / 親 repo の取り違え防止)。`--repo <owner>/<repo>` で対象固定。default `--draft --reviewer @user` (pre-pr-create hook が両方無いと block)。Step 4 の本文を `--body "$(cat ...)"` で渡す
 
 ## Handoff Intake
 
-`kouchiku` 計画実行モードの完了報告 or user から呼ばれる時に期待する入力。
+`kouchiku` 計画実行の完了報告 or user から呼ばれる時の期待入力: `change intent / files changed / verification / scope notes / submodule status / PR body (任意) / target repo (任意) / reviewer (任意)`。足りなければ推測で補完せず停止条件として欠落を user に問い合わせる。
 
-```
-handoff: teishutsu
-reason: 実装完了、PR open まで運んでほしい
-change intent:
-  - [何を解決したか]
-files changed:
-  - [path]
-verification:
-  - [command] -> pass / fail
-scope notes:
-  - [やらなかったこと / 実装中に分かったこと]
-submodule status:
-  - [触れた submodule / 無ければ none]
-PR body:
-  - [任意: 既にあるなら本文、無ければ Step 4 でドラフトする]
-target repo:
-  - [任意: owner/repo、submodule なら明示]
-reviewer:
-  - [任意: @user、未定なら user 判断を仰ぐ]
-```
+## 必須 (停止条件 invariant)
 
-足りない場合は推測で補完せず、停止条件として扱い欠落項目を user に問い合わせる。
-
-## 停止条件
-
-- **PR 本文 intake 不足**: 本文未準備なのに issue / 計画 / change intent のいずれか、diff または変更ファイル一覧、検証コマンドまたは手動確認内容のいずれかが欠けている
-- **PII / Secrets 混入**: PR 本文 / commit message / release notes に email, token, 個人名等が混入している
-- **cwd 不整合**: cwd が submodule 側なのに親 repo の PR を作ろうとしている (or 逆)
-- **未確認の force push**: `--force` / `--force-with-lease` が main / master / develop に対して指定されている (pre-push hook と二重)
-- **reviewer 未指定 + 非 draft**: pre-pr-create hook と二重、teishutsu 側でも先に検出
-- **リモート衝突未解決**: Step 1 で先行 commit を検出したのに reconcile せず push しようとした
-- **submodule pointer 変更ありで submodule 未 push**: Step 2 を skip すると post-commit hook が warning を出す
-
-## Hard Rules
-
-- 各 step は順序を守る (リモート確認 → submodule → 親 commit → PR 本文 → push → PR 作成)。途中失敗時は次に進まない
-- `gh pr create` 直前で必ず `pwd` の出力を user に見せて cwd を明示確認する
-- PR / branch / step の命名は `kouchiku` Hard Rules に従う
+- **PR 本文 intake 不足** (Step 4 の必須 intake が欠けている)
+- **PII / Secrets 混入** (本文 / commit message / release notes に email / token / 個人名等)
+- **cwd 不整合** (cwd が submodule 側なのに親 repo の PR を作ろうとしている、or 逆)
+- **未確認の force push** (`--force` / `--force-with-lease` が main / master / develop 対象。pre-push hook と二重)
+- **reviewer 未指定 + 非 draft** (pre-pr-create hook と二重)
+- **リモート衝突未解決** (Step 1 で先行 commit を検出したのに reconcile せず push)
+- **submodule pointer 変更ありで submodule 未 push** (Step 2 を skip すると post-commit hook が warning)
 - commit / PR 本文の生成は inline で出して user 承認を仰ぐ。承認なしで commit / push / PR 作成しない
 
 ## hook との二重構造
 
+| 停止条件 | 本 skill | hook |
+| --- | --- | --- |
+| non-fast-forward | Step 1 で先制検出 | pre-push が deny |
+| force to protected | Step 5 で警告 | pre-push が deny |
+| reviewer / draft 未指定 | Step 6 で確認 | pre-pr-create が deny |
+| submodule 未 push | Step 2 で順序遵守 | post-commit が warning |
 
-| 停止条件                 | 本 skill      | hook                   |
-| -------------------- | ------------ | ---------------------- |
-| non-fast-forward     | Step 1 で先制検出 | pre-push が block |
-| force to protected   | Step 5 で警告   | pre-push が block       |
-| reviewer / draft 未指定 | Step 6 で確認   | pre-pr-create が block  |
-| submodule 未 push     | Step 2 で順序遵守 | post-commit が warning  |
+skill は通常フローの手順、hook は skill を経由しない操作への補完検査。teishutsu は hook より前に確認項目を検出する。
 
+## 完了記録 (必須)
 
-**役割分担**: skill は通常フローの手順を扱い、hook は skill を経由しない操作に対する補完的な検査を行う。teishutsu は hook より前の段階で確認項目を検出する。
-
-## 完了記録
-
-機械検証可能項目は検証ログ (command 出力) をそのまま引用する。
+機械検証可能項目は command 出力をそのまま引用する。
 
 ```
-worktree:        in-worktree / normal-repo
-mode:            PR body draft / submit
-remote state:    fetched / in sync / had divergence: [...]
-                   検証ログ: [git log HEAD..origin/... の最終行 or "(empty)"]
-submodule:       none / [path] commit [hash] pushed
-                   検証ログ: [git submodule status の出力]
-parent commit:   [hash] - [message 1 行]
-push result:     pushed to origin/[branch] / hook blocked: [reason]
-                   検証ログ: [push command 最終行]
-PR body:         drafted / provided / skipped
-                   PII scan: clean / found: [...]
-cwd at gh:       [pwd 出力]
-                   検証ログ: [pwd 実出力]
-PR:              [url] / draft / reviewers: [@user]
+worktree / mode: PR body draft / submit
+remote state:  fetched / in sync / had divergence / 検証ログ: [git log HEAD..origin/... 最終行 or "(empty)"]
+submodule:     none / [path] commit [hash] pushed / 検証ログ: [git submodule status]
+parent commit: [hash] - [message 1 行]
+push result:   pushed to origin/[branch] / hook blocked: [reason] / 検証ログ: [push 最終行]
+PR body:       drafted / provided / skipped / PII scan: clean / found
+cwd at gh:     [pwd 出力] / 検証ログ: [pwd 実出力]
+PR:            [url] / draft / reviewers: [@user]
 ```
 
 ## subagent
 
-本 skill は PR 本文ドラフトと git/gh 操作が中心、subagent gate に該当しない (inline 実行)。
+PR 本文ドラフトと git/gh 操作が中心、subagent gate に該当しない (inline 実行)。
 
 ## references/
 
-- `pr-template.md` — PR 本文ドラフトの contract (5 セクション template / 手順 / 文章チェック / PII scan / 粒度ルール)
-
+- `pr-template.md` — PR 本文の contract (5 セクション template / 手順 / 文章チェック / PII scan / 粒度ルール)

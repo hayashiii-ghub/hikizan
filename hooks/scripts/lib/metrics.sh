@@ -13,10 +13,10 @@
 # Schema (one JSON object per line):
 #   ts:         RFC3339 UTC timestamp
 #   event:      "hook_fired" (extend later as needed)
-#   hook:       "pre-push" | "pre-pr-create" | "post-commit" | "bootstrap-claude-md"
+#   hook:       "pre-push" | "pre-pr-create" | "pre-destructive" | "post-commit" | "session-context"
 #   condition:  "nff" | "force_protected" | "no_draft_no_reviewer" |
 #               "submodule_unpushed" | "create" | "append" | "noop" | "none"
-#   decision:   "allow" | "block" | "warn"
+#   decision:   "allow" | "block" | "ask" | "warn" | "invoke"
 #   session_id: CC session id (from hook stdin JSON), or "" when unavailable
 
 hikizan_metrics_log() {

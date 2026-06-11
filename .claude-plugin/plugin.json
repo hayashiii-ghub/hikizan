@@ -1,8 +1,8 @@
 {
   "$schema": "https://json.schemastore.org/claude-code-plugin-manifest.json",
   "name": "hikizan",
-  "description": "日本語圏チーム開発向け Claude Code plugin。動詞単位の 5 skill (tansaku / sadoku / kouchiku / shiken / teishutsu) と引き算の哲学。",
-  "version": "0.2.0",
+  "description": "動詞単位の 5 skill (tansaku / sadoku / kouchiku / shiken / teishutsu) を invariant / 既定手順 / hooks floors の 3 層で構成する Claude Code plugin / Agent Skills skill pack。低自律モデルには rails を、高自律モデルにはハーネス税をかけない設計。",
+  "version": "0.3.0",
   "author": {
     "name": "hayashiii-ghub"
   },

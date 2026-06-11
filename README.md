@@ -2,32 +2,43 @@
 
 hikizan は Claude Code plugin / Agent Skills 対応の skill pack。動詞単位で分割した 5 つの主要 skill と、認知負荷を抑える運用方針を提供する。
 
-設計の出発点は「AI agent が長く自走しすぎても、逐一確認を挟まれすぎても作業のテンポが落ちる」という不満。hikizan はその塩梅を、リスクに応じて振る舞いを切り替えることで取る — 低リスクで推測可能なことは自律で進め、計画の分岐点では確認を取り、不可逆・破壊的な操作では必ず止まる。固定の折衷点ではなく、場面ごとに自律と確認のバランスを変える設計。
+設計の出発点は「AI agent が長く自走しすぎても、逐一確認を挟まれすぎても作業のテンポが落ちる」という不満。hikizan はその塩梅を **3 層** で取る:
 
-5 skill (tansaku / sadoku / kouchiku / shiken / teishutsu) は、探索・設計・実装・レビュー・提出の各工程を担当する。
+- **invariant (必須)** — 検証ログ・PII scan・命名・不可逆操作の確認など、全環境で省略できない保証。
+- **既定手順 (procedure)** — guided tier では遵守、standard tier (hooks=floors のある Claude Code) では invariant を満たす限り圧縮可。賢いモデルにハーネス税をかけない仕組み。
+- **floors (hooks)** — push / PR / 破壊的操作を決定論的に止める下限。tier に関わらず効く。
+
+自律度は「環境が宣言する tier × 操作の不可逆度」で決まる (リスクが低く推測可能なら自律、計画の分岐点では確認、不可逆では停止)。モデル名の検知には依存しない。
 
 - repo: [https://github.com/hayashiii-ghub/hikizan](https://github.com/hayashiii-ghub/hikizan)
 - license: MIT
 
 ## core 5 skill
 
+| skill | 漢字 | 動詞 | 担当 |
+| --- | --- | --- | --- |
+| `tansaku` | 探索 | 探す | code map / impact scope / terminology scan / すり合わせ |
+| `sadoku` | 査読 | 見る | code review / simplify findings |
+| `kouchiku` | 構築 | 考える・作る | 設計判断 / 評価 / 計画策定 / 計画実行 / root cause diagnosis |
+| `shiken` | 試験 | 試す | TDD discipline / PRUNE |
+| `teishutsu` | 提出 | 出す | PR 本文ドラフト / PR 提出フロー (remote / submodule / parent / cwd-aware gh) |
 
-| skill       | 漢字  | 動詞     | 担当                                                                       |
-| ----------- | --- | ------ | ------------------------------------------------------------------------ |
-| `tansaku`  | 探索  | 探す     | code map / impact scope / terminology scan / すり合わせ                         |
-| `sadoku`    | 査読  | 見る     | code review / simplify findings                                          |
-| `kouchiku`  | 構築  | 考える・作る | 設計判断 / 評価 / 計画策定 / 計画実行 / root cause diagnosis                           |
-| `shiken`    | 試験  | 試す     | TDD discipline / PRUNE                                                   |
-| `teishutsu` | 提出  | 出す     | PR 本文ドラフト / PR 提出フロー (remote / submodule / parent commit / cwd-aware gh) |
+各 SKILL.md は「共通契約 block + mode router + invariant + 出力契約」に絞り、手順詳細は `references/` に置く。`kouchiku` が controller として判断を保持し、TDD は `shiken`、レビューは `sadoku`、提出は `teishutsu`、探索は `tansaku` に handoff block で渡す。
 
+ユーティリティ skill `init` (`/hikizan:init`) は規約を project の CLAUDE.md に手動で書き込みたい時だけ使う (model 自動起動は無効)。
 
-各 skill は動詞単位で責務を分ける。`tansaku` は情報取得、構造把握、用語整理、すり合わせを扱う。`kouchiku` は controller として設計、計画実行、原因調査を扱う。TDD discipline は `shiken`、レビューは `sadoku`、PR 本文ドラフト / PR 提出プロセスは `teishutsu` に handoff block で渡す。
+## 配布 — 1 ハーネスに 1 チャネル
 
-TDD 必要層では、`kouchiku` が実装を vertical behavior slice に分解し、`shiken` が 1 slice ごとに RED → GREEN → PRUNE を実行する。test level / coverage gap / PRUNE witness は `shiken` の return log に残す。
+hikizan は 2 つの配布チャネルを持つが、**1 つのハーネスにはどちらか一方だけ**で入れる。両方入れると skill が二重定義され、古い側に誤 route する (実際に過去発生した障害)。
 
-## install (Claude Code plugin)
+| ハーネス | 推奨チャネル | 入れない方 |
+| --- | --- | --- |
+| Claude Code | `/plugin` (hooks=floors も同時に入る) | `npx skills add` は併用しない |
+| Cursor / Codex 等 | `npx skills add` (skill pack のみ、hooks なし) | — |
 
-Claude Code 利用者は `/plugin` 経由が推奨経路。
+> Claude Code で一度 `/plugin` で入れたら、同じ環境で `npx skills add -a claude-code` は実行しない。逆も同様。
+
+### install (Claude Code plugin)
 
 ```bash
 # Claude Code セッション内で実行
@@ -35,213 +46,101 @@ Claude Code 利用者は `/plugin` 経由が推奨経路。
 /plugin install hikizan@hikizan
 ```
 
-`.git` 付き HTTPS URL を明示すると、GitHub SSH key 未設定の環境でも git repository として clone できます。
+`.git` 付き HTTPS URL を明示すると SSH key 未設定環境でも clone できる。開発・検証時は `claude --plugin-dir ./hikizan` で直接読み込む。skill は namespace 規約で `/hikizan:tansaku` … `/hikizan:teishutsu` として呼ばれる。
 
-開発・検証時は `--plugin-dir` で直接読み込み:
+### install (skill pack — Cursor / Codex)
 
-```bash
-git clone https://github.com/hayashiii-ghub/hikizan
-claude --plugin-dir ./hikizan
-```
-
-skill 名は namespace 規約により `/hikizan:tansaku` / `/hikizan:sadoku` / `/hikizan:kouchiku` / `/hikizan:shiken` / `/hikizan:teishutsu` で呼ばれる。
-
-## install (skill pack)
-
-hikizan は [Agent Skills 標準](https://agentskills.io) にも沿った **skill pack** です。skills-compatible agent (Cursor / Codex / Claude Code) へ `skills` CLI で配置できます。
-
-> Codex を Claude Code 経由で呼びたい場合は下の [外部 plugin 併用](#外部-plugin-併用) 節を参照してください。skill pack 単独で Codex を直接動かしたい場合のみ、本節の手順 (`npx skills add -a codex`) を使います。
-
-### 推奨: `npx skills add` (1 コマンドで自動配置)
-
-ハーネス別の例:
+hikizan は [Agent Skills 標準](https://agentskills.io) に沿った skill pack でもある。Claude Code 以外のハーネスへはこちらで配置する (hooks は付かないため tier は `guided` 既定)。
 
 ```bash
-# Cursor
-npx skills add github:hayashiii-ghub/hikizan -g -a cursor
-
-# Claude Code
-npx skills add github:hayashiii-ghub/hikizan -g -a claude-code
-
-# Codex
-npx skills add github:hayashiii-ghub/hikizan -g -a codex
+npx skills add github:hayashiii-ghub/hikizan -g -a cursor   # Cursor
+npx skills add github:hayashiii-ghub/hikizan -g -a codex    # Codex
 ```
 
-`-g` で global (home dir)、省略時は cwd の project local。`-a` 無しだと現在のハーネスを auto-detect。詳細は [vercel-labs/skills](https://github.com/vercel-labs/skills) 参照。
+`-g` で global、省略時は project local。配置先は Cursor `~/.cursor/skills/`、universal `~/.agents/skills/`。詳細は [vercel-labs/skills](https://github.com/vercel-labs/skills)。
 
-### 配置先
+Cursor には `beforeShellExecution` hook で CC と同じ floors (force push / 破壊的操作の停止) を移植できる。手順は `docs/cursor-floors.md`。floors を入れた環境は `HIKIZAN_TIER=standard` を宣言してよい。
 
-`npx skills add` は各 skill を対象ツールの skills ディレクトリに配置する。Claude Code は `~/.claude/skills/<skill>/`、Cursor は `~/.cursor/skills/<skill>/`。各ツールはそのディレクトリを auto-discovery する。
+## tier
 
-### 手動配置 (npx を使わない場合)
+- Claude Code (`/plugin`): SessionStart hook (`session-context.sh`) が routing / safety / `hikizan-tier: standard` を毎セッション context に注入する。host repo の CLAUDE.md は書き換えない (常に installed version と同期、汚染なし)。
+- 他ハーネス: 宣言が無ければ `guided` 扱い。`HIKIZAN_TIER` 環境変数で上書きできる。
+- ファイルとして規約を残したい場合のみ `/hikizan:init` で project の CLAUDE.md に追記する。
 
-`skills/<name>/` を各ツールの skills dir にコピー or symlink:
+## hooks (Claude Code の floors)
 
+`hooks/hooks.json` 経由で CC の tool 呼び出しを監視し、定義済み条件に該当する時だけ介入する。skill 本文は通常フローの手順、hook は skill を経由しない操作への補完検査。
 
-| ツール                          | path                                                           |
-| ---------------------------- | -------------------------------------------------------------- |
-| Cursor                       | `~/.cursor/skills/` (global) または `./.cursor/skills/` (project) |
-| Claude Code                  | `~/.claude/skills/` (global) または `./.claude/skills/` (project) |
-| Cline / OpenCode 等 universal | `~/.agents/skills/` または `./.agents/skills/`                    |
+| hook | event | 介入 |
+| --- | --- | --- |
+| `session-context` | SessionStart | routing / safety / tier を context に注入 (書き込みなし) |
+| `pre-push` | PreToolUse `git push` | non-fast-forward / 保護 branch への force を `deny` |
+| `pre-destructive` | PreToolUse `rm` / `git reset` / `clean` / `checkout` | 不可逆操作を `ask` (確認要求) |
+| `pre-pr-create` | PreToolUse `gh pr create` | draft / reviewer 未指定を `deny` |
+| `post-commit` | PostToolUse `git commit` | submodule 未 push を warning |
+| `skill-metrics` | PreToolUse `Skill` | 起動された hikizan skill 名を metrics に記録 (block しない) |
 
-
-## hooks
-
-hikizan は `hooks/hooks.json` 経由で CC の Bash ツール呼び出しを監視し、定義済みの条件に該当するときだけ介入します。skill 本文は通常フローの手順を示し、hook は skill を経由しない操作に対する補完的な検査を担当します。
-
-4 つの hook を定義しています: `SessionStart` で `templates/CLAUDE.md` の内容を重複なく追加、`git push` / `gh pr create` の介入条件チェック、`git commit` 後の submodule pointer 整合性 warning。**発火条件マトリクスは `hooks/conditions.md` を参照** (SoT)。
-
-発火イベントは `~/.hikizan/metrics.jsonl` に 1 行 1 JSON で記録されます (環境変数 `HIKIZAN_METRICS_DIR` で書き込み先変更可)。
-
-## 外部 plugin 併用
-
-hikizan は orchestration 本体を抱え込まない設計。Codex 連携と LSP は公式 plugin を別途 install します。
-
-### Codex
-
-特定タスクだけ Codex に委譲したい場合は、OpenAI 公式の [openai/codex-plugin-cc](https://github.com/openai/codex-plugin-cc) を hikizan と並行で install します。
-
-```bash
-# Claude Code セッション内で実行
-/plugin marketplace add openai/codex-plugin-cc
-/plugin install codex@openai-codex
-/codex:setup
-```
-
-namespace 規約により `/hikizan:*` と `/codex:*` は衝突しません。要件は ChatGPT subscription または OpenAI API key と、ローカルの Codex CLI (`npm install -g @openai/codex`)。hikizan の hooks は CC 本体の Bash ツール呼び出しに発火するため、Codex 経由で実行されるコマンドが CC の Bash を通る限り同じ停止条件が効きます。
-
-### LSP
-
-シンボル探索 (関数 / クラス / 変数の定義 / 参照) に LSP の正確性が必要な場合は、CC 公式 marketplace から各言語の LSP plugin を install します。
-
-```bash
-# Claude Code セッション内で実行 ( /plugin Discover タブで "lsp" を検索しても同じ )
-/plugin install typescript-lsp@anthropic
-/plugin install pyright-lsp@anthropic
-/plugin install rust-analyzer-lsp@anthropic
-```
-
-各 LSP plugin は **language server バイナリを別途要求**します:
-
-
-| LSP plugin          | 言語                      | バイナリ install                                                                   |
-| ------------------- | ----------------------- | ------------------------------------------------------------------------------ |
-| `typescript-lsp`    | TypeScript / JavaScript | `npm install -g typescript-language-server typescript`                         |
-| `pyright-lsp`       | Python                  | `pip install pyright` (または `npm install -g pyright`)                           |
-| `rust-analyzer-lsp` | Rust                    | [rust-analyzer 公式手順](https://rust-analyzer.github.io/manual.html#installation) |
-
-
-hikizan の skill は **「シンボル系は LSP、テキスト系は grep、LSP 未設定なら grep にフォールバック」** の規約で書かれているため、LSP plugin を入れていない環境でも grep ベースで動作します (精度は落ちる)。
-
-## quick start
-
-install 後に skill 起動を確認する手順。
-
-1. Claude Code セッションで install:
-  ```
-   /plugin marketplace add https://github.com/hayashiii-ghub/hikizan.git
-   /plugin install hikizan@hikizan
-  ```
-   別ハーネス (Cursor / Codex) は [install (skill pack)](#install-skill-pack) 参照。
-2. 入力例:
-  ```
-   コードレビューして
-  ```
-   → `/hikizan:sadoku` が起動して review を実行する。
-3. 他の trigger は下の [trigger 早見表](#trigger-早見表) を参照。
+決定は公式の JSON `permissionDecision` 形式 (`deny` / `ask`)。発火条件マトリクスと既知の限界は `hooks/conditions.md` (SoT)。決定論ロジックは `hooks/tests/` で回帰検査する (`bash hooks/tests/run.sh`)。発火イベントは `~/.hikizan/metrics.jsonl` に記録 (`HIKIZAN_METRICS_DIR` で変更可)。
 
 ## trigger 早見表
 
-install 後、各 skill は以下の入力で起動する。
+<!-- hikizan:triggers:start -->
+<!-- generated by scripts/gen-trigger-docs.sh from skills/*/SKILL.md frontmatter — do not edit by hand -->
 
-```
-"設計どうする"           → kouchiku 通常検討
-"探索して" / "全体像を掴んで" → tansaku 探索
-"すり合わせ" / "仕様を詰めたい" → tansaku すり合わせ
-"計画実行" / "進めて"     → kouchiku 計画実行
-"レビューして"           → sadoku 通常レビュー
-"整理して" / "simplify"   → sadoku simplify findings
-"コードレビュー"          → sadoku 通常レビュー + simplify (compound)
-"PR文書いて"            → teishutsu PR 本文ドラフト
-"エラー" / "動かない"     → kouchiku diagnosis
-"TDDで" / "テストから書いて" → shiken
-"PR出す" / "PR提出"     → teishutsu
-```
+| skill | 起動トリガー |
+|---|---|
+| `tansaku` | 探索, 全体像把握, 影響範囲調査, 用語整理, すり合わせ |
+| `sadoku` | PR確認, レビュー, code review, 整理, simplify |
+| `kouchiku` | 設計判断, 方針決め, design decision, kill or keep, 計画実行 |
+| `shiken` | TDD, テスト先行, テストから書く |
+| `teishutsu` | PR提出, PR出す, PR ready, PR文書いて, PR description, submission, PR open |
 
-詳しい trigger 一覧と mode 切替は `docs/workflow.md` (mermaid 図入り) を参照。
+各 skill の mode 別トリガーと遷移は `docs/workflow.md`、発動条件の正本は各 SKILL.md frontmatter `description`。
+<!-- hikizan:triggers:end -->
 
-Claude Code / Codex の `/goal` 相当機能で継続実行する場合の運用例も `docs/workflow.md` を参照。hikizan は loop engine ではなく、loop 内の判断規約として使う。
+## 外部 plugin 併用
+
+hikizan は orchestration / LSP 本体を抱え込まない。必要なら公式 plugin を別途 install する。
+
+- **Codex**: `/plugin install codex@openai-codex` (OpenAI 公式 [codex-plugin-cc](https://github.com/openai/codex-plugin-cc))。namespace で `/hikizan:*` と衝突しない。Codex 経由のコマンドも CC の Bash を通る限り同じ hook が効く。
+- **LSP**: `/plugin install typescript-lsp@anthropic` 等。各 language server バイナリは別途要求 (`typescript-language-server` / `pyright` / `rust-analyzer`)。hikizan の skill は「シンボル系は LSP、テキスト系は grep、未設定なら grep fallback」で書かれており、未導入でも動作する (精度は落ちる)。
+
+## quick start
+
+1. Claude Code で install (上記)。別ハーネスは [install (skill pack)](#install-skill-pack--cursor--codex)。
+2. `コードレビューして` → `/hikizan:sadoku` が通常レビューを実行。
+3. 他の trigger は上の [trigger 早見表](#trigger-早見表) を参照。
+
+継続実行 (`/goal` 相当) の運用例は `docs/workflow.md`。hikizan は loop engine ではなく loop 内の判断規約として使う。
 
 ## 設計原則
 
-1. **skill 構成**: 1 skill に複数 mode / references は分離 / 決定論的な処理は scripts に置く
-2. **Controller Owns Information**: 情報取得だけが目的の subagent はデフォルトで使わない
-3. **inline 既定、subagent は明示 gate**: subagent を使うのは (a) 重い情報取得 / (b) specialist review / (c) 機械的な fan-out の 3 つに限る
-4. **起動と文脈の明示**: announce-at-start / worktree の Step 0 検出 / Hard Rules 冒頭の 1 文ガード
-5. **評価は「環境変化」で見る**: 完了記録のうち機械的に検証できる項目は command の出力をそのまま引用し、自己申告は不可とする
-6. **文章の可読性**: 4 つのチェック (結論を先に出す / 1 段落 1 主張 / 読み手の語彙 / 儀礼的表現を削る)
-7. **認知負荷の削減**: 選択肢の提示 + 推奨度 N/10 + 1 行根拠 / 構造変更は図・線形手順は箇条書き / 読み手の負荷を優先する。PR 粒度・テスト最小化と同様に、全 skill に適用する
-8. **Vertical TDD**: `kouchiku` は次に閉じる 1 つの observable behavior を slice として切り、`shiken` はその slice の output が壊れた時に落ちる test だけを残す
-9. **工数は token 規模で考える**: 重さは「人間の作業時間」ではなく token 消費 / context 占有 / API コストで捉える。行数・ファイル数はその proxy。実行者は AI agent であることを前提とする
-10. **ファクトチェック**: 知識カットオフより後の事実や不確実な情報は、検索・fetch・一次ソースで裏取りしてから断定する
+10+ の設計原則は `docs/principles.md` を参照 (3 層構造 / Controller Owns Information / 環境変化評価 / Vertical TDD / 単一ソース 等)。
 
 ## ディレクトリ構成
 
 ```
 hikizan/
-├── README.md                    ← 利用者向けの入口 (GitHub で最初に表示)
-├── AGENTS.md                    ← AI agent 入口 + routing
-├── LICENSE                      ← MIT
-├── .gitignore
-├── .claude-plugin/              ← Claude Code plugin manifest (CC 経由配布用)
-│   ├── plugin.json              ← plugin 本体の manifest
-│   └── marketplace.json         ← 単一 plugin の marketplace (source: "./")
-├── hooks/                       ← CC plugin hooks (SessionStart / PreToolUse / PostToolUse)
-│   ├── hooks.json
-│   ├── conditions.md            ← 停止条件マトリクス
-│   └── scripts/
-│       ├── lib/metrics.sh       ← ~/.hikizan/metrics.jsonl writer (silent on failure)
-│       ├── bootstrap-claude-md.sh
-│       ├── pre-push.sh
-│       ├── pre-pr-create.sh
-│       └── post-commit.sh
-├── templates/
-│   └── CLAUDE.md                ← SessionStart hook が必要なセクションを重複なく追加する
-├── skills/                      ← skill 本体 (SoT、CC plugin / npx skills add の両経路で読まれる)
-│   ├── tansaku/
-│   │   └── SKILL.md
-│   ├── sadoku/
-│   │   ├── SKILL.md
-│   │   └── references/
-│   │       ├── project-context.md
-│   │       ├── persona-catalog.md
-│   │       ├── simplify-checklist.md
-│   │       └── agents/
-│   │           ├── reviewer-security.md
-│   │           └── reviewer-architecture.md
-│   ├── kouchiku/
-│   │   ├── SKILL.md
-│   │   └── references/
-│   │       ├── diagnosis-techniques.md
-│   │       └── minimal-approach.md
-│   ├── shiken/
-│   │   ├── SKILL.md
-│   │   └── references/testing-anti-patterns.md
-│   └── teishutsu/
-│       ├── SKILL.md
-│       └── references/pr-template.md
-└── docs/
-    └── workflow.md              ← 使い方ガイド (利用者向け、mermaid 図入り)
+├── README.md / AGENTS.md / LICENSE / .gitignore
+├── .claude-plugin/        ← plugin.json / marketplace.json
+├── agents/                ← first-class subagent 定義 (reviewer-security / -architecture)
+├── hooks/
+│   ├── hooks.json / conditions.md
+│   ├── scripts/           ← session-context / pre-push / pre-destructive / pre-pr-create / post-commit
+│   │   └── lib/           ← push-parse / destructive / decision / metrics
+│   └── tests/             ← 自己完結 test runner (run.sh + test-*.sh)
+├── scripts/               ← gen-trigger-docs.sh / check-consistency.sh
+├── templates/CLAUDE.md    ← routing/safety の単一ソース (注入 & /hikizan:init が共用)
+├── skills/                ← SKILL.md (SoT) + references/
+│   ├── tansaku / sadoku / kouchiku / shiken / teishutsu / init
+└── docs/                  ← workflow.md / principles.md
 ```
 
 ## version
 
-hikizan は `.claude-plugin/plugin.json` に semver を明示する。公開時は変更内容に合わせて `version` を更新する。
+`.claude-plugin/plugin.json` に semver を明示する。公開時は変更内容に合わせて更新する。
 
 ## ライセンス / acknowledgements
 
-- License: MIT (`LICENSE` 参照)
-- Inspired by / references:
-  - [tw93/Waza](https://github.com/tw93/Waza)
-  - [obra/superpowers](https://github.com/obra/superpowers)
-  - [mattpocock/skills](https://github.com/mattpocock/skills)
+- License: MIT (`LICENSE`)
+- Inspired by: [tw93/Waza](https://github.com/tw93/Waza) · [obra/superpowers](https://github.com/obra/superpowers) · [mattpocock/skills](https://github.com/mattpocock/skills)
