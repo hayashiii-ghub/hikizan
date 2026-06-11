@@ -33,10 +33,9 @@ this is irreversible. confirm it is intended before running."
   exit 0
 fi
 
-# 2. force push to a protected branch -> deny
-case " $CMD " in *" push "*) IS_PUSH=1 ;; *) IS_PUSH=0 ;; esac
-case "$CMD" in *git*) ;; *) IS_PUSH=0 ;; esac
-if [ "$IS_PUSH" = "1" ] && hikizan_push_has_force "$CMD"; then
+# 2. force push to a protected branch -> deny (anchored on the git subcommand
+# so quoted strings and `git stash push` never trigger)
+if [ "$(hz_git_subcommand "$CMD")" = "push" ] && hikizan_push_has_force "$CMD"; then
   PUSHDIR=$(hz_push_dir "$CMD")
   [ -n "$PUSHDIR" ] && [ ! -d "$PUSHDIR" ] && PUSHDIR=""
   if [ -n "$PUSHDIR" ]; then BRANCH=$(git -C "$PUSHDIR" branch --show-current 2>/dev/null || true)

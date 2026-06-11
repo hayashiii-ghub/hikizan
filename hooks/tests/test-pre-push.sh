@@ -54,5 +54,11 @@ hz_run_hook "$HOOK" "git push --force origin main" "$REPO_MAIN"
 assert_contains "deny reason names protected branch" "protected" \
   "$(printf '%s' "$HZ_OUT" | jq -r '.hookSpecificOutput.permissionDecisionReason // ""')"
 
+# N-1: not actually a push — quoted message / other subcommand must pass through
+hz_run_hook "$HOOK" 'git commit -m "use --force push now"' "$REPO_MAIN"
+assert_eq "commit msg mentioning force push -> allow" "allow" "$(hz_decision_of "$HZ_OUT")"
+hz_run_hook "$HOOK" "git stash push -m wip" "$REPO_MAIN"
+assert_eq "git stash push -> allow" "allow" "$(hz_decision_of "$HZ_OUT")"
+
 rm -rf "$REPO_MAIN" "$REPO_FEAT"
 hz_test_summary

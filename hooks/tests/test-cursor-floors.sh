@@ -42,5 +42,13 @@ run_cursor "rm -rf x" "/tmp"
 assert_contains "ask carries message" "irreversible" \
   "$(printf '%s' "$HZ_OUT" | jq -r '.agent_message // ""')"
 
+# N-1: quoted strings / other subcommands must not trigger (no `if` filter here)
+run_cursor 'git commit -m "use --force push now"' "$REPO_MAIN"
+assert_eq "commit msg mentioning force push -> allow" "allow" "$(perm_of "$HZ_OUT")"
+run_cursor 'git commit -m "see reset --hard docs"' "$REPO_MAIN"
+assert_eq "commit msg mentioning reset --hard -> allow" "allow" "$(perm_of "$HZ_OUT")"
+run_cursor "git stash push -m wip" "$REPO_MAIN"
+assert_eq "git stash push -> allow" "allow" "$(perm_of "$HZ_OUT")"
+
 rm -rf "$REPO_MAIN" "$REPO_FEAT"
 hz_test_summary

@@ -11,6 +11,8 @@ HERE="$(dirname "$0")"
 source "$HERE/lib/metrics.sh" 2>/dev/null || hikizan_metrics_log() { :; }
 # shellcheck source=lib/push-parse.sh
 source "$HERE/lib/push-parse.sh"
+# shellcheck source=lib/destructive.sh
+source "$HERE/lib/destructive.sh"   # for hz_git_subcommand
 # shellcheck source=lib/decision.sh
 source "$HERE/lib/decision.sh"
 
@@ -21,10 +23,10 @@ SESSION_ID=$(printf '%s' "$JSON" | jq -r '.session_id // ""')
 
 [ -n "$CWD" ] && cd "$CWD" 2>/dev/null
 
-# Defensive: must be a git push. The `if` filter is the primary gate, but this
-# also catches `git -C <dir> push` / `command git push` that the filter misses.
-case "$COMMAND" in *git*) ;; *) exit 0 ;; esac
-case " $COMMAND " in *" push "*) ;; *) exit 0 ;; esac
+# Defensive: only a real `git push` (head=git, subcommand=push). Anchoring on
+# the subcommand keeps `git -C <dir> push` / `command git push` in scope while
+# quoted strings (`git commit -m "force push"`) and `git stash push` stay out.
+[ "$(hz_git_subcommand "$COMMAND")" = "push" ] || exit 0
 
 # Resolve the repo the push targets (-C <dir> wins over cwd).
 PUSHDIR=$(hz_push_dir "$COMMAND")

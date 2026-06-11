@@ -6,56 +6,110 @@
 # Scope (the four families the skills' 停止条件 already promise to guard):
 #   rm -rf · git reset --hard · git clean -f · git checkout (discard)
 #
-# Tokenizing loops disable pathname expansion (set -f) so the verdict never
-# depends on cwd contents.
+# Classification is ANCHORED: the rm check requires `rm` to be the command head
+# (sudo/command/env prefixes skipped), and the git checks require the matching
+# git SUBCOMMAND. A quoted string that merely mentions "--force push" or
+# "reset --hard" (e.g. a commit message) never triggers. Tokenizing runs under
+# set -f (noglob) so the verdict never depends on cwd contents.
 
-# hz_is_rm_rf "<command>" -> exit 0 if it is an `rm` with both recurse and force.
-hz_is_rm_rf() {
-  local c="$1" tok seen_rm=0 hasr=0 hasf=0 rc=1 _g
+# hz_cmd_head "<command>" -> first meaningful token (skips sudo / command /
+# leading VAR=value assignments).
+hz_cmd_head() {
+  local tok out="" _g; case $- in *f*) _g=1 ;; *) _g=0 ;; esac; set -f
+  for tok in $1; do
+    case "$tok" in sudo|command|*=*) continue ;; *) out="$tok"; break ;; esac
+  done
+  [ "$_g" = 0 ] && set +f
+  printf '%s' "$out"
+}
+
+# hz_git_subcommand "<command>" -> the git subcommand (push / reset / ...) when
+# the command head is `git`, else empty. Skips git's own pre-subcommand flags
+# (`-C <dir>`, `-c k=v`, `--git-dir <d>`, ...).
+hz_git_subcommand() {
+  local tok seen_git=0 skip=0 out="" _g
   case $- in *f*) _g=1 ;; *) _g=0 ;; esac; set -f
-  for tok in $c; do [ "$tok" = "rm" ] && seen_rm=1; done
-  if [ "$seen_rm" = "1" ]; then
-    for tok in $c; do
-      case "$tok" in
-        --recursive)               hasr=1 ;;
-        --force)                   hasf=1 ;;
-        --*)                       : ;;             # other long opt — NOT a -rf cluster
-        -*[rR]*[fF]*|-*[fF]*[rR]*) rc=0; break ;;   # one short cluster with both
-        -r|-R)                     hasr=1 ;;
-        -f)                        hasf=1 ;;
-      esac
-    done
-    [ "$rc" = 1 ] && [ "$hasr" = 1 ] && [ "$hasf" = 1 ] && rc=0
-  fi
+  for tok in $1; do
+    if [ "$seen_git" = 0 ]; then
+      case "$tok" in sudo|command|*=*) continue ;; esac
+      [ "$tok" = "git" ] || break        # head is not git -> no subcommand
+      seen_git=1; continue
+    fi
+    if [ "$skip" = 1 ]; then skip=0; continue; fi
+    case "$tok" in
+      -C|-c|--git-dir|--work-tree|--namespace|--exec-path) skip=1 ;;
+      --*) : ;;
+      -*)  : ;;
+      *)   out="$tok"; break ;;
+    esac
+  done
+  [ "$_g" = 0 ] && set +f
+  printf '%s' "$out"
+}
+
+# hz_is_rm_rf "<command>" -> exit 0 if it is an `rm` with both recurse and
+# force (one cluster like -rf, or split across tokens like -rv -f).
+hz_is_rm_rf() {
+  local c="$1" tok hasr=0 hasf=0 rc=1 _g
+  [ "$(hz_cmd_head "$c")" = "rm" ] || return 1
+  case $- in *f*) _g=1 ;; *) _g=0 ;; esac; set -f
+  for tok in $c; do
+    case "$tok" in
+      --recursive)               hasr=1 ;;
+      --force)                   hasf=1 ;;
+      --*)                       : ;;             # other long opt — not a cluster
+      -*[rR]*[fF]*|-*[fF]*[rR]*) rc=0; break ;;   # one short cluster with both
+      -*[rR]*)                   hasr=1 ;;        # short cluster with r only
+      -*[fF]*)                   hasf=1 ;;        # short cluster with f only
+    esac
+  done
+  [ "$_g" = 0 ] && set +f
+  [ "$rc" = 1 ] && [ "$hasr" = 1 ] && [ "$hasf" = 1 ] && rc=0
+  return $rc
+}
+
+# _hz_has_tok "<command>" "<token>" -> exit 0 if an exact token is present.
+_hz_has_tok() {
+  local tok rc=1 _g; case $- in *f*) _g=1 ;; *) _g=0 ;; esac; set -f
+  for tok in $1; do [ "$tok" = "$2" ] && { rc=0; break; }; done
+  [ "$_g" = 0 ] && set +f
+  return $rc
+}
+
+# _hz_has_short_f "<command>" -> exit 0 on a short cluster containing f (-f, -fd).
+_hz_has_short_f() {
+  local tok rc=1 _g; case $- in *f*) _g=1 ;; *) _g=0 ;; esac; set -f
+  for tok in $1; do
+    case "$tok" in --*) : ;; -*[fF]*) rc=0; break ;; esac
+  done
   [ "$_g" = 0 ] && set +f
   return $rc
 }
 
 # hz_destructive_label "<command>" -> print a label, or nothing if benign.
 hz_destructive_label() {
-  local c="$1" tok rc=0 out="" _g
+  local c="$1" sub
   if hz_is_rm_rf "$c"; then
     printf 'rm -rf (recursive force delete)'
     return 0
   fi
-  case "$c" in
-    *"reset --hard"*)
-      printf 'git reset --hard (discards commits and working-tree changes)'
-      return 0 ;;
-  esac
-  case "$c" in
-    *"git clean"*)
-      case $- in *f*) _g=1 ;; *) _g=0 ;; esac; set -f
-      for tok in $c; do
-        case "$tok" in -*[fF]*) out='git clean -f (deletes untracked files)'; break ;; esac
-      done
-      [ "$_g" = 0 ] && set +f
-      if [ -n "$out" ]; then printf '%s' "$out"; return 0; fi ;;
-  esac
-  case "$c" in
-    *"git checkout"*" -- "*|*"git checkout -- "*|*"git checkout ."*|*"git checkout -f"*|*"git checkout --force"*)
-      printf 'git checkout (discards working-tree changes)'
-      return 0 ;;
+  sub="$(hz_git_subcommand "$c")"
+  case "$sub" in
+    reset)
+      if _hz_has_tok "$c" "--hard"; then
+        printf 'git reset --hard (discards commits and working-tree changes)'
+      fi ;;
+    clean)
+      if _hz_has_short_f "$c" || _hz_has_tok "$c" "--force"; then
+        printf 'git clean -f (deletes untracked files)'
+      fi ;;
+    checkout)
+      # discard forms: `git checkout [-tree-ish] -- <path>`, `git checkout .`,
+      # `git checkout -f/--force`. A plain pathspec / branch switch stays out.
+      if _hz_has_tok "$c" "--" || _hz_has_tok "$c" "." \
+         || _hz_has_short_f "$c" || _hz_has_tok "$c" "--force"; then
+        printf 'git checkout (discards working-tree changes)'
+      fi ;;
   esac
   return 0
 }

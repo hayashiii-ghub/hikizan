@@ -39,15 +39,17 @@ force push の対象 branch は `scripts/lib/push-parse.sh` の `hikizan_push_ta
 
 破壊的コマンドの分類規約:
 
-- **rm**: 再帰 (`-r`/`-R`/`--recursive`) **かつ** 強制 (`-f`/`--force`) の両方を持つ時だけ ask。`rm --force file` (再帰なし) や `rm -f file` 単体は対象外
-- **checkout**: `git checkout -- <path>` / `git checkout <tree-ish> -- <path>` / `git checkout .` / `git checkout -f` を ask。`git checkout <branch>` (ブランチ切替) は対象外
+- **判定は anchored**: rm 系は「コマンド先頭 (sudo / command / 環境変数 prefix は skip) が `rm`」、git 系は「git の subcommand が reset / clean / checkout」のときだけ評価する。引用文字列に `--force push` や `reset --hard` が現れるだけのコマンド (例: `git commit -m "see reset --hard docs"`) は発火しない
+- **rm**: 再帰 (`-r`/`-R`/`--recursive`、`-rv` 等のクラスタ含む) **かつ** 強制 (`-f`/`--force`) の両方を持つ時だけ ask。`rm --force file` (再帰なし) や `rm -f file` 単体は対象外
+- **checkout**: `--` トークンを含む形 (`git checkout [-tree-ish] -- <path>`) / `git checkout .` / `-f`・`--force` を ask。ブランチ切替や `--` なしの pathspec (`git checkout file.txt`) は対象外
 
 ## 既知の限界
 
 決定論層の floor であり、prose の停止条件 (各 SKILL.md) と二重化する前提。以下は hook 単独ではカバーしない:
 
-- **compound command**: `cd x && rm -rf y` のように先頭が対象コマンドでない複合コマンドは `if` matcher (prefix) に一致せず発火しない。skill 本文の停止条件で補完する。
-- **exotic な git 呼び出し**: 絶対パス `/usr/bin/git push` や alias 経由など、matcher の prefix に外れる形は素通りしうる (script 内 defensive filter は `git` + ` push ` トークンで拾うが、`if` 段で発火しなければ script に届かない)。
+- **compound command**: `cd x && rm -rf y` のように先頭が対象コマンドでない複合コマンドは `if` matcher (prefix) に一致せず発火しない (anchored 判定も head ≠ 対象で skip する)。skill 本文の停止条件で補完する。
+- **`if` prefix に外れる rm**: `sudo rm -rf` / `/bin/rm -rf` / GNU 形の trailing flag (`rm dir -rf`) は CC の `if: "Bash(rm -*)"` に一致せず、CC では script に届かない。Cursor adapter (if なし) では `sudo rm -rf` は head 判定で拾うが、`/bin/rm` は拾わない。
+- **exotic な git 呼び出し**: 絶対パス `/usr/bin/git push` や alias 経由など、matcher の prefix に外れる形は素通りしうる (script 内は `hz_git_subcommand` による anchored 判定だが、`if` 段で発火しなければ script に届かない)。
 - **non-fast-forward の `-C` 解決**: force 保護は `-C <dir>` を解決するが、non-ff 検査の upstream 比較は cwd repo 基準が主。
 - **destructive 分類**: `rm -rf` / `reset --hard` / `clean -f` / `checkout` discard の 4 系統に限定。`git restore` 等は対象外。
 
