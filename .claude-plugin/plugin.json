@@ -1,8 +1,8 @@
 {
   "$schema": "https://json.schemastore.org/claude-code-plugin-manifest.json",
   "name": "hikizan",
-  "description": "動詞単位の 5 skill (tansaku / sadoku / kouchiku / shiken / teishutsu) を invariant / 既定手順 / hooks floors の 3 層で構成する Claude Code plugin / Agent Skills skill pack。低自律モデルには rails を、高自律モデルにはハーネス税をかけない設計。",
-  "version": "0.3.0",
+  "description": "動詞単位の 5 skill (tansaku / sadoku / kouchiku / shiken / teishutsu) を「弱いモデル基準のレール + 賢いモデルへの opt-out (手順自由・出口固定) + hooks floors」で構成する Claude Code plugin / Agent Skills skill pack。タスクの回し方が強くないモデルには番号付き手順を、強いモデルにはハーネス税をかけず出口の形だけ揃える設計。",
+  "version": "0.4.0",
   "author": {
     "name": "hayashiii-ghub"
   },

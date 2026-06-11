@@ -19,9 +19,17 @@ SESSION_ID=$(printf '%s' "$JSON" | jq -r '.session_id // ""' 2>/dev/null)
 TIER="${HIKIZAN_TIER:-standard}"
 PLUGIN_ROOT="${CLAUDE_PLUGIN_ROOT:-}"
 TEMPLATE="$PLUGIN_ROOT/templates/CLAUDE.md"
+PREAMBLE="$PLUGIN_ROOT/templates/standard-preamble.md"
 
 if [ -n "$PLUGIN_ROOT" ] && [ -f "$TEMPLATE" ]; then
   cat "$TEMPLATE"
+  # standard tier only: the scoped opt-out (procedures are optional, the exit
+  # contract and the hook floors still bind). guided tier follows the skills
+  # literally and never sees this.
+  if [ "$TIER" = "standard" ] && [ -f "$PREAMBLE" ]; then
+    printf '\n'
+    cat "$PREAMBLE"
+  fi
   printf '\nhikizan-tier (this session): %s\n' "$TIER"
   hikizan_metrics_log hook_fired session-context inject allow "$SESSION_ID"
 else

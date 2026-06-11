@@ -1,12 +1,11 @@
 #!/usr/bin/env bash
 # Consistency lint for hikizan skills.
 #
-#   1. The 共通契約 block (between the contract markers) must be byte-identical
+#   1. The 共通ルール block (between the contract markers) must be byte-identical
 #      across every skills/*/SKILL.md. It is inlined per skill (not a shared
 #      file) so `npx skills add` per-skill copies keep it; this lint is what
 #      keeps the copies from drifting.
-#   2. Each SKILL.md must carry exactly one contract block and an effort-neutral
-#      structure (a `## 共通契約`, a mode section, an 出力契約/完了記録).
+#   2. Each SKILL.md must carry exactly one contract block.
 #
 # Exit 0 iff everything is consistent. Run: bash scripts/check-consistency.sh
 
@@ -45,7 +44,7 @@ for f in "$ROOT"/skills/*/SKILL.md; do
   if [ -z "$ref" ]; then
     ref="$blk"; ref_file="$name"
   elif [ "$blk" != "$ref" ]; then
-    echo "✘ $name: 共通契約 block differs from $ref_file"
+    echo "✘ $name: 共通ルール block differs from $ref_file"
     diff <(printf '%s\n' "$ref") <(printf '%s\n' "$blk") | sed 's/^/    /' | head -20
     fail=1
   fi
@@ -57,7 +56,7 @@ if [ "$count" -eq 0 ]; then
 fi
 
 if [ "$fail" -eq 0 ]; then
-  echo "✔ 共通契約 block identical across $count skills (ref: $ref_file)"
+  echo "✔ 共通ルール block identical across $count skills (ref: $ref_file)"
 fi
 
 # 3. plugin agents/ (first-class subagents) must match the per-skill fallback

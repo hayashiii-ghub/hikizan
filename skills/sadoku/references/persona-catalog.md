@@ -8,7 +8,7 @@
 2. 各 persona の起動条件を照合
 3. ヒットした persona だけ subagent として起動
 4. subagent の出力を controller が**裏取り** (該当 file:line を実際に grep / Read で確認、subagent の主張を鵜呑みにしない)
-5. 裏取り済の指摘のみ完了記録に反映
+5. 裏取り済の指摘のみ報告に反映
 
 並列起動上限は 3。
 

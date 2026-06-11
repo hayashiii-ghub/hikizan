@@ -79,9 +79,9 @@ flowchart TB
   I -->|"root cause 確定"| C
   C -->|"TDD 必要層<br/>1 vertical slice"| D["shiken<br/>RED → GREEN → REFACTOR → PRUNE"]
   D -->|"検証ログ付き return"| C
-  C -->|"handoff block"| E["sadoku 通常レビュー<br/>深さ・停止条件・完了記録"]
+  C -->|"handoff"| E["sadoku 通常レビュー<br/>深さ・停止条件・報告"]
   E -->|"Standard 以上"| F["専門家レビュー<br/>security / arch は subagent (並列最大3)<br/>adversarial は inline"]
-  F -->|"裏取り済み反映"| G["teishutsu PR 本文<br/>pr-template 8 step"]
+  F -->|"裏取り済み反映"| G["teishutsu PR 本文<br/>pr-template 6 セクション"]
   G -->|"PII scan / 4 チェック"| H["teishutsu<br/>remote / submodule / parent / cwd-aware gh"]
   H -->|"hook で衝突なし"| J["PR open"]
 ```
@@ -90,7 +90,7 @@ flowchart TB
 >
 > - 未知領域や用語ズレがある場合は、設計前に **tansaku** で Map / Terminology / Unknowns を作る。
 > - 原因未確定の調査は **kouchiku diagnosis** として inline で実行する。
-> - **kouchiku → shiken → kouchiku** の往復は handoff block で実行する。1 往復は原則 1 vertical behavior slice。
+> - **kouchiku → shiken → kouchiku** の往復は handoff (+ vertical slice 指定) で実行する。1 往復は原則 1 vertical behavior slice。
 > - **sadoku** は実装完了後に初めて起動（「見る」専門）。
 > - **専門家レビュー**は Standard 以上のみ。Quick は停止条件 + 最小 skeptical lens 中心。
 
@@ -208,7 +208,7 @@ mode レベルの遷移は次の通り (mode mapping は frontmatter に無い�
 | kouchiku 計画実行    | shiken                 | TDD 必要層に触れた          | vertical slice + spec / edge case / non-goals |
 | kouchiku diagnosis   | shiken                 | bugfix 確定                 | root cause + vertical slice + failing behavior + test target |
 | shiken               | kouchiku 計画実行      | サイクル完了                | RED/GREEN/PRUNE log + test level + coverage gap + files changed |
-| kouchiku 計画実行    | sadoku 通常レビュー    | 実装完了                    | handoff block + 完成 diff |
+| kouchiku 計画実行    | sadoku 通常レビュー    | 実装完了                    | handoff + 報告 + 完成 diff |
 | (user)               | sadoku 通常レビュー    | 「レビューして」            | diff                  |
 | sadoku 通常レビュー  | subagent (reviewer-*)  | Standard 以上 + 専門観点該当 | diff + 範囲           |
 | subagent             | sadoku                 | 評価完了                    | findings（要裏取り）  |
@@ -218,17 +218,13 @@ mode レベルの遷移は次の通り (mode mapping は frontmatter に無い�
 | kouchiku 計画実行    | teishutsu              | 完了報告 + 本文準備済       | files changed + body  |
 | (user)               | teishutsu              | 「PR文書いて」              | change intent + files + verification |
 
-handoff block の共通形:
+handoff の共通形 (1 行):
 
 ```text
-handoff: [skill]
-reason: [なぜ今渡すか]
-context: [症状 / 仕様 / 設計判断]
-evidence:
-  - [file:line / command output / logs]
-expected return:
-  - [戻してほしい成果物]
+handoff: [skill] / 渡すこと: [1 文] / evidence: [file:line かコマンド出力]
 ```
+
+`kouchiku` → `shiken` だけは vertical slice の指定を加える (形式は `skills/kouchiku/references/execution.md`)。
 
 ---
 
