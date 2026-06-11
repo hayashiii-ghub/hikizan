@@ -4,7 +4,7 @@
   "owner": {
     "name": "hayashiii-ghub"
   },
-  "description": "動詞単位の 5 skill を invariant / 既定手順 / hooks floors の 3 層で構成する Claude Code plugin / Agent Skills skill pack。",
+  "description": "動詞単位の 5 skill を「弱いモデル基準のレール + 賢いモデルへの opt-out (手順自由・出口固定) + hooks floors」で構成する Claude Code plugin / Agent Skills skill pack。",
   "plugins": [
     {
       "name": "hikizan",

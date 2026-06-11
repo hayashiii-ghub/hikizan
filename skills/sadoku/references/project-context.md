@@ -47,7 +47,7 @@ grep -rn "import.*$SYMBOL\|from.*$SYMBOL" --include='*.ts' --include='*.tsx' .
 
 ## 出力
 
-確認結果を sadoku の完了記録の `scope` 行に反映する。drift があれば「実装中に分かったこと」記載を提案。
+確認結果を sadoku の報告に反映する。drift があれば「実装中に分かったこと」記載を提案。
 
 ## やらないこと
 

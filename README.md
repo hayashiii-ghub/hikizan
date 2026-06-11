@@ -2,13 +2,13 @@
 
 hikizan は Claude Code plugin / Agent Skills 対応の skill pack。動詞単位で分割した 5 つの主要 skill と、認知負荷を抑える運用方針を提供する。
 
-設計の出発点は「AI agent が長く自走しすぎても、逐一確認を挟まれすぎても作業のテンポが落ちる」という不満。hikizan はその塩梅を **3 層** で取る:
+設計の出発点は「AI agent が長く自走しすぎても、逐一確認を挟まれすぎても作業のテンポが落ちる」という不満。hikizan はその塩梅を **3 つの部品** で取る:
 
-- **invariant (必須)** — 検証ログ・PII scan・命名・不可逆操作の確認など、全環境で省略できない保証。
-- **既定手順 (procedure)** — guided tier では遵守、standard tier (hooks=floors のある Claude Code) では invariant を満たす限り圧縮可。賢いモデルにハーネス税をかけない仕組み。
+- **レール (skills)** — 弱いモデル基準で書いた番号付き手順と穴埋めテンプレ。タスクの回し方が強くないモデルでも、上から実行すれば形になる。
+- **opt-out (standard tier)** — hooks=floors のある環境では、SessionStart に「手順は守らなくてよい。ただし出口は固定」という前文を注入する。賢いモデルにハーネス税をかけず、成果物の形だけ揃える。
 - **floors (hooks)** — push / PR / 破壊的操作を決定論的に止める下限。tier に関わらず効く。
 
-自律度は「環境が宣言する tier × 操作の不可逆度」で決まる (リスクが低く推測可能なら自律、計画の分岐点では確認、不可逆では停止)。モデル名の検知には依存しない。
+**出口契約**: どのモデル・どの進め方でも、PR は `teishutsu` の 6 セクション (過程の trace を残す Workflow 節を含む) に収束させる。任せても流れを後から把握できる、が設計目標。
 
 - repo: [https://github.com/hayashiii-ghub/hikizan](https://github.com/hayashiii-ghub/hikizan)
 - license: MIT
@@ -23,7 +23,7 @@ hikizan は Claude Code plugin / Agent Skills 対応の skill pack。動詞単�
 | `shiken` | 試験 | 試す | TDD discipline / PRUNE |
 | `teishutsu` | 提出 | 出す | PR 本文ドラフト / PR 提出フロー (remote / submodule / parent / cwd-aware gh) |
 
-各 SKILL.md は「共通契約 block + mode router + invariant + 出力契約」に絞り、手順詳細は `references/` に置く。`kouchiku` が controller として判断を保持し、TDD は `shiken`、レビューは `sadoku`、提出は `teishutsu`、探索は `tansaku` に handoff block で渡す。
+各 SKILL.md は「共通ルール block + モード表 + 番号付き手順 + やってはいけないこと + 穴埋め報告」に絞り、手順詳細は `references/` に置く。`kouchiku` が controller として判断を保持し、TDD は `shiken`、レビューは `sadoku`、提出は `teishutsu`、探索は `tansaku` に渡す。
 
 ユーティリティ skill `init` (`/hikizan:init`) は規約を project の CLAUDE.md に手動で書き込みたい時だけ使う (model 自動起動は無効)。
 
@@ -63,8 +63,10 @@ Cursor には `beforeShellExecution` hook で CC と同じ floors (force push / 
 
 ## tier
 
-- Claude Code (`/plugin`): SessionStart hook (`session-context.sh`) が routing / safety / `hikizan-tier: standard` を毎セッション context に注入する。host repo の CLAUDE.md は書き換えない (常に installed version と同期、汚染なし)。
-- 他ハーネス: 宣言が無ければ `guided` 扱い。`HIKIZAN_TIER` 環境変数で上書きできる。
+tier は「環境構築時にどこまで足場を置いたか」を表す。skill 本文は両 tier 共通 (弱いモデル基準のレール) で、違いは opt-out 前文の有無だけ。
+
+- **standard** (hooks=floors のある環境): SessionStart hook (`session-context.sh`) が routing / ルールに加えて **opt-out 前文** (`templates/standard-preamble.md` — 手順は自由、出口は固定) を注入する。Claude Code の `/plugin` は既定でこれ。host repo の CLAUDE.md は書き換えない。
+- **guided** (floors 未導入の環境・タスクの回し方が強くないモデル): skill の番号付き手順を上から実行する。`HIKIZAN_TIER` 環境変数で tier を上書きできる。
 - ファイルとして規約を残したい場合のみ `/hikizan:init` で project の CLAUDE.md に追記する。
 
 ## hooks (Claude Code の floors)
@@ -73,7 +75,7 @@ Cursor には `beforeShellExecution` hook で CC と同じ floors (force push / 
 
 | hook | event | 介入 |
 | --- | --- | --- |
-| `session-context` | SessionStart | routing / safety / tier を context に注入 (書き込みなし) |
+| `session-context` | SessionStart | routing / ルール / tier (+ standard なら opt-out 前文) を context に注入 (書き込みなし) |
 | `pre-push` | PreToolUse `git push` | non-fast-forward / 保護 branch への force を `deny` |
 | `pre-destructive` | PreToolUse `rm` / `git reset` / `clean` / `checkout` | 不可逆操作を `ask` (確認要求) |
 | `pre-pr-create` | PreToolUse `gh pr create` | draft / reviewer 未指定を `deny` |
@@ -115,7 +117,7 @@ hikizan は orchestration / LSP 本体を抱え込まない。必要なら公式
 
 ## 設計原則
 
-10+ の設計原則は `docs/principles.md` を参照 (3 層構造 / Controller Owns Information / 環境変化評価 / Vertical TDD / 単一ソース 等)。
+設計原則は `docs/principles.md` を参照 (レール・opt-out・床 / 弱いモデル基準で書く / 出口契約 / 環境変化評価 / Vertical TDD / 単一ソース 等)。
 
 ## ディレクトリ構成
 
@@ -130,7 +132,8 @@ hikizan/
 │   │   └── lib/           ← push-parse / destructive / decision / metrics
 │   └── tests/             ← 自己完結 test runner (run.sh + test-*.sh)
 ├── scripts/               ← gen-trigger-docs.sh / check-consistency.sh
-├── templates/CLAUDE.md    ← routing/safety の単一ソース (注入 & /hikizan:init が共用)
+├── templates/             ← CLAUDE.md (routing/ルールの単一ソース、注入 & /hikizan:init が共用)
+│                            standard-preamble.md (standard tier 専用の opt-out 前文)
 ├── skills/                ← SKILL.md (SoT) + references/
 │   ├── tansaku / sadoku / kouchiku / shiken / teishutsu / init
 └── docs/                  ← workflow.md / principles.md

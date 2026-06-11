@@ -1,6 +1,6 @@
 # 通常検討モードの手順
 
-`kouchiku` SKILL.md の「通常検討」出力契約を満たすための既定手順。standard tier は invariant (前提崩し・前提リスク検証を埋める / 命名規約 / 3 案以上禁止) を保ったまま圧縮してよい。guided tier はこの順序で進める。
+`kouchiku` SKILL.md「手順 (通常検討)」の詳細。出力の全項目はこのファイルが正本。
 
 ## 判断前に tansaku へ渡すか
 

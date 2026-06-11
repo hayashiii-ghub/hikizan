@@ -2,7 +2,7 @@
 
 `sadoku` の simplify findings モードで参照する。各観点ごとの判定基準と書き直し方の指針。
 
-simplify findings は **発見と提案まで**。実装は kouchiku に handoff block で委譲する (sadoku の役割境界)。
+simplify findings は **発見と提案まで**。実装は kouchiku に handoff で委譲する (sadoku の役割境界)。
 
 ## 1. 重複
 
@@ -78,7 +78,7 @@ simplify findings は **発見と提案まで**。実装は kouchiku に handoff
 ## findings を出さない場合
 
 - `findings: 0` を明示する (空 section にしない)
-- 「整理する価値が見当たらない」と判断した理由は完了記録に 1 行残す
+- 「整理する価値が見当たらない」と判断した理由は報告に 1 行残す
 - 「念のため指摘」を増やさない (= sadoku 停止条件「些細な指摘マシン化」防止)
 
 ## 他原則との関係

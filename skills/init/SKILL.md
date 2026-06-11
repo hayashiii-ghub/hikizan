@@ -22,7 +22,7 @@ hikizan の routing / safety を、利用先 project の `CLAUDE.md` に重複�
    - あり、かつ既に `## hikizan Conventions` があれば何もしない (重複させない)。
 3. 書き込んだ内容を user に提示する。
 
-## 必須 (invariant)
+## ルール
 
 - 既存 `CLAUDE.md` の hikizan 以外の内容を書き換えない (追記のみ)。
 - marker `## hikizan Conventions` が既にあれば上書きしない。

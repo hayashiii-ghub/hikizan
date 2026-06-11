@@ -11,132 +11,103 @@ when_to_use: "設計判断, 方針決め, design decision, kill or keep, 計画�
 🌲 Using /kouchiku for [purpose taken from trigger context].
 ```
 
-設計判断・評価・計画策定・承認済み計画の実行を担う controller。原因未確定の不具合は計画実行内の診断分岐で root cause を確定する。情報取得は `tansaku`、TDD は `shiken`、レビューは `sadoku`、提出は `teishutsu` に handoff する (責務は内包しない)。
+考えて決めて実行する skill。調べるのは `tansaku`、テスト先行の実装は `shiken`、レビューは `sadoku`、提出は `teishutsu` に渡す。
 
 <!-- hikizan:contract:start -->
-## 共通契約
+## 共通ルール
 
-全 hikizan skill 共通。ここを変えたら `scripts/check-consistency.sh` が 5 skill の同一性を検査する。
+全 skill 共通。`scripts/check-consistency.sh` が 5 skill で同一であることを検査する。
 
-- **tier**: 環境が宣言する自律度に従う。`hikizan-tier: standard` (floors=hooks のある環境: Claude Code の /plugin、floors 導入済み Cursor 等) は invariant を満たす限り「既定手順」を圧縮してよい。`guided` (既定 / floors 未導入) は「既定手順」を遵守する。未宣言なら `guided` 扱い。
-- **risk dial**: 可逆で推測可能 → 自律で進める / 計画の分岐点 → 確認を取る / 不可逆・破壊的 → 止めてユーザ確認。tier に関わらず不可逆操作は止める。
-- **必須 (invariant)**: 「必須」と記す項目は全 tier で省略不可 — 検証ログは command 出力を引用し自己申告にしない / PII・Secrets scan / 命名規約 / 破壊的操作の明示確認。
-- **既定手順 (procedure)**: 「既定手順」と記す節は guided では遵守、standard では invariant を満たす限り圧縮・省略してよい。
-- **handoff**: skill 間遷移は次の block を出す。
-  ```
-  handoff: [skill]
-  reason: [なぜ今渡すか]
-  context: [症状 / 仕様 / 設計判断]
-  evidence:
-    - [file:line / command output / logs]
-  expected return:
-    - [戻してほしい成果物]
-  ```
-- **命名**: PR / branch / step は issue 名 / 機能名 / branch 名で呼ぶ。独自連番 (PR-1 等) 不可、重複時のみ -v2, -v3。
+- 元に戻せない操作 (削除 / force push / reset --hard / git clean) は、実行する前にユーザに確認する
+- 「pass した」「確認した」と書くときは、コマンド出力の最終行をそのまま貼る。出力なしで完了と書かない
+- 秘密情報 (token / email / チーム外の実名) を PR 本文・commit message に書かない。出す前に grep で確認する
+- PR / branch / step は機能名か issue 名で呼ぶ。PR-1 のような独自の連番を作らない
+- 別の skill に渡すときは 1 行で書く: `handoff: [skill] / 渡すこと: [1 文] / evidence: [file:line かコマンド出力]`
 <!-- hikizan:contract:end -->
 
-## worktree 検出 (必須)
+## 5 つのモード
 
-`git rev-parse --git-dir` と `--git-common-dir` を `pwd -P` で正規化して比較。異なれば worktree 内 — branch 名を完了記録の `worktree` 行に記録する。
+| モード | きっかけ | 出すもの |
+| --- | --- | --- |
+| 軽量検討 | 「どうやって直す」「やり方どっち」/ 対象が 3 ファイル未満 | 推奨案 1 つ |
+| 通常検討 | 「設計どうする」「方針決めたい」/ 新機能の着手前 | 計画 |
+| 評価 | 「やる価値ある?」「採用すべき?」「やめる?」 | Kill / Keep / Pivot |
+| 計画実行 | 「進めて」「計画実行」「着手」(計画の承認後) | 動くコード + 検証ログ |
+| 診断 | 「エラー」「動かない」/ 原因の分からない不具合・test failure | root cause 1 文 + fix |
 
-## モード (router)
+前提情報が足りないと感じたら、考え始める前に `tansaku` に渡す (自分で広域探索をやり直さない)。
 
-| モード | 入力トリガー | 状態トリガー | 出力 | 手順 |
-| --- | --- | --- | --- | --- |
-| 軽量検討 | `どうやって直す` / `やり方どっち` | scope < 3 ファイル | 推奨案 + brute + risk | 本文下記 |
-| 通常検討 | `設計どうする` / `方針決めたい` / `アーキテクチャ判断` | 新機能着手前 | Building…Plan steps | `references/design.md` |
-| 評価 | `やる価値ある` / `採用すべきか` / `やめる?` | — | Verdict + 3 理由 | 本文下記 |
-| 計画実行 | `計画実行` / `進めて` / `着手` | 通常検討の承認直後 | execution-result | `references/execution.md` |
+## 手順 (軽量検討)
 
-通常検討 → 計画実行は連続実行。前提情報が足りなければ判断前に `tansaku` へ handoff し、自分で広域探索を再実行しない。
+1. 推奨案を 1 つ書く: file:line で場所を示し、推奨度 N/10 と根拠 1 行を付ける
+2. 雑にやる案 (brute) があれば 1 行で併記する (なければ省略)
+3. 採用したときの最大の懸念を 1 つ書く
+4. 3 案以上は出さない。明確なら推奨 1 案だけでよい
 
-## handoff 先 (必須: 専門 skill の責務を内包しない)
+## 手順 (通常検討)
 
-| 条件 | 先 |
-| --- | --- |
-| 原因未確定の不具合 / 予期しない test failure | `kouchiku` 診断分岐 |
-| 純ロジック / API / ビジネスルール / bugfix 実装 | `shiken` (1 vertical slice ごと) |
-| 実装完了後の diff review / 整理観点 | `sadoku` (整理の実装は kouchiku に戻す) |
-| PR 本文ドラフト / PR 提出 | `teishutsu` |
-| 情報取得 / 影響範囲把握 / 用語すり合わせ | `tansaku` |
-| 設計判断 / scope 整理 / 計画分解 | `kouchiku` |
+1. 解決すること / しないこと (out-of-scope) を分けて書く
+2. 推奨案を 1 つ決める。迷う近さの代替案があるときだけ併記する (全部で 3 案まで)
+3. この設計が前提とする事実を 3-5 個列挙し、各々を file:line で確認する。確認できないものには ⚠ を付ける
+4. 6 ヶ月後に問題になりうるシナリオを 1 つ書く
+5. 計画 step に分解する。各 step に担当 skill / 触る file / 検証コマンドを書く
+6. 計画が要求から読める規模の 2 倍以上なら、引き算した最小版を併記する (`references/minimal-approach.md`)
+7. 出力して「1. 実装する / 2. 計画を直す / 3. 中止する」で承認を待つ。承認されるまで実装コードを書かない
 
-## 必須 (invariant)
+出力の全項目と詳細な思考手順: `references/design.md`
 
-- 計画実行モード以外で実装コードを書かない (設計を一意に固定する signature / data 形 snippet ~5-8 行・logic 本体なしは可)
-- 通常検討は前提崩し / 前提リスク検証を埋めずに出力を返さない
-- 評価は user 制約 (時間 / 人員 / 顧客約束 / 競合) を根拠にする。技術的好みだけで Kill/Keep しない。「保留」は出さない
-- 3 案以上は出さない (paralysis 防止)
-- 計画実行: 検証コマンドが失敗したら次 step に進まない (診断分岐で root cause)。計画に無い 5+ ファイル touch で停止し scope 再確認。scope 外の発見は記録のみで実装しない
-- 計画実行 / 診断の出力は検証ログ必須 (command 出力を引用、自己申告不可)。検討 / 評価は環境変更なしのため検証ログ不要
+## 手順 (評価)
 
-## 出力契約 (既定手順)
+1. Verdict を 1 つ選ぶ: Kill / Keep / Pivot。「保留」は出さない
+2. 理由を 1-3 個書く。ユーザの制約 (時間 / 人員 / 顧客への約束 / 競合) に紐づける。技術的な好みだけを理由にしない
+3. Pivot なら方向転換先を 1 段落で書く
 
-**軽量検討** — 3 案以上禁止。明確なら推奨 1 案で十分。
+## 手順 (計画実行)
 
-```
-推奨:  [案、file:line で示す、N/10 + 1 行根拠]
-brute: [雑にやるなら、N/10 + 1 行根拠 / 省略可]
-risk:  [採用時の最大の懸念 1 つ]
-```
+1. 承認済みの計画を再読する。不明点があれば実装前に聞く
+2. step を 1 つずつ自分で実装する (subagent に投げない)
+3. 純ロジック / ビジネスルール / API / バグ修正の step は、自分で書かず `shiken` に 1 slice ずつ渡す (slice の形式は `references/execution.md`)
+4. 各 step の後に検証コマンドを実行し、出力の最終行を控える。失敗したら次の step に進まず診断に入る
+5. 計画に無いファイルに 5 つ以上触れそうになったら、止めてユーザに scope を確認する
+6. scope 外の発見は実装せず「実装中に分かったこと」にメモする
+7. 全 step 完了後、下の「報告」を埋めて `sadoku` に渡す
 
-**通常検討** — 詳細手順と Minimal Approach 判定は `references/design.md`。
+詳細: `references/execution.md`
 
-```
-Building / Not building / Approach (N/10) / Alternatives (近接時のみ) /
-Structure (構造変更時のみ mermaid) / Key decisions (3-5, 各「不採用理由」1行) /
-Interface sketch (任意, 最 load-bearing な 1 点, 実在 symbol を file:line) /
-Premises (3-5, 各 ✓file:line / ⚠未検証) / Worst case / Unknowns / Plan steps /
-Minimal Approach (要求規模と対比、最小版併記 or "minimal already")
-```
+## 手順 (診断)
 
-**評価**
+1. 実装の変更を止める
+2. 症状をそのまま書き出す: error message / stack trace / 再現手順 / 期待値と実際の値
+3. 原因の仮説を 1 文で書く: 「root cause は [X]。根拠は [evidence]」
+4. `references/diagnosis-techniques.md` から確認手段を 1 つ選んで仮説を検証する
+5. 当たっていたら直す。外れていたら 3 に戻る
+6. 3 回外れたら、試した仮説 / 現状の見立て / 残る不明点を書いてユーザに判断を求める
+7. 直した後、同じ入力での before / after の出力をそのまま貼る。regression guard が要るなら `shiken` に渡す
 
-```
-Verdict: Kill / Keep / Pivot
-Reasons: 1-3 (user 制約に紐づく)
-If pivot: [方向転換先、1 段落]
-```
+## やってはいけないこと
 
-**計画実行** — step ごとに inline 実装 (subagent 委譲しない)、各 step で検証、TDD 必要層は `shiken` に 1 slice、原因未確定は診断分岐。詳細は `references/execution.md`。
+- 計画の承認前に実装コードを書く (signature やデータ形の例示 ~5-8 行は可)
+- 3 案以上並べる / 評価で「保留」を出す
+- 原因不明のまま当てずっぽうの修正を重ねる
+- scope 外の発見をついでに実装する
+- 検証コマンドが失敗したまま次の step に進む
 
-## 診断分岐 (必須の discipline)
-
-原因未確定の不具合に当たったら実装変更を止め root cause を 1 文で固定する (`I believe the root cause is [X] because [evidence].`)。symptom 列挙 → hypothesis 1 文 → `references/diagnosis-techniques.md` の instrument を 1 つ → confirm/discard。3 回失敗で `hypothesis attempts / current best guess / remaining unknowns / recommended next step` を出して user 判断を仰ぐ。regression guard は `shiken` に渡す。
-
-## 承認後の文言
-
-通常検討の出力が承認されたら次を告げる:
+## 報告 (穴埋め)
 
 ```
-Plan approved. 次に進む場合は番号で返してください。
-1. 実装する
-2. 計画を直す
-3. 中止する
-実装完了後は /sadoku に渡してレビューします。
+mode: [軽量検討 / 通常検討 / 評価 / 計画実行 / 診断]
+done: [N / M step]                     (計画実行のみ)
+検証: [コマンド] → [出力の最終行をそのまま]
+root cause: [1 文 + before/after]      (診断のみ)
+scope: [計画どおり / 外れたもの → 別 issue へ]
+次: [shiken / sadoku / teishutsu / なし]
 ```
 
-## subagent
-
-判断は inline で controller が行う。対象情報を集める段階で gate (a) 重い情報取得 (例: library 3 つの最新動向の Web 横断) に該当する時のみ subagent を 1 つ起動。計画実行は inline 原則 (機械的 fan-out = gate (c) のみ subagent 検討)。
-
-## 完了記録 (必須)
-
-```
-mode / worktree / output type: plan / verdict / evaluation / execution-result
-handoff target: shiken / sadoku / teishutsu / tansaku / none
-
-# 計画実行 / 診断のみ (検証ログ必須)
-steps done:    N (of M)
-diagnosis:     [root cause 1 文 + 同 input の before/after diff / none]
-verification:  [command] -> pass / fail
-                 検証ログ: [出力末尾 3-5 行、失敗時は full error]
-scope drift:   on target / drift: [別 issue に切り出したもの]
-```
+worktree 内 (`git rev-parse --git-dir` と `--git-common-dir` の正規化結果が異なる) なら `worktree: [branch]` を 1 行足す。
 
 ## references/
 
-- `design.md` — 通常検討の思考手順と出力テンプレ詳細
-- `execution.md` — 計画実行の手順 (step 実装 / 検証 / TDD・診断分岐 / 完了報告)
-- `diagnosis-techniques.md` — 診断 instrument 集
+- `design.md` — 通常検討の詳細手順と出力テンプレ
+- `execution.md` — 計画実行の詳細 (TDD 分岐 / slice の渡し方 / 診断の入り方)
+- `diagnosis-techniques.md` — 診断の確認手段
 - `minimal-approach.md` — 引き算プロトコルと推奨度 N/10 の付け方

@@ -1,6 +1,6 @@
 # 計画実行モードの手順
 
-承認済み計画を実行する既定手順。前提: 通常検討の出力に推奨案 / Key decisions / Plan steps が含まれている。invariant (検証ログ必須 / scope 外は記録のみ / 5+ ファイル touch で停止 / 不可逆操作は確認) は全 tier で守る。
+承認済み計画を実行する手順の詳細。前提: 通常検討の出力に推奨案 / Key decisions / Plan steps が含まれている。検証はコマンド出力を引用し、scope 外は記録のみ、計画に無い 5+ ファイル touch で停止、元に戻せない操作はユーザ確認 — ここは省略しない。
 
 ## 手順
 
@@ -8,7 +8,7 @@
 2. step ごとに inline で実装 (subagent には委譲しない)
 3. 各 step 完了後に検証 (test / lint / type-check / 手動確認)
 4. scope 外の発見は実装せず「実装中に分かったこと」に記録 (後で `teishutsu` の PR 本文で参照)
-5. 完了報告を出力 → `sadoku` に PR レビュー用 handoff block を渡す
+5. 報告を出力 → `sadoku` に handoff (報告と diff を添える)
 
 ## TDD 必要層を踏むときの分岐
 
@@ -19,19 +19,15 @@
 - `shiken` に後続 slice の設計や追加実装を任せない
 
 ```
-handoff: shiken
-reason: API の挙動に触れる実装のため
-context: [仕様 / edge case / non-goals]
+handoff: shiken / 渡すこと: [slice 1 文] / evidence: [関連 file:line]
 vertical slice:
   entry: [user action / API call / public function]
   behavior: [観測したい振る舞い]
   observable output: [UI / response / return value / state change / persisted data]
   excluded layers: [この cycle で通さない層]
-evidence:
-  - [関連 file:line]
-expected return:
-  - RED / GREEN / PRUNE log + test level / coverage gap / prune witness + verification command
 ```
+
+`shiken` は「報告」(RED / GREEN / PRUNE のログ、gap、prune witness) を埋めて返してくる。
 
 ## 診断分岐
 
@@ -43,5 +39,5 @@ expected return:
 - confirm → fix / `shiken` へ。discard → hypothesis 再構築。同じ症状が修正後も残れば停止して再構築
 - 3 回失敗したら `hypothesis attempts / current best guess / remaining unknowns / recommended next step` を出して user の proceed 判断を求める
 - fix が 5+ ファイルに touch するなら scope を確認する (= 別 bug の可能性)
-- fix 後は同 input の before / after 挙動 diff を完了記録にそのまま引用する
+- fix 後は同 input の before / after 挙動 diff を報告にそのまま引用する
 - regression guard が必要なら `shiken` に渡す (root cause と再現条件を固定し、実装 discipline は委譲)
