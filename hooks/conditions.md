@@ -67,10 +67,10 @@ force push の対象 branch は `scripts/lib/push-parse.sh` の `hikizan_push_ta
 | field | 値 |
 |---|---|
 | `ts` | RFC3339 UTC タイムスタンプ |
-| `event` | `hook_fired` / `skill_invoked` |
+| `event` | `hook_fired` |
 | `hook` | `pre-push` / `pre-pr-create` / `pre-destructive` / `post-commit` / `session-context` |
 | `condition` | `nff` / `force_protected` / `no_draft_no_reviewer` / `destructive` / `submodule_unpushed` / `create` / `append` / `noop` / `none` |
-| `decision` | `allow` / `block` (= deny) / `ask` / `warn` / `invoke` (skill 起動記録) |
+| `decision` | `allow` / `block` (= deny) / `ask` / `warn` |
 | `session_id` | CC session id (stdin JSON より取得)、無ければ空文字 |
 
 ### 集計例
