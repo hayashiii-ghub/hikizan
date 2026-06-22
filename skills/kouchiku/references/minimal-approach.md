@@ -1,6 +1,6 @@
 # minimal-approach
 
-引き算プロトコル本体。kouchiku 通常検討モードの出力に必須の `Minimal Approach:` セクションと、推奨度 N/10 の付け方を定義する。他 skill (sadoku findings の disposition / teishutsu の PR 規模判定 等) からも参照する。
+引き算の手順そのもの。kouchiku 通常検討モードの出力に必須の `Minimal Approach:` セクションと、推奨度 N/10 の付け方を定義する。他 skill (sadoku findings の扱い / teishutsu の PR 規模判定 等) からも参照する。
 
 ## 推奨度の付け方
 
@@ -41,7 +41,7 @@ Minimal Approach: minimal already (要求から直接読める規模 N step に�
 
 ## なぜ引き算が要るか
 
-LLM agent は「丁寧に網羅する」方向に偏る場合がある。issue 文から直接読める要求よりも、周辺の改善案 / リファクタ / 将来拡張案を含めてしまうことがある。引き算プロトコルはこの傾向を補正するための確認項目。
+LLM agent は「丁寧に網羅する」方向に偏る場合がある。issue 文から直接読める要求よりも、周辺の改善案 / リファクタ / 将来拡張案を含めてしまうことがある。引き算の手順はこの傾向を補正するための確認項目。
 
 - 計画策定段階: `Minimal Approach:` で要求から直接読める規模との対比を必須化
 - 推奨度: N/10 + 1 行根拠で「なんとなく良さそう」案の混入を抑止
@@ -71,7 +71,7 @@ LLM agent は「丁寧に網羅する」方向に偏る場合がある。issue �
 
 ### 出典
 
-ponytail (github.com/DietrichGebert/ponytail) の rung の概念を hikizan 向けに再構成した。逐語コピーはしない。
+ponytail (github.com/DietrichGebert/ponytail) のラダーの概念を hikizan 向けに再構成した。逐語コピーはしない。
 
 ## 関連
 
