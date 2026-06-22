@@ -1,7 +1,7 @@
 # プロジェクト文書の形式
 
 hikizan が配る repo の README と AGENTS.md の正本。
-スケルトンは `templates/README.md` と `templates/AGENTS.md`。
+スケルトンは `templates/AGENTS.md` と、README は genre 別に `templates/README.app.md` / `templates/README.package.md`。
 
 ## 原則
 
@@ -22,6 +22,18 @@ README は人間の貢献者向け、AGENTS.md は agent 向け。
 任意は Routing (SoT が多い repo)、Tool usage (公開 CLI / ライブラリ)。
 
 agents.md の popular sections (project overview / build & test / code style / testing / security) をこの形に畳んでいる。
+
+## README の genre
+
+README は読み手の最初の関心で 2 種類に分ける。
+AGENTS.md は分けない (genre 非依存、`Tool usage` を任意節にして吸収する)。
+
+| genre | 使う skeleton | 主な節 |
+| --- | --- | --- |
+| deploy するもの (app / site) | `templates/README.app.md` | Local dev / Deploy / Environment |
+| 配布するもの (CLI / library / plugin) | `templates/README.package.md` | Install / Usage |
+
+判定は「deploy するか / 配布するか」の二択。迷ったら deploy 側 (app) を既定にする。
 
 ## 2 つのジャンル
 

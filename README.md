@@ -135,7 +135,7 @@ hikizan/
 ├── scripts/               ← gen-trigger-docs.sh / check-consistency.sh
 ├── templates/             ← CLAUDE.md (routing/ルールの単一ソース、注入 & /hikizan:init が共用)
 │                            standard-preamble.md (standard tier 専用の opt-out 前文)
-│                            AGENTS.md / README.md (他 project へ配る文書スケルトン)
+│                            AGENTS.md / README.app.md / README.package.md (他 project へ配る文書スケルトン)
 ├── skills/                ← SKILL.md (SoT) + references/
 │   ├── tansaku / sadoku / kouchiku / shiken / teishutsu / kaku / init
 └── docs/                  ← workflow.md / principles.md / writing-style.md / naming.md / doc-format.md
