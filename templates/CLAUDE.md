@@ -9,6 +9,7 @@ hikizan plugin の使い方。手順の詳細は各 skill に書いてある。�
 - ロジックの実装・バグ修正 (テスト先行) → `shiken`
 - diff をレビューする / 整理の観点を出す → `sadoku`
 - PR 本文を書く / PR を出す → `teishutsu`
+- 日本語の文章を書く / 推敲する → `kaku`
 
 ### ルール
 

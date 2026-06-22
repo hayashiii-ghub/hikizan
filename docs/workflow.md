@@ -162,6 +162,7 @@ flowchart TB
 | `kouchiku` | 設計判断, 方針決め, design decision, kill or keep, 計画実行 |
 | `shiken` | TDD, テスト先行, テストから書く |
 | `teishutsu` | PR提出, PR出す, PR ready, PR文書いて, PR description, submission, PR open |
+| `kaku` | 執筆, 推敲, リライト, 文章を書く |
 
 各 skill の mode 別トリガーと遷移は `docs/workflow.md`、発動条件の正本は各 SKILL.md frontmatter `description`。
 <!-- hikizan:triggers:end -->

@@ -1,6 +1,6 @@
 # hikizan
 
-hikizan は Claude Code plugin / Agent Skills 対応の skill pack。動詞単位で分割した 5 つの主要 skill と、認知負荷を抑える運用方針を提供する。
+hikizan は Claude Code plugin / Agent Skills 対応の skill pack。動詞単位で分割した 6 つの主要 skill と、認知負荷を抑える運用方針を提供する。
 
 設計の出発点は「AI agent が長く自走しすぎても、逐一確認を挟まれすぎても作業のテンポが落ちる」という不満。hikizan はその塩梅を **3 つの部品** で取る:
 
@@ -13,7 +13,7 @@ hikizan は Claude Code plugin / Agent Skills 対応の skill pack。動詞単�
 - repo: [https://github.com/hayashiii-ghub/hikizan](https://github.com/hayashiii-ghub/hikizan)
 - license: MIT
 
-## core 5 skill
+## core 6 skill
 
 | skill | 漢字 | 動詞 | 担当 |
 | --- | --- | --- | --- |
@@ -22,8 +22,9 @@ hikizan は Claude Code plugin / Agent Skills 対応の skill pack。動詞単�
 | `kouchiku` | 構築 | 考える・作る | 設計判断 / 評価 / 計画策定 / 計画実行 / root cause diagnosis |
 | `shiken` | 試験 | 試す | TDD discipline / PRUNE |
 | `teishutsu` | 提出 | 出す | PR 本文ドラフト / PR 提出フロー (remote / submodule / parent / cwd-aware gh) |
+| `kaku` | 書く | 書く・直す | 日本語文章の執筆 / 推敲 (規範は `docs/writing-style.md`) |
 
-各 SKILL.md は「共通ルール block + モード表 + 番号付き手順 + やってはいけないこと + 穴埋め報告」に絞り、手順詳細は `references/` に置く。`kouchiku` が controller として判断を保持し、TDD は `shiken`、レビューは `sadoku`、提出は `teishutsu`、探索は `tansaku` に渡す。
+各 SKILL.md は「共通ルール block + モード表 + 番号付き手順 + やってはいけないこと + 穴埋め報告」に絞り、手順詳細は `references/` に置く。`kouchiku` が controller として判断を保持し、TDD は `shiken`、レビューは `sadoku`、提出は `teishutsu`、探索は `tansaku`、文章は `kaku` に渡す。
 
 ユーティリティ skill `init` (`/hikizan:init`) は規約を project の CLAUDE.md に手動で書き込みたい時だけ使う (model 自動起動は無効)。
 
@@ -95,6 +96,7 @@ tier は「環境構築時にどこまで足場を置いたか」を表す。ski
 | `kouchiku` | 設計判断, 方針決め, design decision, kill or keep, 計画実行 |
 | `shiken` | TDD, テスト先行, テストから書く |
 | `teishutsu` | PR提出, PR出す, PR ready, PR文書いて, PR description, submission, PR open |
+| `kaku` | 執筆, 推敲, リライト, 文章を書く |
 
 各 skill の mode 別トリガーと遷移は `docs/workflow.md`、発動条件の正本は各 SKILL.md frontmatter `description`。
 <!-- hikizan:triggers:end -->
@@ -134,8 +136,8 @@ hikizan/
 ├── templates/             ← CLAUDE.md (routing/ルールの単一ソース、注入 & /hikizan:init が共用)
 │                            standard-preamble.md (standard tier 専用の opt-out 前文)
 ├── skills/                ← SKILL.md (SoT) + references/
-│   ├── tansaku / sadoku / kouchiku / shiken / teishutsu / init
-└── docs/                  ← workflow.md / principles.md
+│   ├── tansaku / sadoku / kouchiku / shiken / teishutsu / kaku / init
+└── docs/                  ← workflow.md / principles.md / writing-style.md
 ```
 
 ## version
