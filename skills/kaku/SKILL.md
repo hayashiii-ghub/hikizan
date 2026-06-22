@@ -11,7 +11,7 @@ when_to_use: "執筆, 推敲, リライト, 文章を書く"
 🌲 Using /kaku for [purpose taken from trigger context].
 ```
 
-日本語の文章を書く / 推敲する skill。文章規範は `docs/writing-style.md` に従う。コードのレビューは `sadoku`、PR 本文は `teishutsu` に渡す。
+日本語の文章を書く / 推敲する skill。文章規範は `docs/writing-style.md` に従う。コードのレビューは `sadoku`、PR 本文は `teishutsu`、リポジトリ外の人間に配る PDF は `pdfmint` に渡す (markdown が既定、PDF 化は配布先次第)。
 
 <!-- hikizan:contract:start -->
 ## 共通ルール
@@ -63,7 +63,7 @@ when_to_use: "執筆, 推敲, リライト, 文章を書く"
 mode: [執筆 / 推敲]
 対象: [何を・どの形式で]
 規範チェック: [当てた節 → 直した箇所 / 違反なし]
-次: [teishutsu に渡す / sadoku に渡す / 完了]
+次: [teishutsu に渡す / sadoku に渡す / pdfmint で PDF 化 / 完了]
 ```
 
 worktree 内 (`git rev-parse --git-dir` と `--git-common-dir` の正規化結果が異なる) なら `worktree: [branch]` を 1 行足す。

@@ -43,7 +43,8 @@ diff があるだけでは始めない。状態から起動するときは 1 行
 4. 下の「停止条件」を上から順に diff に当てる。該当したら作業を止めてユーザに確認する
 5. Standard 以上で security / architecture に触れる diff なら、subagent (`agents/reviewer-security.md` / `agents/reviewer-architecture.md`、他ハーネスでは `references/agents/` の同一コピー) を起動する (最大 3 並列、条件は `references/persona-catalog.md`)。返ってきた finding は自分で diff を読み直す / テストを再実行して裏取りしてから採用する
 6. 「merge 後に壊れる一番現実的なシナリオ」を 1 つ書く。Quick では省略してよいが、bugfix / 挙動変更 / business rule / API / security の diff では Quick でも書く
-7. 下の「報告」を埋めて返す
+7. UI / style / レイアウトに触れる diff なら、視覚エビデンスを取る (web project かつ `sitesnap` があるとき。shot で撮って Read で読み戻し、check で overflow / console / a11y の合否を見る)。撮れない環境は「視覚未確認」と明記する
+8. 下の「報告」を埋めて返す
 
 ## 停止条件 (上から順にチェックし、該当したら止める)
 
@@ -78,6 +79,7 @@ files: N (+X -Y) / 深さ: [Quick / Standard / Deep]
 停止条件: [該当 N 件 → 各 1 行 / なし]
 PII scan: [grep コマンド + 出力。0 件なら "0 matches"]
 failure scenario: [1 つ / 該当なし]
+visual: [sitesnap shot のパス / 視覚未確認 (理由) / 該当なし]
 検証: [コマンド] → [出力の最終行をそのまま]
 ```
 
