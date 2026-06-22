@@ -8,7 +8,7 @@
 | --- | --- |
 | skill の trigger / mode / 出力形式 / 停止条件を変える | `skills/<name>/SKILL.md` |
 | skill discovery の条件を変える | 各 `skills/<name>/SKILL.md` の frontmatter `description` |
-| 全 skill 共通のルール (不可逆操作の確認 / 検証ログ引用 / 秘密情報 / 命名 / handoff 形式) を変える | 各 SKILL.md の `共通ルール` block (5 skill で同一、`scripts/check-consistency.sh` が検査) |
+| 全 skill 共通のルール (不可逆操作の確認 / 検証ログ引用 / 秘密情報 / 命名 / handoff 形式) を変える | 各 SKILL.md の `共通ルール` block (6 skill で同一、`scripts/check-consistency.sh` が検査) |
 | 探索 / すり合わせ / 影響範囲把握を変える | `skills/tansaku/SKILL.md` |
 | 引き算原則を変える | `skills/kouchiku/references/minimal-approach.md` |
 | review / 整理観点を変える | `skills/sadoku/SKILL.md` |

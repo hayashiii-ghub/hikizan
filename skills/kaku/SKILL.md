@@ -1,0 +1,73 @@
+---
+name: kaku
+description: "Use this skill when the user wants to write or revise Japanese prose — technical docs, articles, READMEs, explanations — including the phrasings 書いて, 文章書いて, 執筆, 推敲, リライト, 文章直して. Activate when drafting or rewriting Japanese text against a writing norm. Code review goes to sadoku instead."
+license: MIT
+when_to_use: "執筆, 推敲, リライト, 文章を書く"
+---
+
+# kaku (書く)
+
+```
+🌲 Using /kaku for [purpose taken from trigger context].
+```
+
+日本語の文章を書く / 推敲する skill。文章規範は `docs/writing-style.md` に従う。コードのレビューは `sadoku`、PR 本文は `teishutsu` に渡す。
+
+<!-- hikizan:contract:start -->
+## 共通ルール
+
+全 skill 共通。`scripts/check-consistency.sh` が 6 skill で同一であることを検査する。
+
+- 元に戻せない操作 (削除 / force push / reset --hard / git clean) は、実行する前にユーザに確認する
+- 「pass した」「確認した」と書くときは、コマンド出力の最終行をそのまま貼る。出力なしで完了と書かない
+- 秘密情報 (token / email / チーム外の実名) を PR 本文・commit message に書かない。出す前に grep で確認する
+- PR / branch / step は機能名か issue 名で呼ぶ。PR-1 のような独自の連番を作らない
+- 別の skill に渡すときは 1 行で書く: `handoff: [skill] / 渡すこと: [1 文] / evidence: [file:line かコマンド出力]`
+- 日本語の文章は docs/writing-style.md の規範に従う
+<!-- hikizan:contract:end -->
+
+## 2 つのモード
+
+| モード | きっかけ |
+| --- | --- |
+| 執筆 | 「文章書いて」「執筆」「README 書いて」/ 新規に日本語の文を書く |
+| 推敲 | 「推敲」「リライト」「文章直して」/ 既存の文を規範に沿って直す |
+
+## 手順 (執筆)
+
+1. 何を・誰に・どの形式 (PR 本文 / docs / 記事 / README) で書くかを 1 文で確認する
+2. 結論を先に置く。1 文目で「何が言いたいか」が分かる構成にする
+3. `docs/writing-style.md` の規範に従って書く。段落は一トピック、一文一行
+4. 書き上げたら `docs/writing-style.md` の各節の点検項目を上から当て、外れた箇所だけ直す
+5. 下の「報告」を埋めて返す
+
+## 手順 (推敲)
+
+1. 対象の文と、直す狙い (規範違反の除去 / 短縮 / 読みやすさ) を確認する
+2. `docs/writing-style.md` の各節を上から当て、外れた箇所を拾う。特に「LLM っぽい表現の禁止」「冗長の排除」「論証の厳密さ」
+3. 直すのは規範に外れた箇所だけ。意味を変える書き換えは元の主張を保つ
+4. before / after を示せる粒度で直す。原文の事実・主張を勝手に追加・削除しない
+5. 下の「報告」を埋めて返す
+
+## やってはいけないこと
+
+- `docs/writing-style.md` の規範を SKILL.md 内に書き写す (規範は writing-style.md が正本)
+- 推敲で原文の主張・事実を勝手に足す / 消す
+- 「自然にした」のような抽象指示だけで終える
+- 単語狩りで品質を判定する (規範の節ごとに点検する)
+- コードレビューを始める (`sadoku` へ)
+
+## 報告 (穴埋め)
+
+```
+mode: [執筆 / 推敲]
+対象: [何を・どの形式で]
+規範チェック: [当てた節 → 直した箇所 / 違反なし]
+次: [teishutsu に渡す / sadoku に渡す / 完了]
+```
+
+worktree 内 (`git rev-parse --git-dir` と `--git-common-dir` の正規化結果が異なる) なら `worktree: [branch]` を 1 行足す。
+
+## references/
+
+- `../../docs/writing-style.md` — 日本語文章規範の正本 (整形 / 段落と論証 / 厳密さ / 負荷管理 / 視点 / 演出 / LLM 句 / 冗長 / 誠実さ / 見出し)
