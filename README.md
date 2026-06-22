@@ -137,7 +137,7 @@ hikizan/
 │                            standard-preamble.md (standard tier 専用の opt-out 前文)
 ├── skills/                ← SKILL.md (SoT) + references/
 │   ├── tansaku / sadoku / kouchiku / shiken / teishutsu / kaku / init
-└── docs/                  ← workflow.md / principles.md / writing-style.md
+└── docs/                  ← workflow.md / principles.md / writing-style.md / naming.md
 ```
 
 ## version
