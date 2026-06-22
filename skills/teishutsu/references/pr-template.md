@@ -15,7 +15,7 @@
 
 ## Procedure
 
-1. issue / 計画から「課題」と「DoD」を抽出する
+1. issue / 計画から「課題」と「DoD」を抽出し、タイトルを `docs/naming.md` の規則で 1 行決める
 2. diff または計画から「実装の流れとレビュー順」を作る
 3. scope 外発見を「実装中に分かったこと」へ分ける
 4. 検証コマンドと手動確認シナリオを列挙する
@@ -31,6 +31,15 @@
 - diff が複数 issue に跨いでいる
 - PII / Secrets が本文、commit message、release notes に混入している
 - 検証結果が不明なのに「検証済み」と書こうとしている
+
+## PR Title
+
+タイトルは `docs/naming.md` の識別子規範に従う。
+hikizan は squash merge なので、PR タイトルはそのまま main の commit subject になる。
+
+- 命令形か現在形で「何が変わるか」を機能名で 1 行 (例: `add naming norm doc`)。
+- 連番 (`PR-1`) や種別 prefix を付けない。
+- 末尾の `(#NN)` は squash 時に GitHub が自動付与するので手で書かない。
 
 ## Output Template
 
