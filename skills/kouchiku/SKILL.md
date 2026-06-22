@@ -69,9 +69,10 @@ when_to_use: "設計判断, 方針決め, design decision, kill or keep, 計画�
 2. step を 1 つずつ自分で実装する (subagent に投げない)
 3. 純ロジック / ビジネスルール / API / バグ修正の step は、自分で書かず `shiken` に 1 slice ずつ渡す (slice の形式は `references/execution.md`)
 4. 各 step の後に検証コマンドを実行し、出力の最終行を控える。失敗したら次の step に進まず診断に入る
-5. 計画に無いファイルに 5 つ以上触れそうになったら、止めてユーザに scope を確認する
-6. scope 外の発見は実装せず「実装中に分かったこと」にメモする
-7. 全 step 完了後、下の「報告」を埋めて `sadoku` に渡す
+5. UI / レイアウト / 視覚に触れる step は、検証コマンドに加えて視覚検証を渡す (web project かつ `sitesnap` があるとき。`handoff: sitesnap / 渡すこと: shot --json の file を Read で読み戻して目視、check --json の合否を step 通過判定に / evidence: shot のパス`)。撮れない環境では「視覚未確認」と報告に明記してスキップする
+6. 計画に無いファイルに 5 つ以上触れそうになったら、止めてユーザに scope を確認する
+7. scope 外の発見は実装せず「実装中に分かったこと」にメモする
+8. 全 step 完了後、下の「報告」を埋めて `sadoku` に渡す
 
 詳細: `references/execution.md`
 
@@ -99,6 +100,7 @@ when_to_use: "設計判断, 方針決め, design decision, kill or keep, 計画�
 mode: [軽量検討 / 通常検討 / 評価 / 計画実行 / 診断]
 done: [N / M step]                     (計画実行のみ)
 検証: [コマンド] → [出力の最終行をそのまま]
+visual: [shot のパス / 視覚未確認 (理由) / 該当なし]   (UI step のみ)
 root cause: [1 文 + before/after]      (診断のみ)
 scope: [計画どおり / 外れたもの → 別 issue へ]
 次: [shiken / sadoku / teishutsu / なし]
