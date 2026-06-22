@@ -5,7 +5,7 @@ hikizan は Claude Code plugin / Agent Skills 対応の skill pack。動詞単�
 設計の出発点は「AI agent が長く自走しすぎても、逐一確認を挟まれすぎても作業のテンポが落ちる」という不満。hikizan はその塩梅を **3 つの部品** で取る:
 
 - **レール (skills)** — 弱いモデル基準で書いた番号付き手順と穴埋めテンプレ。タスクの回し方が強くないモデルでも、上から実行すれば形になる。
-- **opt-out (standard tier)** — hooks=floors のある環境では、SessionStart に「手順は守らなくてよい。ただし出口は固定」という前文を注入する。賢いモデルにハーネス税をかけず、成果物の形だけ揃える。
+- **opt-out (standard tier)** — hooks=floors のある環境では、SessionStart に「手順は守らなくてよい。ただし出口は固定」という前文を注入する。賢いモデルに余計な手順を課さず、成果物の形だけ揃える。
 - **floors (hooks)** — push / PR / 破壊的操作を決定論的に止める下限。tier に関わらず効く。
 
 **出口契約**: どのモデル・どの進め方でも、PR は `teishutsu` の 6 セクション (過程の trace を残す Workflow 節を含む) に収束させる。任せても流れを後から把握できる、が設計目標。
@@ -64,7 +64,7 @@ Cursor には `beforeShellExecution` hook で CC と同じ floors (force push / 
 
 ## tier
 
-tier は「環境構築時にどこまで足場を置いたか」を表す。skill 本文は両 tier 共通 (弱いモデル基準のレール) で、違いは opt-out 前文の有無だけ。
+tier は「環境構築時にどこまで仕組みを用意したか」を表す。skill 本文は両 tier 共通 (弱いモデル基準のレール) で、違いは opt-out 前文の有無だけ。
 
 - **standard** (hooks=floors のある環境): SessionStart hook (`session-context.sh`) が routing / ルールに加えて **opt-out 前文** (`templates/standard-preamble.md` — 手順は自由、出口は固定) を注入する。Claude Code の `/plugin` は既定でこれ。host repo の CLAUDE.md は書き換えない。
 - **guided** (floors 未導入の環境・タスクの回し方が強くないモデル): skill の番号付き手順を上から実行する。`HIKIZAN_TIER` 環境変数で tier を上書きできる。
@@ -118,7 +118,7 @@ hikizan は orchestration / LSP 本体を抱え込まない。必要なら公式
 
 ## 設計原則
 
-設計原則は `docs/principles.md` を参照 (レール・opt-out・床 / 弱いモデル基準で書く / 出口契約 / 環境変化評価 / Vertical TDD / 単一ソース 等)。
+設計原則は `docs/principles.md` を参照 (レール・opt-out・floors / 弱いモデル基準で書く / 出口契約 / 環境変化評価 / Vertical TDD / 単一ソース 等)。
 
 ## ディレクトリ構成
 

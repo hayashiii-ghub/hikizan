@@ -2,7 +2,7 @@
 
 skill / hook / docs が従う原則。各 skill 本文から参照するときは番号でなく名前で書く。
 
-1. **レール・opt-out・床**: skill 本文は弱いモデル基準のレール (番号付き手順 + 穴埋めテンプレ)。standard tier (hooks=floors のある環境) には opt-out 前文 (`templates/standard-preamble.md`) を注入し「手順は自由、出口は固定」にする。hooks は tier に関わらず効く決定論的な床。自律度はモデル検知でなく、環境構築時にどこまで足場を置いたかで決まる。
+1. **レール・opt-out・floors**: skill 本文は弱いモデル基準のレール (番号付き手順 + 穴埋めテンプレ)。standard tier (hooks=floors のある環境) には opt-out 前文 (`templates/standard-preamble.md`) を注入し「手順は自由、出口は固定」にする。hooks は tier に関わらず効く決定論的な下限。自律度はモデル検知でなく、環境構築時にどこまで仕組みを用意したかで決まる。
 2. **弱いモデル基準で書く**: skill 本文は 1 行 1 命令 / 抽象語彙を使わない / 規則より穴埋めテンプレート / 選択肢の数を減らす。賢いモデルへの自由は opt-out 前文で与え、本文の手順には書き込まない。
 3. **出口契約**: 形は手順ではなく成果物で揃える。どの進め方でも PR は `teishutsu` の 6 セクション (Workflow trace 含む) に収束させ、過程の把握は PR を読めばできる状態にする。
 4. **skill 構成**: 1 skill に複数 mode、手順詳細は references に分離、決定論的な処理は `scripts/` / `hooks/` に置く。SKILL.md は「モード表 + 番号付き手順 + やってはいけないこと + 穴埋め報告」に絞る。
