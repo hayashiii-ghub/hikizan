@@ -19,6 +19,7 @@
 | standard tier への opt-out 前文 (手順自由・出口固定) を変える | `templates/standard-preamble.md` (`session-context.sh` が tier=standard のときだけ注入) |
 | 設計原則を変える | `docs/principles.md` |
 | 人間向け説明 / install / 公開情報を変える | `README.md` |
+| 他 project へ配る AGENTS.md の形式 / README の役割境界を変える | `docs/doc-format.md` (正本) と `templates/AGENTS.md` (スケルトン) |
 
 ## Rules
 
