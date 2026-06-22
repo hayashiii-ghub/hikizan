@@ -43,7 +43,7 @@ when_to_use: "探索, 全体像把握, 影響範囲調査, 用語整理, すり�
    git log --oneline -20
    grep -rn "TODO\|FIXME" <関連 dir> | head -20
    ```
-6. 下の「報告」を埋めて返す。確認できた事実には file:line かコマンド出力を付ける。確認できないことは推測で埋めず Unknowns に書く
+6. 下の「報告」を埋めて返す。確認できた事実には file:line かコマンド出力を付ける。確認できないことは推測で埋めず Unknowns に書く。構造がグラフ的 (依存 / 制御フロー / やり取り / データモデル) なら、文章でなく mermaid を 1 枚添える (`references/mermaid-views.md`)
 7. 実装前に決めないと手戻りが大きい曖昧さがあれば、すり合わせに進む。小さな不明点は Unknowns に残して止まらない
 
 ## 手順 (すり合わせ)
@@ -79,3 +79,4 @@ worktree 内 (`git rev-parse --git-dir` と `--git-common-dir` の正規化結�
 ## references/
 
 - `suriawase.md` — すり合わせの発火条件・質問フォーマット・docs 更新の扱い
+- `mermaid-views.md` — 構造を mermaid で見せるときの図種別と最小例
