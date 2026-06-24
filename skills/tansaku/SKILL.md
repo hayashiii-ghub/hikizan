@@ -64,16 +64,18 @@ when_to_use: "探索, 全体像把握, 影響範囲調査, 用語整理, すり�
 
 ## 報告 (穴埋め)
 
-```
-Explored: [何を調べたか]
-Map:
-- [path:line] — [役割]
-Terminology:
-- [用語] = [コード/docs 上の意味] ([path:line])
-Unknowns:
-- [コードと docs だけでは分からないこと]
-次: [kouchiku に渡す / shiken に渡す / 調査のみで完了]
-```
+最初に結論を 1 文。続けて調査結果をまとめる。確認できた事実には file:line かコマンド出力を添える。
+
+[1 文: 何を調べて何が分かったか、次に何へ渡すか]
+
+- 調べた範囲: [何を調べたか]
+- Map:
+  - [path:line]、[役割]
+- Terminology:
+  - [用語] = [コード/docs 上の意味] ([path:line])
+- Unknowns:
+  - [コードと docs だけでは分からないこと]
+- 次: [kouchiku / shiken に渡す / 調査のみで完了]
 
 worktree 内 (`git rev-parse --git-dir` と `--git-common-dir` の正規化結果が異なる) なら `worktree: [branch]` を 1 行足す。
 

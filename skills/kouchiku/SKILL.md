@@ -96,15 +96,17 @@ when_to_use: "設計判断, 方針決め, design decision, kill or keep, 計画�
 
 ## 報告 (穴埋め)
 
-```
-mode: [軽量検討 / 通常検討 / 評価 / 計画実行 / 診断]
-done: [N / M step]                     (計画実行のみ)
-検証: [コマンド] → [出力の最終行をそのまま]
-visual: [shot のパス / 視覚未確認 (理由) / 該当なし]   (UI step のみ)
-root cause: [1 文 + before/after]      (診断のみ)
-scope: [計画どおり / 外れたもの → 別 issue へ]
-次: [shiken / sadoku / teishutsu / なし]
-```
+最初に結論を 1 文。続けて内訳を箇条書きにする。検証はコマンド出力の最終行をそのまま貼る。
+
+[1 文: 何を決めた / どこまで進めた / 原因は何か]
+
+- モード: [軽量検討 / 通常検討 / 評価 / 計画実行 / 診断]
+- 進捗: [N / M step] (計画実行のみ)
+- 検証: [コマンド] → [出力の最終行をそのまま]
+- 視覚: [shot のパス / 視覚未確認 (理由) / 該当なし] (UI step のみ)
+- root cause: [1 文 + before/after] (診断のみ)
+- scope: [計画どおり / 外れたもの → 別 issue へ]
+- 次: [shiken / sadoku / teishutsu / なし]
 
 worktree 内 (`git rev-parse --git-dir` と `--git-common-dir` の正規化結果が異なる) なら `worktree: [branch]` を 1 行足す。
 
