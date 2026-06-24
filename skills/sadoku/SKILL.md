@@ -78,12 +78,12 @@ diff があるだけでは始めない。状態から起動するときは 1 行
 
 [1 文: レビュー結論。そのまま出せるか、止めるべきか]
 
-- 規模 / 深さ: [N ファイル (+X / -Y)、Quick / Standard / Deep]
-- 停止条件: [該当 N 件 → 各 1 行 / なし]
+- files / depth: [N ファイル (+X / -Y)、Quick / Standard / Deep]
+- stop conditions: [該当 N 件 → 各 1 行 / なし]
 - PII: [grep コマンド + 出力。0 件なら "0 matches"]
-- 想定した故障: [merge 後に壊れる現実的なシナリオ 1 つ / 該当なし]
-- 視覚: [sitesnap shot のパス / 視覚未確認 (理由) / 該当なし]
-- 検証: [コマンド] → [出力の最終行をそのまま]
+- failure scenario: [merge 後に壊れる現実的なシナリオ 1 つ / 該当なし]
+- visual: [sitesnap shot のパス / 視覚未確認 (理由) / 該当なし]
+- verification: [コマンド] → [出力の最終行をそのまま]
 
 worktree 内 (`git rev-parse --git-dir` と `--git-common-dir` の正規化結果が異なる) なら `worktree: [branch]` を 1 行足す。
 

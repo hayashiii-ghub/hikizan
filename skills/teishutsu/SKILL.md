@@ -59,7 +59,7 @@ PR 本文を書いて PR を出す skill。レビューは `sadoku`。ここが 
 
 [1 文: 何を提出した / どこまで進めたか]
 
-- モード: [本文ドラフトのみ / 提出]
+- mode: [本文ドラフトのみ / 提出]
 - remote: [git log HEAD..origin/... の最終行 / "(empty)"]
 - submodule: [なし / path + 状態 (git submodule status の出力)]
 - commit: [hash]、[message 1 行]
