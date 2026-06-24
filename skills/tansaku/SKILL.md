@@ -11,7 +11,7 @@ when_to_use: "探索, 全体像把握, 影響範囲調査, 用語整理, すり�
 🌲 Using /tansaku for [purpose taken from trigger context].
 ```
 
-調べて報告する skill。実装と設計判断はしない — 設計と計画は `kouchiku`、テスト先行の実装は `shiken`、レビューは `sadoku`、提出は `teishutsu` に渡す。
+調べて報告する skill。実装と設計判断はしない。設計と計画は `kouchiku`、テスト先行の実装は `shiken`、レビューは `sadoku`、提出は `teishutsu` に渡す。
 
 <!-- hikizan:contract:start -->
 ## 共通ルール
@@ -79,5 +79,5 @@ worktree 内 (`git rev-parse --git-dir` と `--git-common-dir` の正規化結�
 
 ## references/
 
-- `suriawase.md` — すり合わせの発火条件・質問フォーマット・docs 更新の扱い
-- `mermaid-views.md` — 構造を mermaid で見せるときの図種別と最小例
+- `suriawase.md`：すり合わせの発火条件・質問フォーマット・docs 更新の扱い
+- `mermaid-views.md`：構造を mermaid で見せるときの図種別と最小例

@@ -70,4 +70,4 @@ worktree 内 (`git rev-parse --git-dir` と `--git-common-dir` の正規化結�
 
 ## references/
 
-- `../../docs/writing-style.md` — 日本語文章規範の正本 (整形 / 段落と論証 / 厳密さ / 負荷管理 / 視点 / 演出 / LLM 句 / 冗長 / 誠実さ / 見出し)
+- `../../docs/writing-style.md`：日本語文章規範の正本 (整形 / 段落と論証 / 厳密さ / 負荷管理 / 視点 / 演出 / LLM 句 / 冗長 / 誠実さ / 見出し)

@@ -87,7 +87,7 @@ worktree 内 (`git rev-parse --git-dir` と `--git-common-dir` の正規化結�
 
 ## references/
 
-- `project-context.md` — diff 読解前の文脈確認の観点
-- `persona-catalog.md` — 専門家レビュー (security / architecture / adversarial) の起動条件
-- `simplify-checklist.md` — simplify の 5 観点判定基準
-- `agents/reviewer-security.md` / `agents/reviewer-architecture.md` — 他ハーネス向けコピー (plugin `agents/` と同一内容)
+- `project-context.md`：diff 読解前の文脈確認の観点
+- `persona-catalog.md`：専門家レビュー (security / architecture / adversarial) の起動条件
+- `simplify-checklist.md`：simplify の 5 観点判定基準
+- `agents/reviewer-security.md` / `agents/reviewer-architecture.md`：他ハーネス向けコピー (plugin `agents/` と同一内容)

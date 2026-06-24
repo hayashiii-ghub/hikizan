@@ -4,9 +4,9 @@ hikizan は Claude Code plugin / Agent Skills 対応の skill pack。動詞単�
 
 設計の出発点は「AI agent が長く自走しすぎても、逐一確認を挟まれすぎても作業のテンポが落ちる」という不満。hikizan はその塩梅を **3 つの部品** で取る:
 
-- **レール (skills)** — 弱いモデル基準で書いた番号付き手順と穴埋めテンプレ。タスクの回し方が強くないモデルでも、上から実行すれば形になる。
-- **opt-out (standard tier)** — hooks=floors のある環境では、SessionStart に「手順は守らなくてよい。ただし出口は固定」という前文を注入する。賢いモデルに余計な手順を課さず、成果物の形だけ揃える。
-- **floors (hooks)** — push / PR / 破壊的操作を決定論的に止める下限。tier に関わらず効く。
+- **レール (skills)**：弱いモデル基準で書いた番号付き手順と穴埋めテンプレ。タスクの回し方が強くないモデルでも、上から実行すれば形になる。
+- **opt-out (standard tier)**：hooks=floors のある環境では、SessionStart に「手順は守らなくてよい。ただし出口は固定」という前文を注入する。賢いモデルに余計な手順を課さず、成果物の形だけ揃える。
+- **floors (hooks)**：push / PR / 破壊的操作を決定論的に止める下限。tier に関わらず効く。
 
 **出口契約**: どのモデル・どの進め方でも、PR は `teishutsu` の 6 セクション (過程の trace を残す Workflow 節を含む) に収束させる。任せても流れを後から把握できる、が設計目標。
 
@@ -28,14 +28,14 @@ hikizan は Claude Code plugin / Agent Skills 対応の skill pack。動詞単�
 
 ユーティリティ skill `init` (`/hikizan:init`) は規約を project の CLAUDE.md に手動で書き込みたい時だけ使う (model 自動起動は無効)。
 
-## 配布 — 1 ハーネスに 1 チャネル
+## 配布チャネルは 1 ハーネスに 1 つ
 
 hikizan は 2 つの配布チャネルを持つが、**1 つのハーネスにはどちらか一方だけ**で入れる。両方入れると skill が二重定義され、古い側に誤 route する (実際に過去発生した障害)。
 
 | ハーネス | 推奨チャネル | 入れない方 |
 | --- | --- | --- |
 | Claude Code | `/plugin` (hooks=floors も同時に入る) | `npx skills add` は併用しない |
-| Cursor / Codex 等 | `npx skills add` (skill pack のみ、hooks なし) | — |
+| Cursor / Codex 等 | `npx skills add` (skill pack のみ、hooks なし) | なし |
 
 > Claude Code で一度 `/plugin` で入れたら、同じ環境で `npx skills add -a claude-code` は実行しない。逆も同様。
 
@@ -49,7 +49,7 @@ hikizan は 2 つの配布チャネルを持つが、**1 つのハーネスに�
 
 `.git` 付き HTTPS URL を明示すると SSH key 未設定環境でも clone できる。開発・検証時は `claude --plugin-dir ./hikizan` で直接読み込む。skill は namespace 規約で `/hikizan:tansaku` … `/hikizan:teishutsu` として呼ばれる。
 
-### install (skill pack — Cursor / Codex)
+### install (skill pack / Cursor / Codex)
 
 hikizan は [Agent Skills 標準](https://agentskills.io) に沿った skill pack でもある。Claude Code 以外のハーネスへはこちらで配置する (hooks は付かないため tier は `guided` 既定)。
 
@@ -66,8 +66,8 @@ Cursor には `beforeShellExecution` hook で CC と同じ floors (force push / 
 
 tier は「環境構築時にどこまで仕組みを用意したか」を表す。skill 本文は両 tier 共通 (弱いモデル基準のレール) で、違いは opt-out 前文の有無だけ。
 
-- **standard** (hooks=floors のある環境): SessionStart hook (`session-context.sh`) が routing / ルールに加えて **opt-out 前文** (`templates/standard-preamble.md` — 手順は自由、出口は固定) を注入する。Claude Code の `/plugin` は既定でこれ。host repo の CLAUDE.md は書き換えない。
-- **guided** (floors 未導入の環境・タスクの回し方が強くないモデル): skill の番号付き手順を上から実行する。`HIKIZAN_TIER` 環境変数で tier を上書きできる。
+- **standard** (hooks=floors のある環境)：SessionStart hook (`session-context.sh`) が routing / ルールに加えて **opt-out 前文** (`templates/standard-preamble.md`：手順は自由、出口は固定) を注入する。Claude Code の `/plugin` は既定でこれ。host repo の CLAUDE.md は書き換えない。
+- **guided** (floors 未導入の環境・タスクの回し方が強くないモデル)：skill の番号付き手順を上から実行する。`HIKIZAN_TIER` 環境変数で tier を上書きできる。
 - ファイルとして規約を残したい場合のみ `/hikizan:init` で project の CLAUDE.md に追記する。
 
 ## hooks (Claude Code の floors)

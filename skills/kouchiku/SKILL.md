@@ -110,7 +110,7 @@ worktree 内 (`git rev-parse --git-dir` と `--git-common-dir` の正規化結�
 
 ## references/
 
-- `design.md` — 通常検討の詳細手順と出力テンプレ
-- `execution.md` — 計画実行の詳細 (TDD 分岐 / slice の渡し方 / 診断の入り方)
-- `diagnosis-techniques.md` — 診断の確認手段
-- `minimal-approach.md` — 引き算の手順と推奨度 N/10 の付け方
+- `design.md`：通常検討の詳細手順と出力テンプレ
+- `execution.md`：計画実行の詳細 (TDD 分岐 / slice の渡し方 / 診断の入り方)
+- `diagnosis-techniques.md`：診断の確認手段
+- `minimal-approach.md`：引き算の手順と推奨度 N/10 の付け方

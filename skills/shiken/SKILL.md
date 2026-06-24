@@ -86,4 +86,4 @@ worktree 内 (`git rev-parse --git-dir` と `--git-common-dir` の正規化結�
 
 ## references/
 
-- `testing-anti-patterns.md` — PRUNE の判定 5 問と anti-pattern 集
+- `testing-anti-patterns.md`：PRUNE の判定 5 問と anti-pattern 集

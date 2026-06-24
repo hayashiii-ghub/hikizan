@@ -37,12 +37,12 @@ PR 本文を書いて PR を出す skill。レビューは `sadoku`。ここが 
 
 ## 手順 (順番を変えない・飛ばさない)
 
-1. **リモート確認** — `git fetch --all` → `git log HEAD..origin/<branch> --oneline`。リモートに先行 commit があれば、別の実装が存在しうることを警告し、pull --rebase / 別 branch / 中止 のどれにするかユーザに聞く。解決するまで次に進まない
-2. **submodule 先行** — `git submodule status --recursive`。未 commit / 未 push の submodule があれば、submodule 内で commit message をドラフト → ユーザ承認 → commit + push を**親の commit より必ず先に**行う
-3. **親 commit** — 親 repo で `git add` (submodule pointer を含む) → commit message をドラフト → 共通ルールの grep で秘密情報を確認 → ユーザ承認 → commit する。ここでは push しない
-4. **本文ドラフト** — `references/pr-template.md` を読み、6 セクション (課題 / DoD / 実装の流れとレビュー順 / 実装中に分かったこと / 検証 / Workflow) を埋める。必要な材料は (issue・計画・変更意図のどれか) + (diff か変更ファイル一覧) + (検証コマンドか手動確認)。足りなければ推測で埋めず、欠けている項目だけユーザに聞く。本文にも秘密情報の grep をかける。「PR文書いて」で呼ばれたときはここで終了
-5. **push** — `git push`。hook に止められたら理由を読み、手順 1 に戻る。push が失敗したまま PR 作成に進まない
-6. **PR 作成** — `gh pr create` の直前に `pwd` と `git rev-parse --show-toplevel` を実行してユーザに見せ、対象 repo を確認する (submodule と親 repo の取り違え防止)。`--repo <owner>/<repo>` で対象を固定し、`--draft` か `--reviewer` を必ず付け (両方無いと hook が止める)、手順 4 の本文を `--body` で渡す
+1. **リモート確認**：`git fetch --all` → `git log HEAD..origin/<branch> --oneline`。リモートに先行 commit があれば、別の実装が存在しうることを警告し、pull --rebase / 別 branch / 中止 のどれにするかユーザに聞く。解決するまで次に進まない
+2. **submodule 先行**：`git submodule status --recursive`。未 commit / 未 push の submodule があれば、submodule 内で commit message をドラフト → ユーザ承認 → commit + push を**親の commit より必ず先に**行う
+3. **親 commit**：親 repo で `git add` (submodule pointer を含む) → commit message をドラフト → 共通ルールの grep で秘密情報を確認 → ユーザ承認 → commit する。ここでは push しない
+4. **本文ドラフト**：`references/pr-template.md` を読み、6 セクション (課題 / DoD / 実装の流れとレビュー順 / 実装中に分かったこと / 検証 / Workflow) を埋める。必要な材料は (issue・計画・変更意図のどれか) + (diff か変更ファイル一覧) + (検証コマンドか手動確認)。足りなければ推測で埋めず、欠けている項目だけユーザに聞く。本文にも秘密情報の grep をかける。「PR文書いて」で呼ばれたときはここで終了
+5. **push**：`git push`。hook に止められたら理由を読み、手順 1 に戻る。push が失敗したまま PR 作成に進まない
+6. **PR 作成**：`gh pr create` の直前に `pwd` と `git rev-parse --show-toplevel` を実行してユーザに見せ、対象 repo を確認する (submodule と親 repo の取り違え防止)。`--repo <owner>/<repo>` で対象を固定し、`--draft` か `--reviewer` を必ず付け (両方無いと hook が止める)、手順 4 の本文を `--body` で渡す
 
 ## やってはいけないこと
 
@@ -67,4 +67,4 @@ PR: [URL] / [draft か reviewer]
 
 ## references/
 
-- `pr-template.md` — PR 本文の形式 (6 セクション template / 文章チェック / PII scan / 粒度ルール)
+- `pr-template.md`：PR 本文の形式 (6 セクション template / 文章チェック / PII scan / 粒度ルール)

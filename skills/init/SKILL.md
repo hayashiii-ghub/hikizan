@@ -1,6 +1,6 @@
 ---
 name: init
-description: "hikizan の routing / safety を現在の project の CLAUDE.md に永続追記する。通常は SessionStart の context 注入で足りるため不要 — ファイルとして残したいときだけ手動で呼ぶ。"
+description: "hikizan の routing / safety を現在の project の CLAUDE.md に永続追記する。通常は SessionStart の context 注入で足りるため不要。ファイルとして残したいときだけ手動で呼ぶ。"
 license: MIT
 disable-model-invocation: true
 user-invocable: true
