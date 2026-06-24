@@ -5,7 +5,7 @@ PRUNE フェーズで検出すべきパターン。いずれかに該当する t
 ## PRUNE 評価基準 (各 test に順に問う)
 
 1. この test が落ちたら、vertical slice の observable output が壊れているか? → **No なら削除** (実装ロックの疑い)
-2. mock の存在 / 呼び出し回数を assert していないか? → **Yes なら書き直し or 削除** (下記 #1)
+2. mock の存在・呼び出し回数を assert していないか? → **Yes なら書き直し or 削除** (下記 #1)
 3. 同じ assertion を別 setup で重複していないか? → **1 つに統合** (下記 #6)
 4. 探索中に書いた scaffold か、spec を表現する test か? → **scaffold なら削除**
 5. private helper 形状 / 内部分岐 / mock call count を壊した時だけ落ちていないか? → **Yes なら observable output へ書き直し or 削除**

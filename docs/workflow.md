@@ -173,7 +173,7 @@ mode レベルの遷移は次の通り (mode mapping は frontmatter に無い�
 |---|---|---|
 | tansaku | 探索 | 「探索して」「全体像を掴んで」「この辺り見て」「影響範囲を調べて」「zoom-out」 |
 | tansaku | すり合わせ | 「すり合わせ」「仕様を詰めたい」「用語を整理したい」 |
-| tansaku | 探索 → すり合わせ (auto) | 用語ズレ / DoD 曖昧 / docs / ADR 不足 / 手戻りが大きい未決事項を検出 |
+| tansaku | 探索 → すり合わせ (auto) | 用語ズレ / DoD 曖昧 / docs・ADR 不足 / 手戻りが大きい未決事項を検出 |
 | sadoku | 通常レビュー | 「レビューして」「コードレビュー」 |
 | sadoku | simplify findings | 「整理して」「simplify」「スリム化したい」(明示トリガー専用) |
 | kouchiku | 軽量検討 | 「どうやって直す」「やり方どっち」 |
@@ -185,7 +185,7 @@ mode レベルの遷移は次の通り (mode mapping は frontmatter に無い�
 | teishutsu | PR 本文ドラフト / 提出 | 「PR文書いて」「PR description」「PR出す」「PR提出」「PR ready」「提出して」 |
 
 > **shiken の必須レイヤー**: 純ロジック / API / バグ修正に触れる場合は必須、インタラクションは推奨、純スタイル / アニメ / 文言のみはスキップ可 (理由必須)。`shiken` 直接起動で 1 つの vertical slice に言語化できない場合は `kouchiku` に戻す。
-> **状態トリガー** (git diff 検出 / 計画実行の完了報告直後など) の詳細は各 `SKILL.md` を参照。reviewer コメント対応は skill mode 化しない (通常会話で「返信書いて」)。
+> **状態トリガー** (git diff 検出・計画実行の完了報告直後など) の詳細は各 `SKILL.md` を参照。reviewer コメント対応は skill mode 化しない (通常会話で「返信書いて」)。
 
 ### 起動経路は 3 層ある (運用実態)
 
@@ -193,7 +193,7 @@ trigger 表は「どう呼ばれうるか」の定義。実際の起動経路は
 
 | 経路 | 主な skill | 意味 |
 |---|---|---|
-| 会話内の自動ルーティング | `kouchiku` / `sadoku` / `teishutsu` | ユーザの発話 / セッション状態から発火する主動線 |
+| 会話内の自動ルーティング | `kouchiku` / `sadoku` / `teishutsu` | ユーザの発話・セッション状態から発火する主動線 |
 | エージェント実行 (goal コマンド / VM など) | `shiken` | 自律実行の中で TDD 層として使われる。ローカルの metrics には残らない |
 | ユーザの明示起動のみ | `tansaku` | 実装に移る前にユーザが全体像を把握したいときだけ呼ぶ。自動発火しないのが正常 |
 

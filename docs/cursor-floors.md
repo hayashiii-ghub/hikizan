@@ -71,4 +71,4 @@ pure logic (`push-parse.sh` / `destructive.sh`) は CC hooks と**同一ファ�
 
 ## tier への含意
 
-floors が Cursor にも置けるようになったため、tier は「floors の有無」ではなく「skill の手順をレールとして使うか、opt-out (手順自由 / 出口固定) で使うか」を表す軸として一貫する。floors を入れ、かつタスクの回し方が強いモデルを使う Cursor 環境は `HIKIZAN_TIER=standard` を宣言してよい (CC と同じ理屈)。floors 未導入、またはタスクの回し方が強くないモデル (VM で走らせる類) は `guided` 既定のまま。skill の番号付き手順がレールとして機能する。
+floors が Cursor にも置けるようになったため、tier は「floors の有無」ではなく「skill の手順をレールとして使うか、opt-out (手順自由・出口固定) で使うか」を表す軸として一貫する。floors を入れ、かつタスクの回し方が強いモデルを使う Cursor 環境は `HIKIZAN_TIER=standard` を宣言してよい (CC と同じ理屈)。floors 未導入、またはタスクの回し方が強くないモデル (VM で走らせる類) は `guided` 既定のまま。skill の番号付き手順がレールとして機能する。

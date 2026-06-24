@@ -65,7 +65,7 @@ prompt 詳細: `references/agents/reviewer-architecture.md`
 
 - 状態管理 (race condition, retry, idempotency) に diff が触れている
 - 外部 API / 非同期処理 / queue / scheduler の変更
-- error handling パス (try/catch, fallback, retry) の追加 / 削除
+- error handling パス (try/catch, fallback, retry) の追加・削除
 - ユーザに与える影響が大きい (課金 / 通知 / データ破壊系)
 
 **観点**

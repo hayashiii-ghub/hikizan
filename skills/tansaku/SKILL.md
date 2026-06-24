@@ -20,7 +20,7 @@ when_to_use: "探索, 全体像把握, 影響範囲調査, 用語整理, すり�
 
 - 元に戻せない操作 (削除 / force push / reset --hard / git clean) は、実行する前にユーザに確認する
 - 「pass した」「確認した」と書くときは、コマンド出力の最終行をそのまま貼る。出力なしで完了と書かない
-- 秘密情報 (token / email / チーム外の実名) を PR 本文 / commit message に書かない。出す前に grep で確認する
+- 秘密情報 (token / email / チーム外の実名) を PR 本文・commit message に書かない。出す前に grep で確認する
 - PR / branch / step は機能名か issue 名で呼ぶ。PR-1 のような独自の連番を作らない (詳細は docs/naming.md)
 - 別の skill に渡すときは 1 行で書く: `handoff: [skill] / 渡すこと: [1 文] / evidence: [file:line かコマンド出力]`
 - 日本語の文章は docs/writing-style.md の規範に従う
@@ -37,7 +37,7 @@ when_to_use: "探索, 全体像把握, 影響範囲調査, 用語整理, すり�
 
 1. 入口文書を読む: `README.md` / `AGENTS.md` / `docs/` / ADR
 2. ユーザが指定した file / dir / issue の語が出る場所を読む
-3. 関連シンボルの定義 / 参照 / 呼び出し元を辿る (関数や変数は LSP、TODO やコメント等の文字列は grep。LSP が無ければ全部 grep)
+3. 関連シンボルの定義・参照・呼び出し元を辿る (関数や変数は LSP、TODO やコメント等の文字列は grep。LSP が無ければ全部 grep)
 4. 既存テストと検証コマンドを確認する
 5. 履歴を見る:
    ```bash
@@ -79,5 +79,5 @@ worktree 内 (`git rev-parse --git-dir` と `--git-common-dir` の正規化結�
 
 ## references/
 
-- `suriawase.md`：すり合わせの発火条件 / 質問フォーマット / docs 更新の扱い
+- `suriawase.md`：すり合わせの発火条件・質問フォーマット・docs 更新の扱い
 - `mermaid-views.md`：構造を mermaid で見せるときの図種別と最小例

@@ -16,7 +16,7 @@
 | PR 本文ドラフト / PR 提出フローを変える | `skills/teishutsu/SKILL.md` |
 | hook の block / warning 条件を変える | `hooks/conditions.md` と `hooks/hooks.json` (ロジックは `hooks/scripts/lib/`、検査は `hooks/tests/`) |
 | 利用先 project に注入する routing / ルール文を変える | `templates/CLAUDE.md` (注入 `session-context.sh` と `/hikizan:init` の単一ソース) |
-| standard tier への opt-out 前文 (手順自由 / 出口固定) を変える | `templates/standard-preamble.md` (`session-context.sh` が tier=standard のときだけ注入) |
+| standard tier への opt-out 前文 (手順自由・出口固定) を変える | `templates/standard-preamble.md` (`session-context.sh` が tier=standard のときだけ注入) |
 | 設計原則を変える | `docs/principles.md` |
 | 人間向け説明 / install / 公開情報を変える | `README.md` |
 | 他 project へ配る AGENTS.md の形式 / README の役割境界を変える | `docs/doc-format.md` (正本) と `templates/AGENTS.md` (スケルトン) |
