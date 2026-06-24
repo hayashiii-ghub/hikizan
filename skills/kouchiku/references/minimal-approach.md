@@ -5,7 +5,7 @@
 ## 推奨度の付け方
 
 - `N/10 + 1 行根拠` を必須化 (数値だけだと検証不能)
-- 例: `Approach: 案 A (8/10) — 既存 module の依存方向に沿う、変更点が局所的`
+- 例: `Approach: 案 A (8/10)：既存 module の依存方向に沿う、変更点が局所的`
 - 「9/10 と 8/10 の差を 1 行で説明できない」なら数値を下げて根拠を明示
 
 ## Minimal Approach の判定
@@ -75,4 +75,4 @@ ponytail (github.com/DietrichGebert/ponytail) のラダーの概念を hikizan �
 
 ## 関連
 
-- `skills/kouchiku/SKILL.md` Hard Rules — 命名規約側の引き算
+- `skills/kouchiku/SKILL.md` Hard Rules：命名規約側の引き算

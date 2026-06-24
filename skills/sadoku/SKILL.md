@@ -20,7 +20,7 @@ diff を見る skill。見つけた問題を直すのは `kouchiku`、テスト�
 
 - 元に戻せない操作 (削除 / force push / reset --hard / git clean) は、実行する前にユーザに確認する
 - 「pass した」「確認した」と書くときは、コマンド出力の最終行をそのまま貼る。出力なしで完了と書かない
-- 秘密情報 (token / email / チーム外の実名) を PR 本文・commit message に書かない。出す前に grep で確認する
+- 秘密情報 (token / email / チーム外の実名) を PR 本文 / commit message に書かない。出す前に grep で確認する
 - PR / branch / step は機能名か issue 名で呼ぶ。PR-1 のような独自の連番を作らない (詳細は docs/naming.md)
 - 別の skill に渡すときは 1 行で書く: `handoff: [skill] / 渡すこと: [1 文] / evidence: [file:line かコマンド出力]`
 - 日本語の文章は docs/writing-style.md の規範に従う
@@ -39,7 +39,7 @@ diff があるだけでは始めない。状態から起動するときは 1 行
 
 1. `references/project-context.md` の観点で対象 repo の前提 (依存関係 / テスト構造 / 命名規則) を確認する
 2. diff の行数で深さを決める: 50 行以内かテスト変更のみ → Quick / 50〜500 行 → Standard / 500 行超か security に触れる → Deep
-3. 実装者の説明・PR 本文・前段の報告は鵜呑みにしない。finding の根拠は強い順に採る: ①テストの pass/fail ②diff ③周辺コード ④検証ログ ⑤実装者のメモ
+3. 実装者の説明 / PR 本文 / 前段の報告は鵜呑みにしない。finding の根拠は強い順に採る: ①テストの pass/fail ②diff ③周辺コード ④検証ログ ⑤実装者のメモ
 4. 下の「停止条件」を上から順に diff に当てる。該当したら作業を止めてユーザに確認する
 5. Standard 以上で security / architecture に触れる diff なら、subagent (`agents/reviewer-security.md` / `agents/reviewer-architecture.md`、他ハーネスでは `references/agents/` の同一コピー) を起動する (最大 3 並列、条件は `references/persona-catalog.md`)。返ってきた finding は自分で diff を読み直す / テストを再実行して裏取りしてから採用する
 6. 「merge 後に壊れる一番現実的なシナリオ」を 1 つ書く。Quick では省略してよいが、bugfix / 挙動変更 / business rule / API / security の diff では Quick でも書く
@@ -48,14 +48,14 @@ diff があるだけでは始めない。状態から起動するときは 1 行
 
 ## 停止条件 (上から順にチェックし、該当したら止める)
 
-- email / token / 実名が diff・commit message に混入している (grep recipe は `skills/teishutsu/references/pr-template.md` の「PII / Secrets scan」)
+- email / token / 実名が diff / commit message に混入している (grep recipe は `skills/teishutsu/references/pr-template.md` の「PII / Secrets scan」)
 - `console.log` / `debugger` / 一時的な debug 出力が production コードに残っている
 - 理由の書かれていない `.skip` / `xfail` がある
 - mock の存在や呼び出し回数を assert している / テストのためだけの method が production class にある
 - bugfix なのに root cause 1 文と同じ入力での before/after が無い
 - diff が複数の issue にまたがっている (1 issue = 1 PR)
 - 「最新の X」「Y が標準」のような外部事実が URL なしで根拠になっている
-- 仕様・データ形状・権限・時系列の前提が崩れると壊れる変更なのに、diff / テスト / 周辺コードでその前提を確認できない (命名の好みや将来の漠然とした不安では止めない)
+- 仕様 / データ形状 / 権限 / 時系列の前提が崩れると壊れる変更なのに、diff / テスト / 周辺コードでその前提を確認できない (命名の好みや将来の漠然とした不安では止めない)
 - 識別子が grep でヒットしない / lockfile 変更の理由が分からない → 推測で補完せず質問する
 
 ## 手順 (simplify)
@@ -87,7 +87,7 @@ worktree 内 (`git rev-parse --git-dir` と `--git-common-dir` の正規化結�
 
 ## references/
 
-- `project-context.md` — diff 読解前の文脈確認の観点
-- `persona-catalog.md` — 専門家レビュー (security / architecture / adversarial) の起動条件
-- `simplify-checklist.md` — simplify の 5 観点判定基準
-- `agents/reviewer-security.md` / `agents/reviewer-architecture.md` — 他ハーネス向けコピー (plugin `agents/` と同一内容)
+- `project-context.md`：diff 読解前の文脈確認の観点
+- `persona-catalog.md`：専門家レビュー (security / architecture / adversarial) の起動条件
+- `simplify-checklist.md`：simplify の 5 観点判定基準
+- `agents/reviewer-security.md` / `agents/reviewer-architecture.md`：他ハーネス向けコピー (plugin `agents/` と同一内容)

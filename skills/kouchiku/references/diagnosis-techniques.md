@@ -67,7 +67,7 @@ curl -v -X POST https://... -H '...' -d '...'
 
 ### 6. env diff (環境差異)
 
-**用途**: 「俺の環境では動く」を覆すために、env 変数・依存 version を全列挙して比較
+**用途**: 「俺の環境では動く」を覆すために、env 変数 / 依存 version を全列挙して比較
 
 ```bash
 env | sort > local.env

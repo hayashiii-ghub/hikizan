@@ -23,7 +23,7 @@ diff を読み、以下のカテゴリを順に評価する:
 | 認可 | role / scope の判定漏れ、横展開リスク |
 | 入力検証 | type guard / boundary / escape の有無 |
 | Injection | SQL / shell / template / XSS |
-| Secret | log・error message・response body への混入 |
+| Secret | log / error message / response body への混入 |
 | SSRF | 内部 IP / metadata endpoint への到達可能性 |
 
 該当しないカテゴリは「該当なし」と明記する (省略しない)。

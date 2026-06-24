@@ -20,7 +20,7 @@ when_to_use: "設計判断, 方針決め, design decision, kill or keep, 計画�
 
 - 元に戻せない操作 (削除 / force push / reset --hard / git clean) は、実行する前にユーザに確認する
 - 「pass した」「確認した」と書くときは、コマンド出力の最終行をそのまま貼る。出力なしで完了と書かない
-- 秘密情報 (token / email / チーム外の実名) を PR 本文・commit message に書かない。出す前に grep で確認する
+- 秘密情報 (token / email / チーム外の実名) を PR 本文 / commit message に書かない。出す前に grep で確認する
 - PR / branch / step は機能名か issue 名で呼ぶ。PR-1 のような独自の連番を作らない (詳細は docs/naming.md)
 - 別の skill に渡すときは 1 行で書く: `handoff: [skill] / 渡すこと: [1 文] / evidence: [file:line かコマンド出力]`
 - 日本語の文章は docs/writing-style.md の規範に従う
@@ -34,7 +34,7 @@ when_to_use: "設計判断, 方針決め, design decision, kill or keep, 計画�
 | 通常検討 | 「設計どうする」「方針決めたい」/ 新機能の着手前 | 計画 |
 | 評価 | 「やる価値ある?」「採用すべき?」「やめる?」 | Kill / Keep / Pivot |
 | 計画実行 | 「進めて」「計画実行」「着手」(計画の承認後) | 動くコード + 検証ログ |
-| 診断 | 「エラー」「動かない」/ 原因の分からない不具合・test failure | root cause 1 文 + fix |
+| 診断 | 「エラー」「動かない」/ 原因の分からない不具合 / test failure | root cause 1 文 + fix |
 
 前提情報が足りないと感じたら、考え始める前に `tansaku` に渡す (自分で広域探索をやり直さない)。
 
@@ -110,7 +110,7 @@ worktree 内 (`git rev-parse --git-dir` と `--git-common-dir` の正規化結�
 
 ## references/
 
-- `design.md` — 通常検討の詳細手順と出力テンプレ
-- `execution.md` — 計画実行の詳細 (TDD 分岐 / slice の渡し方 / 診断の入り方)
-- `diagnosis-techniques.md` — 診断の確認手段
-- `minimal-approach.md` — 引き算の手順と推奨度 N/10 の付け方
+- `design.md`：通常検討の詳細手順と出力テンプレ
+- `execution.md`：計画実行の詳細 (TDD 分岐 / slice の渡し方 / 診断の入り方)
+- `diagnosis-techniques.md`：診断の確認手段
+- `minimal-approach.md`：引き算の手順と推奨度 N/10 の付け方
