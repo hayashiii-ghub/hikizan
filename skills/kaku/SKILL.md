@@ -59,12 +59,14 @@ when_to_use: "執筆, 推敲, リライト, 文章を書く"
 
 ## 報告 (穴埋め)
 
-```
-mode: [執筆 / 推敲]
-対象: [何を・どの形式で]
-規範チェック: [当てた節 → 直した箇所 / 違反なし]
-次: [teishutsu に渡す / sadoku に渡す / pdfmint で PDF 化 / 完了]
-```
+最初に結論を 1 文。続けて内訳を箇条書きにする。
+
+[1 文: 何をどう書いた / 直したか、いまどういう状態か]
+
+- mode: [執筆 / 推敲]
+- target: [何を・どの形式で]
+- norm check: [当てた節 → 直した箇所 / 違反なし]
+- next: [teishutsu / sadoku / pdfmint で PDF 化 / 完了]
 
 worktree 内 (`git rev-parse --git-dir` と `--git-common-dir` の正規化結果が異なる) なら `worktree: [branch]` を 1 行足す。
 

@@ -74,14 +74,16 @@ diff があるだけでは始めない。状態から起動するときは 1 行
 
 ## 報告 (穴埋め)
 
-```
-files: N (+X -Y) / 深さ: [Quick / Standard / Deep]
-停止条件: [該当 N 件 → 各 1 行 / なし]
-PII scan: [grep コマンド + 出力。0 件なら "0 matches"]
-failure scenario: [1 つ / 該当なし]
-visual: [sitesnap shot のパス / 視覚未確認 (理由) / 該当なし]
-検証: [コマンド] → [出力の最終行をそのまま]
-```
+最初に結論を 1 文。続けて確認項目を箇条書きにする。検証はコマンド出力の最終行をそのまま貼る。
+
+[1 文: レビュー結論。そのまま出せるか、止めるべきか]
+
+- files / depth: [N ファイル (+X / -Y)、Quick / Standard / Deep]
+- stop conditions: [該当 N 件 → 各 1 行 / なし]
+- PII: [grep コマンド + 出力。0 件なら "0 matches"]
+- failure scenario: [merge 後に壊れる現実的なシナリオ 1 つ / 該当なし]
+- visual: [sitesnap shot のパス / 視覚未確認 (理由) / 該当なし]
+- verification: [コマンド] → [出力の最終行をそのまま]
 
 worktree 内 (`git rev-parse --git-dir` と `--git-common-dir` の正規化結果が異なる) なら `worktree: [branch]` を 1 行足す。
 

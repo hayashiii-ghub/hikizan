@@ -55,15 +55,17 @@ PR 本文を書いて PR を出す skill。レビューは `sadoku`。ここが 
 
 ## 報告 (穴埋め)
 
-```
-mode: [本文ドラフトのみ / 提出]
-remote: [git log HEAD..origin/... の最終行 / "(empty)"]
-submodule: [なし / path + 状態 (git submodule status の出力)]
-commit: [hash] — [message 1 行]
-push: [push 出力の最終行 / hook に止められた理由]
-cwd at gh: [pwd の実出力]
-PR: [URL] / [draft か reviewer]
-```
+最初に結論を 1 文。続けて各ステップの結果を残す。コマンド出力はそのまま貼る。
+
+[1 文: 何を提出した / どこまで進めたか]
+
+- mode: [本文ドラフトのみ / 提出]
+- remote: [git log HEAD..origin/... の最終行 / "(empty)"]
+- submodule: [なし / path + 状態 (git submodule status の出力)]
+- commit: [hash]、[message 1 行]
+- push: [push 出力の最終行 / hook に止められた理由]
+- cwd at gh: [pwd の実出力]
+- PR: [URL] / [draft か reviewer]
 
 ## references/
 

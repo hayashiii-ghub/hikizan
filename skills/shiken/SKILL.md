@@ -71,16 +71,18 @@ skip した後でもロジック行に 1 行でも触れたら必須に戻る。
 
 ## 報告 (穴埋め)
 
-```
-slice: [入力 / 操作] のとき [観測できる出力] になる
-test level: [unit / integration / component / e2e] — [選んだ理由 1 行]
-RED:   [test runner の最終行 (fail を含む)]
-GREEN: [test runner の最終行 (pass)]
-PRUNE: [N 残し M 削除] / witness: [何を壊して fail を見たか]
-restore: [git status --short の出力 / "clean"]
-gap: [テストしていない振る舞い / なし]
-skip: [skip した変更と理由 1 行 / なし]
-```
+最初に結論を 1 文。続けて TDD サイクルのログを残す。RED / GREEN はコマンド出力の最終行をそのまま貼る。
+
+[1 文: どの振る舞いを実装し、テストが通っているか]
+
+- slice: [入力 / 操作] のとき [観測できる出力] になる
+- test level: [unit / integration / component / e2e]、[選んだ理由 1 行]
+- RED: [test runner の最終行 (fail を含む)]
+- GREEN: [test runner の最終行 (pass)]
+- PRUNE: [N 残し M 削除] / witness: [何を壊して fail を見たか]
+- restore: [git status --short の出力 / "clean"]
+- gap: [テストしていない振る舞い / なし]
+- skip: [skip した変更と理由 1 行 / なし]
 
 worktree 内 (`git rev-parse --git-dir` と `--git-common-dir` の正規化結果が異なる) なら `worktree: [branch]` を 1 行足す。
 
