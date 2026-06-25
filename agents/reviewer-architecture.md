@@ -39,6 +39,7 @@ diff を読み、以下のカテゴリを順に評価する:
 ```
 ## architecture review
 
+verdict:   [1 文。重大な指摘の有無]
 scope:     [評価範囲、controller から渡された通り]
 
 ### finding 1

@@ -23,17 +23,13 @@
 
 ## 質問フォーマット
 
-```
-すり合わせが必要です。
-確認したいことは1つです。
+すり合わせが必要です。確認したいことは1つです。
 
-Question: [質問]
-Recommended: [推奨案]
-Reason: [1-2 行根拠。Evidence があれば path:line を含める]
-
-この回答で決まる docs:
-- CONTEXT.md: [追記候補 / none]
-- ADR: [必要なら候補 / none]
-```
+- Question: [質問]
+- Recommended: [推奨案]
+- Reason: [1-2 行根拠。Evidence があれば path:line を含める]
+- affected docs:
+  - CONTEXT.md: [追記候補 / none]
+  - ADR: [必要なら候補 / none]
 
 回答を得たら、解決済み事項を `Terminology.confirmed` または `Unknowns` から取り除いた handoff brief に反映する。`CONTEXT.md` / ADR の実ファイル更新は、ユーザが明示的に求めた場合だけ行う。
