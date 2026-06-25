@@ -234,7 +234,7 @@ trigger 表は「どう呼ばれうるか」の定義。実際の起動経路は
 handoff の共通形 (1 行):
 
 ```text
-handoff: [skill] / 渡すこと: [1 文] / evidence: [file:line かコマンド出力]
+handoff: [skill] / brief: [1 文] / evidence: [file:line かコマンド出力]
 ```
 
 `kouchiku` → `shiken` だけは vertical slice の指定を加える (形式は `skills/kouchiku/references/execution.md`)。

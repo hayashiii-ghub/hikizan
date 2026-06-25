@@ -18,14 +18,12 @@
 - `shiken` return の `coverage gap` を読んで、gap を受け入れる / 次 slice にする / test level を変える を `kouchiku` が判断する
 - `shiken` に後続 slice の設計や追加実装を任せない
 
-```
-handoff: shiken / 渡すこと: [slice 1 文] / evidence: [関連 file:line]
-vertical slice:
-  entry: [user action / API call / public function]
-  behavior: [観測したい振る舞い]
-  observable output: [UI / response / return value / state change / persisted data]
-  excluded layers: [この cycle で通さない層]
-```
+- handoff: shiken / brief: [slice 1 文] / evidence: [関連 file:line]
+- vertical slice:
+  - entry: [user action / API call / public function]
+  - behavior: [観測したい振る舞い]
+  - observable output: [UI / response / return value / state change / persisted data]
+  - excluded layers: [この cycle で通さない層]
 
 `shiken` は「報告」(RED / GREEN / PRUNE のログ、gap、prune witness) を埋めて返してくる。
 

@@ -10,7 +10,7 @@
 
 - 未知の code area / module boundary に触れる
 - 影響範囲、呼び出し元、依存先が不明
-- ユーザーの用語とコード上の用語がズレている疑いがある
+- ユーザの用語とコード上の用語がズレている疑いがある
 - `CONTEXT.md` / ADR / docs の確認が必要
 - issue / 要望の DoD が曖昧
 - 実装前に決めないと手戻りが大きい未決事項がある
@@ -19,7 +19,7 @@
 
 - 変更が小さく、対象ファイルと期待挙動が明確
 - 既存テストや実装から仕様が十分に読める
-- ユーザーが設計判断だけを求めており、追加探索のコストが判断価値を上回る
+- ユーザが設計判断だけを求めており、追加探索のコストが判断価値を上回る
 
 ## 思考の手順
 
@@ -32,23 +32,22 @@
 
 ## 出力形式
 
-```
-Building:        [何を作る、1 段落]
-Not building:    [out-of-scope、1-3 項目]
-Approach:        [選んだ案、推奨度 N/10 + 1 行根拠]
-Alternatives:    [近接時のみ、各案に推奨度 N/10 + 1 行根拠。明確なら 1 案でよい]
-Structure:       [任意] 構造変更 (module 境界 / 依存 / data flow) を伴う時だけ
-                 before/after を mermaid 1 枚。線形手順は箇条書きで足りる
-Key decisions:   3-5 項目 (各「ほかの選択肢を採らなかった理由」を 1 行)
-Interface sketch: [任意] 最も load-bearing な interface 1 点を signature / data 形で
-                 (実在 symbol を file:line 付きで参照、~5-8 行、logic 本体なし)
-Premises:        依存している事実 3-5 個 (各 ✓ file:line で確認済 / ⚠ 未検証)
-Worst case:      6 ヶ月後に問題化しうるシナリオ
-Unknowns:        defer 理由 + 担当明記の項目のみ
-Plan steps:      実装単位 (owner skill / file / 検証コマンド。TDD 必要層は
-                 next slice / candidate follow-up slices を分ける)
-Minimal Approach: 下記判定に従い最小版を併記 or "minimal already"
-```
+最初に結論を 1 文 (何を作り、どの案を推すか)。続けて各項目を箇条書きにする。
+
+[1 文: 何を作る / どの案を推すか]
+
+- Building: [何を作る、1 段落]
+- Not building: [out-of-scope、1-3 項目]
+- Approach: [選んだ案、推奨度 N/10 + 1 行根拠]
+- Alternatives: [近接時のみ、各案に推奨度 N/10 + 1 行根拠。明確なら 1 案でよい]
+- Structure: [任意] 構造変更 (module 境界 / 依存 / data flow) を伴う時だけ before/after を mermaid 1 枚。線形手順は箇条書きで足りる
+- Key decisions: 3-5 項目 (各「ほかの選択肢を採らなかった理由」を 1 行)
+- Interface sketch: [任意] 最も load-bearing な interface 1 点を signature / data 形で (実在 symbol を file:line 付きで参照、~5-8 行、logic 本体なし)
+- Premises: 依存している事実 3-5 個 (各 ✓ file:line で確認済 / ⚠ 未検証)
+- Worst case: 6 ヶ月後に問題化しうるシナリオ
+- Unknowns: defer 理由 + 担当明記の項目のみ
+- Plan steps: 実装単位 (owner skill / file / 検証コマンド。TDD 必要層は next slice / candidate follow-up slices を分ける)
+- Minimal Approach: 下記判定に従い最小版を併記 or "minimal already"
 
 ## Minimal Approach の判定
 
