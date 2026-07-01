@@ -54,7 +54,7 @@ when_to_use: "設計判断, 方針決め, design decision, kill or keep, 計画�
 7. 各 step を書く前に `references/minimal-approach.md` の「書く前のラダー」で止める。計画が要求から読める規模の 2 倍以上なら、引き算した最小版を併記する (同ファイル)
 8. 出力して「1. 実行する (jikkou へ) / 2. 計画を直す / 3. 中止する」で承認を待つ。承認されるまで実装には入らない。承認されたら `jikkou` に handoff する
 
-出力の全項目と詳細な思考手順: `references/design.md`
+出力の全項目と詳細な思考手順: `references/deliberation.md`
 
 ## 手順 (評価)
 
@@ -86,5 +86,5 @@ worktree 内 (`git rev-parse --git-dir` と `--git-common-dir` の正規化結�
 
 ## references/
 
-- `design.md`：通常検討の詳細手順と出力テンプレ
+- `deliberation.md`：通常検討の詳細手順と出力テンプレ
 - `minimal-approach.md`：引き算の手順と推奨度 N/10 の付け方

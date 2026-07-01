@@ -227,7 +227,7 @@ handoff の共通形 (1 行):
 handoff: [skill] / brief: [1 文] / evidence: [file:line かコマンド出力]
 ```
 
-`jikkou` → `shiken` だけは vertical slice の指定を加える (形式は `skills/jikkou/references/execution.md`)。
+`jikkou` → `shiken` だけは vertical slice の指定を加える (形式は `skills/jikkou/references/plan-execution.md`)。
 
 ---
 
@@ -285,9 +285,9 @@ flowchart LR
 | 文脈抽出                     | `../skills/sadoku/references/project-context.md`                                  |
 | subagent                     | `../skills/sadoku/references/agents/reviewer-security.md`, `reviewer-architecture.md` |
 | sekkei                       | `../skills/sekkei/SKILL.md`                                                       |
-| sekkei references            | `../skills/sekkei/references/design.md`, `../skills/sekkei/references/minimal-approach.md` |
+| sekkei references            | `../skills/sekkei/references/deliberation.md`, `../skills/sekkei/references/minimal-approach.md` |
 | jikkou                       | `../skills/jikkou/SKILL.md`                                                       |
-| jikkou references            | `../skills/jikkou/references/execution.md`, `../skills/jikkou/references/diagnosis-techniques.md` |
+| jikkou references            | `../skills/jikkou/references/plan-execution.md`, `../skills/jikkou/references/diagnosis-techniques.md` |
 | shiken                       | `../skills/shiken/SKILL.md`, `../skills/shiken/references/testing-anti-patterns.md` |
 | teishutsu                    | `../skills/teishutsu/SKILL.md`                                                    |
 | PR テンプレ                  | `../skills/teishutsu/references/pr-template.md`                                   |
