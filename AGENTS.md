@@ -10,6 +10,7 @@
 | skill discovery の条件を変える | 各 `skills/<name>/SKILL.md` の frontmatter `description` |
 | 全 skill 共通のルール (不可逆操作の確認 / 検証ログ引用 / 秘密情報 / 命名 / handoff 形式) を変える | 各 SKILL.md の `共通ルール` block (7 skill で同一、`scripts/check-consistency.sh` が検査) |
 | 探索 / 用語整理 / 影響範囲把握を変える | `skills/tansaku/SKILL.md` |
+| ドメイン文脈 (用語 / 不変条件 / 制約 / 受容済みリスク) の正本 CONTEXT.md の契約を変える | `skills/tansaku/references/context-doc.md` |
 | 設計判断 / 計画立案 / kill・keep 評価を変える | `skills/sekkei/SKILL.md` |
 | 計画実行 / 原因診断を変える | `skills/jikkou/SKILL.md` |
 | 引き算原則を変える | `skills/sekkei/references/minimal-approach.md` |
