@@ -36,7 +36,7 @@ subagent は軸ごとの構造化データ (finding + 判定 + severity + ripple
 - [軸: 該当なし]  ← subagent の「該当なし」を集約。"そもそも見たのか" の疑念を消す
 
 ## 次どうする
-- [ ] top-N を kouchiku に渡して直す
+- [ ] top-N を jikkou に渡して直す
 - [ ] 一部だけ直して残りは別 issue 化
 - [ ] 全部受容してこのまま出す (teishutsu へ)
 ```

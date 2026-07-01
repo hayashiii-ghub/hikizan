@@ -12,10 +12,10 @@
 
 ## TDD 必要層を踏むときの分岐
 
-純ロジック / API / バグ修正など必須レイヤーに触れる場合は計画実行を一時停止し `shiken` に入る。`kouchiku` は実装を vertical behavior slice に分解し、次に閉じる 1 slice だけを渡す。GREEN → PRUNE を終えてから次 step に戻る。
+純ロジック / API / バグ修正など必須レイヤーに触れる場合は計画実行を一時停止し `shiken` に入る。`jikkou` は実装を vertical behavior slice に分解し、次に閉じる 1 slice だけを渡す。GREEN → PRUNE を終えてから次 step に戻る。
 
 - Plan steps には候補 slice を列挙してよいが、確定扱いは次に実行する 1 slice のみ
-- `shiken` return の `coverage gap` を読んで、gap を受け入れる / 次 slice にする / test level を変える を `kouchiku` が判断する
+- `shiken` return の `coverage gap` を読んで、gap を受け入れる / 次 slice にする / test level を変える を `jikkou` が判断する
 - `shiken` に後続 slice の設計や追加実装を任せない
 
 - handoff: shiken / brief: [slice 1 文] / evidence: [関連 file:line]

@@ -18,7 +18,7 @@ extract() { awk -v s="$START" -v e="$END" '$0==s{f=1;next} $0==e{f=0} f' "$1"; }
 
 # Core workflow skills carry the shared contract. Utility skills (e.g. init)
 # are exempt — they have no contract block.
-CORE="kouchiku tansaku sadoku shiken teishutsu kaku"
+CORE="sekkei jikkou tansaku sadoku shiken teishutsu kaku"
 
 fail=0
 ref=""

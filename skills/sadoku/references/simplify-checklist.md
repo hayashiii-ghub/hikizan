@@ -2,7 +2,7 @@
 
 `sadoku` の simplify findings モードで参照する。各観点ごとの判定基準と書き直し方の指針。
 
-simplify findings は **発見と提案まで**。実装は kouchiku に handoff で委譲する (sadoku の役割境界)。
+simplify findings は **発見と提案まで**。実装は jikkou に handoff で委譲する (sadoku の役割境界)。
 
 ## 1. 重複
 
@@ -14,7 +14,7 @@ simplify findings は **発見と提案まで**。実装は kouchiku に handoff
 **書き直し方**:
 - helper function に抽出 (副作用と return 値が明確な単位で)
 - shared module に置くかは「他 module からも呼ぶか」で判断
-- 配置先の判断 (どの module に置くか) は kouchiku が controller として行う
+- 配置先の判断 (どの module に置くか) は sekkei が controller として行う
 
 **severity 目安**: 重複が広域 (3+ file) なら high、同 file 内なら medium / low。
 
@@ -27,7 +27,7 @@ simplify findings は **発見と提案まで**。実装は kouchiku に handoff
 
 **書き直し方**:
 - 命名規約を `project-context.md` (3. 命名規則の踏襲) で確認、揃える
-- 一括 rename の影響範囲確認は kouchiku に handoff
+- 一括 rename の影響範囲確認は sekkei に handoff
 
 **severity 目安**: public API の命名揺れは high、internal helper の揺れは medium / low。
 
@@ -41,7 +41,7 @@ simplify findings は **発見と提案まで**。実装は kouchiku に handoff
 
 **書き直し方**:
 - inline 化、interface 解消
-- 「将来増える予定がある」場合は据え置き判断、kouchiku に確認
+- 「将来増える予定がある」場合は据え置き判断、sekkei に確認
 - YAGNI 原則を引用根拠にできる場合は high severity
 
 **severity 目安**: production code の見通しを大きく悪化させているなら high、軽微な over-engineering は medium / low。
@@ -71,7 +71,7 @@ simplify findings は **発見と提案まで**。実装は kouchiku に handoff
 
 **書き直し方**:
 - 計測 / benchmark なしで自明な改善のみ取り上げる (premature optimization を避ける)
-- 計測を要する判断は kouchiku に振る (= simplify findings の範囲外、kouchiku が「やる価値ある」で評価)
+- 計測を要する判断は sekkei に振る (= simplify findings の範囲外、sekkei が「やる価値ある」で評価)
 
 **severity 目安**: hot path や user-visible な performance に直結するなら high、それ以外は medium / low。
 

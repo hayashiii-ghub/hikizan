@@ -23,5 +23,5 @@ flowchart LR
 ## 注意
 
 - mermaid は GitHub / Markdown ビューアでは描画されるが、素のターミナルでは描画されない。報告が PR / docs に着地する前提で使う。
-- 1 枚で追えないほど複雑なら、図を分けるより対象を絞る。tansaku は全体像、詳細は `kouchiku` に渡す。
+- 1 枚で追えないほど複雑なら、図を分けるより対象を絞る。tansaku は全体像、詳細は `sekkei` に渡す。
 - ノードのラベルは実在の symbol / path にする。架空の構造を描かない (事実は file:line)。

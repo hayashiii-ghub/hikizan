@@ -16,7 +16,7 @@ PR 本文を書いて PR を出す skill。レビューは `sadoku`。ここが 
 <!-- hikizan:contract:start -->
 ## 共通ルール
 
-全 skill 共通。`scripts/check-consistency.sh` が 6 skill で同一であることを検査する。
+全 skill 共通。`scripts/check-consistency.sh` が 7 skill で同一であることを検査する。
 
 - 元に戻せない操作 (削除 / force push / reset --hard / git clean) は、実行する前にユーザに確認する
 - 「pass した」「確認した」と書くときは、コマンド出力の最終行をそのまま貼る。出力なしで完了と書かない
