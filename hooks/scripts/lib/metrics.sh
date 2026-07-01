@@ -14,9 +14,9 @@
 #   ts:         RFC3339 UTC timestamp
 #   event:      "hook_fired" (extend later as needed)
 #   hook:       "pre-push" | "pre-pr-create" | "pre-destructive" | "post-commit" | "session-context"
-#   condition:  "nff" | "force_protected" | "no_draft_no_reviewer" |
-#               "submodule_unpushed" | "create" | "append" | "noop" | "none"
-#   decision:   "allow" | "block" | "ask" | "warn" | "invoke"
+#   condition:  "nff" | "force_protected" | "no_draft_no_reviewer" | "destructive" |
+#               "submodule_unpushed" | "inject" | "noop" | "none"
+#   decision:   "allow" | "block" | "ask" | "warn"
 #   session_id: CC session id (from hook stdin JSON), or "" when unavailable
 
 hikizan_metrics_log() {

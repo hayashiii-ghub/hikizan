@@ -6,6 +6,8 @@ description: tansaku / sadoku / sekkei / jikkou / shiken / teishutsu の境界�
 # Skill ワークフロー例
 
 > **目的:** 入力例に対する skill の起動条件と遷移を確認できるようにする。
+>
+> **対象範囲:** 本書は実装パイプラインの 6 skill (`tansaku` / `sekkei` / `jikkou` / `shiken` / `sadoku` / `teishutsu`) の境界・遷移・handoff を扱う。文章作成の `kaku` はこの pipeline から独立して動くため、以降のフロー図・mode 遷移・handoff 表・検証ログの対象外 (起動語は下の生成トリガー表に含む、詳細は `../skills/kaku/SKILL.md`)。
 
 ---
 
@@ -39,7 +41,7 @@ flowchart TB
   end
   subgraph EXEC["jikkou（実行）"]
     J["作る<br/>計画実行"]
-    JD["診る<br/>diagnosis / root cause"]
+    JD["診る<br/>診断 / root cause"]
   end
   subgraph TEST["shiken（試験）"]
     S["試す<br/>RED → GREEN → REFACTOR → PRUNE"]
@@ -76,7 +78,7 @@ flowchart TB
   A1 -->|"brief"| B["sekkei 通常検討<br/>問題定義・案・前提崩し・前提リスク検証・Plan"]
   A -->|"文脈が十分"| B
   B -->|"Plan 承認 / 進めて"| C["jikkou 計画実行<br/>owner skill 付き Plan steps"]
-  C -->|"原因未確定"| I["jikkou diagnosis<br/>root cause 1文 + evidence"]
+  C -->|"原因未確定"| I["jikkou 診断<br/>root cause 1文 + evidence"]
   I -->|"root cause 確定"| C
   C -->|"scope 逸脱 / 方針の再決定"| B
   C -->|"TDD 必要層<br/>1 vertical slice"| D["shiken<br/>RED → GREEN → REFACTOR → PRUNE"]
@@ -92,7 +94,7 @@ flowchart TB
 >
 > - 未知領域や用語ズレがある場合は、設計前に **tansaku** で Map / Terminology / Unknowns を作る。
 > - **sekkei** はコードを触らず、Plan 承認を境に **jikkou** に handoff する。scope 逸脱や方針の再決定が要るときは jikkou から sekkei に差し戻す。
-> - 原因未確定の調査は **jikkou diagnosis** として inline で実行する。
+> - 原因未確定の調査は **jikkou 診断** として inline で実行する。
 > - **jikkou → shiken → jikkou** の往復は handoff (+ vertical slice 指定) で実行する。1 往復は原則 1 vertical behavior slice。
 > - **sadoku** は実装完了後に初めて起動（「見る」専門）。
 > - **専門家レビュー**は Standard 以上のみ。Quick は停止条件 + 最小 skeptical lens 中心。
@@ -105,7 +107,7 @@ flowchart TB
 
 ```mermaid
 flowchart TB
-  B0["バグ報告 / error / 動かない"] --> B1["jikkou diagnosis<br/>症状列挙・hypothesis 1文・instrument 1つ・confirm/fix"]
+  B0["バグ報告 / error / 動かない"] --> B1["jikkou 診断<br/>症状列挙・hypothesis 1文・instrument 1つ・confirm/fix"]
   B1 -->|"root cause 確定<br/>fix 前"| B2["shiken regression guard<br/>RED: 実装前は fail<br/>GREEN: fix 後 pass<br/>PRUNE: observable output break で fail 目視"]
   B2 --> B3["sadoku 通常レビュー"]
   B3 --> B4["teishutsu PR 本文 + 提出"]
@@ -114,7 +116,7 @@ flowchart TB
 
 > **補足**
 >
-> - **jikkou diagnosis**: hypothesis を 1 文にできるまでコードに触らない discipline。方針ごと考え直す重い分岐なら sekkei に戻す。
+> - **jikkou 診断**: hypothesis を 1 文にできるまでコードに触らない discipline。方針ごと考え直す重い分岐なら sekkei に戻す。
 > - **bugfix** は shiken の**必須**層。再現テストを先行。
 > - 「直りました」だけでは完了扱いにしない。**fix 前後の挙動差分をそのまま引用**。
 
@@ -171,22 +173,8 @@ flowchart TB
 各 skill の mode 別トリガーと遷移は `docs/workflow.md`、発動条件の正本は各 SKILL.md frontmatter `description`。
 <!-- hikizan:triggers:end -->
 
-mode レベルの遷移は次の通り (mode mapping は frontmatter に無いため手動だが、起動語は上の生成表と一致させる):
+mode 別の起動トリガーと手順は各 `SKILL.md` の「モード表」が正本 (上の生成表は skill 単位の起動語、mode 詳細は各 SKILL.md)。ここで二重管理しない。`shiken` の必須 / skip レイヤー判定も `../skills/shiken/SKILL.md` を参照。
 
-| skill | mode / 遷移先 | 入力トリガーの例 |
-|---|---|---|
-| tansaku | 探索 | 「探索して」「全体像を掴んで」「この辺り見て」「影響範囲を調べて」「zoom-out」「用語を整理して」 |
-| sadoku | 通常レビュー | 「レビューして」「コードレビュー」 |
-| sadoku | simplify findings | 「整理して」「simplify」「スリム化したい」(明示トリガー専用) |
-| sekkei | 軽量検討 | 「どうやって直す」「やり方どっち」 |
-| sekkei | 通常検討 | 「設計どうする」「方針決めたい」「アーキテクチャ判断」 |
-| sekkei | 評価 | 「やる価値ある」「採用すべきか」「kill か keep」 |
-| jikkou | 計画実行 | 「計画実行」「進めて」「着手」「実装開始」(計画の承認後) |
-| jikkou | diagnosis | 「エラー」「動かない」「落ちる」「クラッシュ」「前は動いてた」「同じ問題が再発」 |
-| shiken | 起動 | 「TDDで」「テストから書いて」 |
-| teishutsu | PR 本文ドラフト / 提出 | 「PR文書いて」「PR description」「PR出す」「PR提出」「PR ready」「提出して」 |
-
-> **shiken の必須レイヤー**: 純ロジック / API / バグ修正に触れる場合は必須、インタラクションは推奨、純スタイル / アニメ / 文言のみはスキップ可 (理由必須)。`shiken` 直接起動で 1 つの vertical slice に言語化できない場合は `jikkou` に戻す (設計から見直すべきなら `sekkei`)。
 > **状態トリガー** (git diff 検出・計画実行の完了報告直後など) の詳細は各 `SKILL.md` を参照。reviewer コメント対応は skill mode 化しない (通常会話で「返信書いて」)。
 
 ### 起動経路は 3 層ある (運用実態)
@@ -215,13 +203,13 @@ trigger 表は「どう呼ばれうるか」の定義。実際の起動経路は
 | (user)               | sekkei 通常検討        | 「設計どうする」            | issue + DoD / tansaku brief |
 | (user)               | sekkei 軽量検討        | 「どうやって直す」          | 修正対象              |
 | (user)               | sekkei 評価            | 「やる価値ある」            | 判断対象              |
-| (user)               | jikkou diagnosis       | 「エラー」「動かない」      | バグ症状              |
+| (user)               | jikkou 診断       | 「エラー」「動かない」      | バグ症状              |
 | sekkei 通常検討      | jikkou 計画実行        | Plan 承認 / 「進めて」      | owner skill 付き Plan steps |
 | jikkou 計画実行      | sekkei 通常検討        | scope 逸脱 / 方針の再決定   | 逸脱点 + 再検討したい判断 |
-| jikkou 計画実行      | jikkou diagnosis       | 原因未確定 / test failure   | 症状 + evidence |
-| jikkou diagnosis     | jikkou 計画実行        | root cause 確定             | root cause 1 文 + fix 候補 |
+| jikkou 計画実行      | jikkou 診断       | 原因未確定 / test failure   | 症状 + evidence |
+| jikkou 診断     | jikkou 計画実行        | root cause 確定             | root cause 1 文 + fix 候補 |
 | jikkou 計画実行      | shiken                 | TDD 必要層に触れた          | vertical slice + spec / edge case / non-goals |
-| jikkou diagnosis     | shiken                 | bugfix 確定                 | root cause + vertical slice + failing behavior + test target |
+| jikkou 診断     | shiken                 | bugfix 確定                 | root cause + vertical slice + failing behavior + test target |
 | shiken               | jikkou 計画実行        | サイクル完了                | RED/GREEN/PRUNE log + test level + coverage gap + files changed |
 | jikkou 計画実行      | sadoku 通常レビュー    | 実装完了                    | handoff + 報告 + 完成 diff |
 | (user)               | sadoku 通常レビュー    | 「レビューして」            | diff                  |
@@ -253,19 +241,19 @@ Claude Code / Codex などの runtime が `/goal` 相当の継続実行機能を
 - `shiken` は coverage gap / failure / PRUNE witness を return し、次 slice を自分で増やさない
 - 実装完了後は `sadoku` に渡す
 - 提出時は `teishutsu` に渡す
-- 失敗時は `jikkou diagnosis` に戻り、root cause を 1 文で固定してから進む
+- 失敗時は `jikkou 診断` に戻り、root cause を 1 文で固定してから進む
 
 Example goal:
 
 ```text
-この issue を完了まで進める。未知領域や用語ズレがあれば `tansaku`、設計・計画は `sekkei`、承認後の実行 controller は `jikkou`、TDD 必要層は `shiken`、実装後レビューは `sadoku`、提出は `teishutsu` に渡す。各 step で検証ログを残し、失敗時は `jikkou diagnosis` に戻る。
+この issue を完了まで進める。未知領域や用語ズレがあれば `tansaku`、設計・計画は `sekkei`、承認後の実行 controller は `jikkou`、TDD 必要層は `shiken`、実装後レビューは `sadoku`、提出は `teishutsu` に渡す。各 step で検証ログを残し、失敗時は `jikkou 診断` に戻る。
 ```
 
 ---
 
 ## 9. hook 検査
 
-skill 本文は通常フローの手順を示し、hook は skill を経由しない操作に対する補完的な検査を行う。実体は `hooks/hooks.json` と `hooks/scripts/`。6 つの hook (SessionStart で routing / safety / tier を context 注入、`git push` の non-ff / 保護 branch force を deny、`rm` / `git reset` / `clean` / `checkout` の不可逆操作を ask、`gh pr create` の draft / reviewer 未指定を deny、`git commit` 後の submodule warning、`Skill` 起動を metrics に記録)。決定は公式 JSON `permissionDecision`。**発火条件マトリクスと既知の限界は `hooks/conditions.md` を参照** (SoT)。決定論ロジックは `hooks/tests/` で回帰検査。発火イベントは `~/.hikizan/metrics.jsonl` に記録される (`HIKIZAN_METRICS_DIR` で書き込み先変更可)。
+skill 本文は通常フローの手順を示し、hook は skill を経由しない操作に対する補完的な検査を行う。実体は `hooks/hooks.json` と `hooks/scripts/`。5 つの hook (SessionStart で routing / safety / tier を context 注入、`git push` の non-ff / 保護 branch force を deny、`rm` / `git reset` / `clean` / `checkout` の不可逆操作を ask、`gh pr create` の draft / reviewer 未指定を deny、`git commit` 後の submodule warning)。決定は公式 JSON `permissionDecision`。**発火条件マトリクスと既知の限界は `hooks/conditions.md` を参照** (SoT)。決定論ロジックは `hooks/tests/` で回帰検査。発火イベントは `~/.hikizan/metrics.jsonl` に記録される (`HIKIZAN_METRICS_DIR` で書き込み先変更可)。
 
 ```mermaid
 flowchart LR
@@ -280,16 +268,9 @@ flowchart LR
 
 ## 10. 各 skill の検証ログ要件（環境変化評価）
 
-| skill     | 検証ログ必須項目                                                 | 形式                    |
-| --------- | ---------------------------------------------------------------- | ----------------------- |
-| tansaku  | Map / Terminology / Unknowns の evidence                         | file:line / command output |
-| sadoku    | 停止条件 scan / tests / verification / PII scan                  | command + 出力末尾      |
-| sekkei    | 設計が前提とする事実の file:line（未確認は ⚠）                    | file:line               |
-| jikkou    | （計画実行 / diagnosis）verification / Confirmed（fix 前後の挙動差分） | command + 出力末尾 / そのまま引用 |
-| shiken    | RED / GREEN / PRUNE 各 phase、test level、coverage gap、PRUNE witness | test runner 最終行 + return log |
-| teishutsu | remote state / submodule / parent commit / push / PR body / cwd at gh / PR | command + 出力 (`pwd` はそのまま引用) |
+各 skill が報告に残す検証ログの必須項目は、該当 `SKILL.md` の「報告 (穴埋め)」テンプレが正本 (ここで再掲しない)。共通の原則は 1 つ:
 
-**不可:** self-report だけ（「pass しました」「直りました」等）。**必ず command 実行結果を引用**。
+**不可:** self-report だけ（「pass しました」「直りました」等）。機械的に検証できる項目は command 実行結果をそのまま引用する (設計原則「評価は環境変化で見る」、どの tier でも省略しない)。
 
 ---
 
