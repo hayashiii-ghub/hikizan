@@ -298,6 +298,7 @@ flowchart LR
 | 種別                         | パス                                                                              |
 | ---------------------------- | --------------------------------------------------------------------------------- |
 | tansaku                     | `../skills/tansaku/SKILL.md`                                                     |
+| CONTEXT.md 契約              | `../skills/tansaku/references/context-doc.md`                                     |
 | sadoku                       | `../skills/sadoku/SKILL.md`                                                       |
 | persona                      | `../skills/sadoku/references/persona-catalog.md`                                  |
 | 文脈抽出                     | `../skills/sadoku/references/project-context.md`                                  |
