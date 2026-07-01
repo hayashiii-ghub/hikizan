@@ -29,18 +29,19 @@ when_to_use: "探索, 全体像把握, 影響範囲調査, 用語整理"
 ## 手順
 
 1. 入口文書を読む: `README.md` / `AGENTS.md` / `docs/` / ADR
-2. ユーザが指定した file / dir / issue の語が出る場所を読む
-3. 関連シンボルの定義・参照・呼び出し元を辿る (関数や変数は LSP、TODO やコメント等の文字列は grep。LSP が無ければ全部 grep)
-4. 既存テストと検証コマンドを確認する
-5. 履歴を見る:
+2. 探索の広さを見積もる。独立に読める領域 / sub-question が 3 つ以上に割れるなら、以降の深い読み (シンボル / テスト / 履歴 / 指定領域) を read-only な探索 subagent に fan out する (最大 3 並列、渡し方と裏取りは `references/fanout.md`)。1 本の線形トレースなら inline で読む。合成 (用語確定 / CONTEXT.md / 報告) は controller が持つ
+3. ユーザが指定した file / dir / issue の語が出る場所を読む
+4. 関連シンボルの定義・参照・呼び出し元を辿る (関数や変数は LSP、TODO やコメント等の文字列は grep。LSP が無ければ全部 grep)
+5. 既存テストと検証コマンドを確認する
+6. 履歴を見る:
    ```bash
    git log --oneline -20
    grep -rn "TODO\|FIXME" <関連 dir> | head -20
    ```
-6. 用語のズレ (ユーザ用語 vs コード用語 / 同じ概念を複数名で呼ぶ / 重要用語の定義が無い) を見つけたら、事実で解消できるものは Terminology に確定する。事実で決まらない用語だけ一問ずつ user に確認する (推奨案を 1 行添える)。ただし単なる日本語/英語の表記違いは確認しない
-7. 確定した 用語 / 不変条件 / 制約 / 受容済みリスク は、報告に載せるだけでなく CONTEXT.md への **diff 提案**として出す (提案 by default、適用は user 承認、silent に書き換えない)。既存のドメイン doc (`CLAUDE.md` / `AGENTS.md` / `docs/`) があればそこへ追記、無ければ root に `CONTEXT.md` を作る (1 repo 1 正本)。設計の決定 (なぜ選んだか) は書かない (それは ADR / `sekkei`)。詳細は `references/context-doc.md`
-8. 下の「報告」を埋めて返す。確認できた事実には file:line かコマンド出力を付ける。確認できないことは推測で埋めず Unknowns に書く。構造がグラフ的 (依存 / 制御フロー / やり取り / データモデル) なら、文章でなく mermaid を 1 枚添える (`references/mermaid-views.md`)
-9. 実装前に決めるべき設計分岐 / DoD / 受容条件の曖昧さは、自分で詰めず `sekkei` に渡す (tansaku は設計判断をしない)。小さな不明点は Unknowns に残して止まらない
+7. 用語のズレ (ユーザ用語 vs コード用語 / 同じ概念を複数名で呼ぶ / 重要用語の定義が無い) を見つけたら、事実で解消できるものは Terminology に確定する。事実で決まらない用語だけ一問ずつ user に確認する (推奨案を 1 行添える)。ただし単なる日本語/英語の表記違いは確認しない
+8. 確定した 用語 / 不変条件 / 制約 / 受容済みリスク は、報告に載せるだけでなく CONTEXT.md への **diff 提案**として出す (提案 by default、適用は user 承認、silent に書き換えない)。既存のドメイン doc (`CLAUDE.md` / `AGENTS.md` / `docs/`) があればそこへ追記、無ければ root に `CONTEXT.md` を作る (1 repo 1 正本)。設計の決定 (なぜ選んだか) は書かない (それは ADR / `sekkei`)。詳細は `references/context-doc.md`
+9. 下の「報告」を埋めて返す。確認できた事実には file:line かコマンド出力を付ける。確認できないことは推測で埋めず Unknowns に書く。構造がグラフ的 (依存 / 制御フロー / やり取り / データモデル) なら、文章でなく mermaid を 1 枚添える (`references/mermaid-views.md`)
+10. 実装前に決めるべき設計分岐 / DoD / 受容条件の曖昧さは、自分で詰めず `sekkei` に渡す (tansaku は設計判断をしない)。小さな不明点は Unknowns に残して止まらない
 
 ## やってはいけないこと
 
@@ -49,6 +50,7 @@ when_to_use: "探索, 全体像把握, 影響範囲調査, 用語整理"
 - CONTEXT.md に設計の決定・理由を書く (それは ADR / `sekkei`) / user 承認なしに CONTEXT.md を書き換える
 - 事実と推測を混ぜる (evidence の無い行は Unknowns へ)
 - 質問を一度に複数並べる
+- 探索 subagent に用語確定 / CONTEXT.md 書き込み / 設計判断 / handoff を任せる (controller 所有、詳細は `references/fanout.md`)
 
 ## 報告 (穴埋め)
 
@@ -71,4 +73,5 @@ worktree 内 (`git rev-parse --git-dir` と `--git-common-dir` の正規化結�
 ## references/
 
 - `context-doc.md`：CONTEXT.md (ドメイン文脈の正本) の契約と書き込み手順 (提案 → 承認 → commit)
+- `fanout.md`：広い探索を read-only subagent に分散する契約 (起動条件 / 渡す形 / 裏取り)
 - `mermaid-views.md`：構造を mermaid で見せるときの図種別と最小例

@@ -198,6 +198,8 @@ trigger 表は「どう呼ばれうるか」の定義。実際の起動経路は
 | from                 | to                     | きっかけ                    | 何を渡す              |
 | -------------------- | ---------------------- | --------------------------- | --------------------- |
 | (user)               | tansaku 探索          | 「探索して」「全体像を掴んで」 | 対象 file / dir / issue |
+| tansaku 探索         | subagent (探索 scout)  | 独立領域が 3 つ以上          | sub-question + 対象範囲 |
+| subagent             | tansaku                | 探索完了                    | digest（要裏取り・統合）|
 | tansaku 探索         | sekkei 通常検討        | 設計判断に進める              | Map + Terminology + Unknowns + Evidence |
 | sekkei 通常検討      | tansaku 探索          | 判断前の情報不足              | 要望 / 対象 file / 既知 evidence |
 | (user)               | sekkei 通常検討        | 「設計どうする」            | issue + DoD / tansaku brief |
@@ -280,6 +282,7 @@ flowchart LR
 | ---------------------------- | --------------------------------------------------------------------------------- |
 | tansaku                     | `../skills/tansaku/SKILL.md`                                                     |
 | CONTEXT.md 契約              | `../skills/tansaku/references/context-doc.md`                                     |
+| tansaku fan-out              | `../skills/tansaku/references/fanout.md`                                          |
 | sadoku                       | `../skills/sadoku/SKILL.md`                                                       |
 | persona                      | `../skills/sadoku/references/persona-catalog.md`                                  |
 | 文脈抽出                     | `../skills/sadoku/references/project-context.md`                                  |
