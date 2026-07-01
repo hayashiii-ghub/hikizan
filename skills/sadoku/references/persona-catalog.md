@@ -1,14 +1,14 @@
 # 専門家レビュー persona の起動条件
 
-`sadoku` の通常レビューモードで深さ Standard 以上のときに subagent として起動する 3 persona。**全 diff に起動するのではなく、起動条件にヒットした persona のみ**。
+`sadoku` の通常レビューモードで深さ Standard 以上のときに subagent として起動する 3 persona。**全対象に起動するのではなく、起動条件にヒットした persona のみ**。対象は diff でも指定範囲のコードでもよい。
 
 ## 起動の流れ
 
-1. controller (sadoku 本体) が diff を読む
+1. controller (sadoku 本体) が対象 (diff / 範囲) を読む
 2. 各 persona の起動条件を照合
-3. ヒットした persona だけ subagent として起動
+3. ヒットした persona だけ subagent として起動。**起動時に脅威モデル / 設計意図 (何を守り、何を受容しているか) を渡す** — subagent の採否判定はこの前提に照らす。渡さないと勝手な基準で「危険」と言い、懸念の羅列になる
 4. subagent の出力を controller が**裏取り** (該当 file:line を実際に grep / Read で確認、subagent の主張を鵜呑みにしない)
-5. 裏取り済の指摘のみ報告に反映
+5. 裏取り済の指摘を `references/synthesis.md` の手順で 1 本に統合して報告に反映
 
 並列起動上限は 3。
 
@@ -18,7 +18,7 @@
 
 **起動条件 (いずれか 1 つでも該当)**
 
-- 認証 / 認可フロー (login / signup / role / permission / session) に diff が触れている
+- 認証 / 認可フロー (login / signup / role / permission / session) に対象が触れている
 - 入力経路 (HTTP handler / form / file upload / URL parser / SQL builder / shell exec) の変更
 - 暗号化 / hashing / secret 取扱 (env, key, token) の変更
 - 外部 fetch / SSRF を生む可能性のある URL 動的構築
@@ -63,7 +63,7 @@ prompt 詳細: `references/agents/reviewer-architecture.md`
 
 **起動条件 (いずれか 1 つでも該当)**
 
-- 状態管理 (race condition, retry, idempotency) に diff が触れている
+- 状態管理 (race condition, retry, idempotency) に対象が触れている
 - 外部 API / 非同期処理 / queue / scheduler の変更
 - error handling パス (try/catch, fallback, retry) の追加・削除
 - ユーザに与える影響が大きい (課金 / 通知 / データ破壊系)
@@ -81,4 +81,4 @@ prompt 詳細: `references/agents/reviewer-architecture.md`
 
 - 5+ ファイル touch なら **architecture** は必ず起動
 - 入力経路に触れたら **security** は必ず起動
-- どれも該当しないが diff が 200 行超なら adversarial だけ inline で実行
+- どれも該当しないが対象が大きい (diff 200 行超 / 範囲が 1 module 超) なら adversarial だけ inline で実行
