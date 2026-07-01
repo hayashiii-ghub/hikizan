@@ -33,3 +33,21 @@
 - 破壊的操作や force push は、ユーザの明示確認なしに進めない (skill の共通ルール + hooks の floors で二重化)。
 - 設計原則を skill 本文から参照するときは番号でなく名前で書く。
 - 決定論ロジック (hook scripts) を変えたら `hooks/tests/` を RED → GREEN で更新する。
+
+## Cursor Cloud specific instructions
+
+この repo は shell + markdown の skill pack で、package manager / build step は無い。ランタイム本体は `hooks/scripts/` の bash hook 群。依存は `bash` / `jq` / `git` / `gh` / `awk` のみで、いずれも VM の base image に既にある (update script でインストールするものは無い)。
+
+検証コマンド (lint / test 相当、いずれも `bash`):
+
+- test: `bash hooks/tests/run.sh` (個別は `bash hooks/tests/run.sh <name>`、例 `push-parse`)
+- lint (共通ルール block / agents fallback の一致): `bash scripts/check-consistency.sh`
+- lint (trigger 表の同期): `bash scripts/gen-trigger-docs.sh --check`
+
+hook を単体で動かす (= このプロダクトの「実行」): PreToolUse hook は JSON payload を stdin に流す。例:
+`printf '{"tool_input":{"command":"git push --force origin main"},"cwd":"/workspace"}' | bash hooks/scripts/pre-push.sh`。
+非自明な gotcha:
+
+- `session-context.sh` は `CLAUDE_PLUGIN_ROOT` (= repo root) が未設定だと template を読めず no-op になる。単体実行時は `CLAUDE_PLUGIN_ROOT=/workspace` を渡す。
+- hook は発火を `~/.hikizan/metrics.jsonl` に追記する。単体で試すときは `HIKIZAN_METRICS_DIR` を temp dir に向けて実データを汚さない (test harness は既にそうしている)。
+- `hooks/tests/e2e/bench.sh` は `claude` CLI 必須の user-run ベンチで、`run.sh` / CI には含まれない。この環境では回さない。
