@@ -36,18 +36,13 @@
 
 ## Cursor Cloud specific instructions
 
-この repo は shell + markdown の skill pack で、package manager / build step は無い。ランタイム本体は `hooks/scripts/` の bash hook 群。依存は `bash` / `jq` / `git` / `gh` / `awk` のみで、いずれも VM の base image に既にある (update script でインストールするものは無い)。
+この repo は shell + markdown の skill pack で package manager / build step が無い。ランタイム本体は `hooks/scripts/` の bash hook 群で、依存 (`bash` / `jq` / `git` / `gh` / `awk`) は VM の base image に既にある (update script でインストールするものは無い)。
 
-検証コマンド (lint / test 相当、いずれも `bash`):
+検証・lint コマンドの正本は `docs/workflow.md` (§9 hook 検査 / §10 検証ログ) と `hooks/conditions.md`。ここで再掲しない。いずれも `bash` だけで動き build は無い。
 
-- test: `bash hooks/tests/run.sh` (個別は `bash hooks/tests/run.sh <name>`、例 `push-parse`)
-- lint (共通ルール block / agents fallback の一致): `bash scripts/check-consistency.sh`
-- lint (trigger 表の同期): `bash scripts/gen-trigger-docs.sh --check`
+hook を単体で動かす (= このプロダクトの「実行」) ときの、この環境に固有の gotcha:
 
-hook を単体で動かす (= このプロダクトの「実行」): PreToolUse hook は JSON payload を stdin に流す。例:
-`printf '{"tool_input":{"command":"git push --force origin main"},"cwd":"/workspace"}' | bash hooks/scripts/pre-push.sh`。
-非自明な gotcha:
-
-- `session-context.sh` は `CLAUDE_PLUGIN_ROOT` (= repo root) が未設定だと template を読めず no-op になる。単体実行時は `CLAUDE_PLUGIN_ROOT=/workspace` を渡す。
-- hook は発火を `~/.hikizan/metrics.jsonl` に追記する。単体で試すときは `HIKIZAN_METRICS_DIR` を temp dir に向けて実データを汚さない (test harness は既にそうしている)。
-- `hooks/tests/e2e/bench.sh` は `claude` CLI 必須の user-run ベンチで、`run.sh` / CI には含まれない。この環境では回さない。
+- PreToolUse hook は JSON payload を stdin に流す (例 `printf '{"tool_input":{"command":"git push --force origin main"},"cwd":"/workspace"}' | bash hooks/scripts/pre-push.sh`)。発火条件の正本は `hooks/conditions.md`。
+- `session-context.sh` は `CLAUDE_PLUGIN_ROOT` が未設定だと template を読めず no-op になる。単体実行時は `CLAUDE_PLUGIN_ROOT=/workspace` を渡す。
+- hook は発火を `~/.hikizan/metrics.jsonl` に追記する。単体で試すときは `HIKIZAN_METRICS_DIR` を temp dir に向けて実データを汚さない。
+- `hooks/tests/e2e/bench.sh` は `claude` CLI 必須の user-run ベンチで `run.sh` / CI には含まれない。この環境では回さない。
