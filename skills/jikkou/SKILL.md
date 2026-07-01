@@ -39,14 +39,14 @@ when_to_use: "計画実行, 実装, エラー診断, root cause, バグ修正"
 
 1. 承認済みの計画を再読する。不明点があれば実装前に聞く。計画が無い / 未承認なら `sekkei` に戻す
 2. step を 1 つずつ自分で実装する (subagent に投げない)
-3. 純ロジック / ビジネスルール / API / バグ修正の step は、自分で書かず `shiken` に 1 slice ずつ渡す (slice の形式は `references/execution.md`)
+3. 純ロジック / ビジネスルール / API / バグ修正の step は、自分で書かず `shiken` に 1 slice ずつ渡す (slice の形式は `references/plan-execution.md`)
 4. 各 step の後に検証コマンドを実行し、出力の最終行を控える。失敗したら次の step に進まず診断に入る
 5. UI / レイアウト / 視覚に触れる step は、検証コマンドに加えて視覚検証も通す (web project かつ `sitesnap` があるとき。shot で撮って --json の file を Read で読み戻して目視し、check --json の合否を step 通過判定にする)。撮れない環境では「視覚未確認」と報告に明記してスキップする
 6. 計画に無いファイルに 5 つ以上触れそうになったら、または方針の再決定が要ると分かったら、止めて `sekkei` に差し戻す
 7. scope 外の発見は実装せず「実装中に分かったこと」にメモする
 8. 全 step 完了後、下の「報告」を埋めて `sadoku` に渡す
 
-詳細: `references/execution.md`
+詳細: `references/plan-execution.md`
 
 ## 手順 (診断)
 
@@ -83,5 +83,5 @@ worktree 内 (`git rev-parse --git-dir` と `--git-common-dir` の正規化結�
 
 ## references/
 
-- `execution.md`：計画実行の詳細 (TDD 分岐 / slice の渡し方 / 診断の入り方)
+- `plan-execution.md`：計画実行の詳細 (TDD 分岐 / slice の渡し方 / 診断の入り方)
 - `diagnosis-techniques.md`：診断の確認手段
