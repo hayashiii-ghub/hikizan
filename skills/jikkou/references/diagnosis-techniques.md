@@ -1,6 +1,6 @@
 # instrument を 1 つだけ仕込むパターン
 
-`kouchiku` の診断分岐で「hypothesis を 1 つ confirm / discard する」ための instrument 集。**証拠は 1 つだけ**。1 回の実験で hypothesis の真偽を分ける。仕込んだら必ず外す (commit には残さない)。
+`jikkou` の診断分岐で「hypothesis を 1 つ confirm / discard する」ための instrument 集。**証拠は 1 つだけ**。1 回の実験で hypothesis の真偽を分ける。仕込んだら必ず外す (commit には残さない)。
 
 ## 7 パターン
 

@@ -13,12 +13,12 @@ when_to_use: "TDD, テスト先行, テストから書く"
 
 > **テストが先。fail を見るまで実装を書かない。「あとで書く」「手で確認した」は理由にならない。**
 
-テスト先行で 1 つの振る舞いを実装する skill。slice の分解や設計判断が必要なら `kouchiku` に渡す。
+テスト先行で 1 つの振る舞いを実装する skill。slice の分解は `jikkou`、設計判断は `sekkei` に渡す。
 
 <!-- hikizan:contract:start -->
 ## 共通ルール
 
-全 skill 共通。`scripts/check-consistency.sh` が 6 skill で同一であることを検査する。
+全 skill 共通。`scripts/check-consistency.sh` が 7 skill で同一であることを検査する。
 
 - 元に戻せない操作 (削除 / force push / reset --hard / git clean) は、実行する前にユーザに確認する
 - 「pass した」「確認した」と書くときは、コマンド出力の最終行をそのまま貼る。出力なしで完了と書かない
@@ -30,7 +30,7 @@ when_to_use: "TDD, テスト先行, テストから書く"
 
 ## 手順
 
-1. slice を 1 文で書く: 「[入力 / 操作] のとき [観測できる出力] になる」。1 文にできなければ実装に入らず `kouchiku` に返す。`kouchiku` からの handoff に slice が無いときも差し戻す
+1. slice を 1 文で書く: 「[入力 / 操作] のとき [観測できる出力] になる」。1 文にできなければ実装に入らず `jikkou` に返す。`jikkou` からの handoff に slice が無いときも差し戻す
 2. **RED**: その slice が失敗するテストを 1 つ書き、test runner を実行して fail の出力を見る (最終行を控える)
 3. **GREEN**: テストを pass させる最小の実装を書き、test runner を実行して pass の出力を見る
 4. **REFACTOR**: 重複除去と命名改善をする。テストは green のまま保つ

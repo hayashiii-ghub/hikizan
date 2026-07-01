@@ -1,6 +1,6 @@
 # minimal-approach
 
-引き算の手順そのもの。kouchiku 通常検討モードの出力に必須の `Minimal Approach:` セクションと、推奨度 N/10 の付け方を定義する。他 skill (sadoku findings の扱い / teishutsu の PR 規模判定 等) からも参照する。
+引き算の手順そのもの。sekkei 通常検討モードの出力に必須の `Minimal Approach:` セクションと、推奨度 N/10 の付け方を定義する。他 skill (sadoku findings の扱い / teishutsu の PR 規模判定 等) からも参照する。
 
 ## 推奨度の付け方
 
@@ -75,4 +75,4 @@ ponytail (github.com/DietrichGebert/ponytail) のラダーの概念を hikizan �
 
 ## 関連
 
-- `skills/kouchiku/SKILL.md` Hard Rules：命名規約側の引き算
+- `skills/sekkei/SKILL.md` Hard Rules：命名規約側の引き算
