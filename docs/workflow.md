@@ -281,21 +281,15 @@ flowchart LR
 | 種別                         | パス                                                                              |
 | ---------------------------- | --------------------------------------------------------------------------------- |
 | tansaku                     | `../skills/tansaku/SKILL.md`                                                     |
-| CONTEXT.md 契約              | `../skills/tansaku/references/context-doc.md`                                     |
-| tansaku fan-out              | `../skills/tansaku/references/fanout.md`                                          |
 | sadoku                       | `../skills/sadoku/SKILL.md`                                                       |
-| persona                      | `../skills/sadoku/references/persona-catalog.md`                                  |
-| 文脈抽出                     | `../skills/sadoku/references/project-context.md`                                  |
-| subagent                     | `../skills/sadoku/references/agents/reviewer-security.md`, `reviewer-architecture.md` |
 | sekkei                       | `../skills/sekkei/SKILL.md`                                                       |
-| sekkei references            | `../skills/sekkei/references/deliberation.md`, `../skills/sekkei/references/minimal-approach.md` |
 | jikkou                       | `../skills/jikkou/SKILL.md`                                                       |
-| jikkou references            | `../skills/jikkou/references/plan-execution.md`, `../skills/jikkou/references/diagnosis-techniques.md` |
-| shiken                       | `../skills/shiken/SKILL.md`, `../skills/shiken/references/testing-anti-patterns.md` |
+| shiken                       | `../skills/shiken/SKILL.md`                                                       |
 | teishutsu                    | `../skills/teishutsu/SKILL.md`                                                    |
-| PR テンプレ                  | `../skills/teishutsu/references/pr-template.md`                                   |
 | hook 設定 / 停止条件マトリクス | `../hooks/conditions.md`, `../hooks/hooks.json`     |
 | CLAUDE.md テンプレ           | `../templates/CLAUDE.md`                                                          |
+
+各 skill 配下の references/ 一覧は、ここでは二重管理せず各 `SKILL.md` 末尾の `## references/` 節を正本とする。
 
 ---
 

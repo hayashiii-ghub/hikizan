@@ -129,10 +129,11 @@ hikizan/
 ├── README.md / AGENTS.md / LICENSE / .gitignore
 ├── .claude-plugin/        ← plugin.json / marketplace.json
 ├── agents/                ← first-class subagent 定義 (reviewer-security / -architecture)
+├── cursor/                ← Cursor 用 floors adapter (before-shell.sh / hooks.json テンプレ)
 ├── hooks/
 │   ├── hooks.json / conditions.md
 │   ├── scripts/           ← session-context / pre-push / pre-destructive / pre-pr-create / post-commit
-│   │   └── lib/           ← push-parse / destructive / decision / metrics
+│   │   └── lib/           ← push-parse / destructive / decision / decision-cursor / metrics
 │   └── tests/             ← 自己完結 test runner (run.sh + test-*.sh)
 ├── scripts/               ← gen-trigger-docs.sh / check-consistency.sh
 ├── templates/             ← CLAUDE.md (routing/ルールの単一ソース、注入 & /hikizan:init が共用)
@@ -140,7 +141,7 @@ hikizan/
 │                            AGENTS.md (他 project へ配る AGENTS スケルトン)
 ├── skills/                ← SKILL.md (SoT) + references/
 │   ├── tansaku / sadoku / sekkei / jikkou / shiken / teishutsu / kaku / init
-└── docs/                  ← workflow.md / principles.md / writing-style.md / naming.md / doc-format.md
+└── docs/                  ← workflow.md / principles.md / writing-style.md / naming.md / doc-format.md / cursor-floors.md
 ```
 
 ## version

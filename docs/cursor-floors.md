@@ -27,7 +27,7 @@ Reasons:
      allow/deny/ask, 入力に command/cwd)。force 保護・破壊的検出の pure logic
      (push-parse.sh / destructive.sh) はハーネス非依存で、I/O glue だけ足せば再利用できる。
   3. [cost] 追加コストは薄い adapter 1 本と decision emitter 1 本のみ。pure logic は
-     既に 57+ assertion で検査済み。glue も 7 assertion で検査した。
+     既に 57+ assertion で検査済み。glue も 7 assertion で検査した (いずれも当時)。
 If pivot: 「Cursor には floors を置けない、guided で守る」→「CC と同じ floors を Cursor に
           移植する。tier は floors の有無ではなく既定手順の拘束度として残す」へ方針転換。
 ```
@@ -39,7 +39,7 @@ If pivot: 「Cursor には floors を置けない、guided で守る」→「CC 
 | `cursor/scripts/before-shell.sh` | `beforeShellExecution` adapter。破壊的操作 → ask、保護 branch への force push → deny |
 | `hooks/scripts/lib/decision-cursor.sh` | Cursor permission JSON emitter (CC の `decision.sh` の Cursor 版、pure logic は共通) |
 | `cursor/hooks.json` | adapter を登録する hooks.json テンプレ |
-| `hooks/tests/test-cursor-floors.sh` | Cursor 形式 input → permission output の glue テスト (7 assertion) |
+| `hooks/tests/test-cursor-floors.sh` | Cursor 形式 input → permission output の glue テスト |
 
 pure logic (`push-parse.sh` / `destructive.sh`) は CC hooks と**同一ファイルを再利用**しており、二重実装ではない。
 
