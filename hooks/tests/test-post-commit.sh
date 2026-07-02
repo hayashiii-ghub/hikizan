@@ -34,6 +34,11 @@ hz_mk_parent_with_submodule() { # <path>
   hz_mkgit "$parent"
   git -C "$parent" commit -q --allow-empty -m "parent init"
   git -C "$parent" -c protocol.file.allow=always submodule add -q "$sub" "$sm_path" >/dev/null 2>&1
+  # The submodule checkout is a fresh clone and does not inherit the source
+  # repo's local identity — set it here or commits inside it fail on hosts
+  # with no global identity (CI runners).
+  git -C "$parent/$sm_path" config user.email t@example.com
+  git -C "$parent/$sm_path" config user.name tester
   git -C "$parent" commit -q -m "add submodule $sm_path"
   printf '%s' "$parent"
 }
