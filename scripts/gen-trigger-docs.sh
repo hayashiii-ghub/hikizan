@@ -59,6 +59,15 @@ inject() { # <file> — print <file> with the marker region replaced by gen_tabl
 
 CHECK=0
 [ "${1:-}" = "--check" ] && CHECK=1
+
+# Fail loudly if ORDER references a skill that doesn't exist, instead of
+# silently dropping it from the generated table (the `[ -f "$f" ] || continue`
+# in gen_table stays as a defensive fallback but should now be unreachable).
+for s in $ORDER; do
+  f="$ROOT/skills/$s/SKILL.md"
+  [ -f "$f" ] || { echo "✘ ORDER references missing skill: $s" >&2; exit 1; }
+done
+
 rc=0
 for rel in README.md docs/workflow.md; do
   file="$ROOT/$rel"

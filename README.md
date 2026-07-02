@@ -146,7 +146,7 @@ hikizan/
 
 ## version
 
-`.claude-plugin/plugin.json` に semver を明示する。公開時は変更内容に合わせて更新する。
+`.claude-plugin/plugin.json` に semver を明示する。公開時は変更内容に合わせて更新する。bump commit を main に merge したら、その commit に tag `v<version>` を打つ (CI の tag-version が plugin.json との一致を検査する)。
 
 ## ライセンス / acknowledgements
 
