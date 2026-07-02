@@ -2,7 +2,7 @@
   "$schema": "https://json.schemastore.org/claude-code-plugin-manifest.json",
   "name": "hikizan",
   "description": "動詞単位の 7 skill (tansaku / sadoku / sekkei / jikkou / shiken / teishutsu / kaku) を「弱いモデル基準のレール + 賢いモデルへの opt-out (手順自由・出口固定) + hooks floors」で構成する Claude Code plugin / Agent Skills skill pack。タスクの回し方が強くないモデルには番号付き手順を、強いモデルには余計な手順を課さず出口の形だけ揃える設計。",
-  "version": "0.5.9",
+  "version": "0.6.0",
   "author": {
     "name": "hayashiii-ghub"
   },
