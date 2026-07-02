@@ -18,7 +18,12 @@ SESSION_ID=$(printf '%s' "$JSON" | jq -r '.session_id // ""')
 # Bail if no submodules configured
 [ ! -f .gitmodules ] && exit 0
 
-SUBMODULE_PATHS=$(git config --file .gitmodules --get-regexp 'submodule\..*\.path' 2>/dev/null | awk '{print $2}')
+# -z (NUL-terminated, "key\nvalue\0" per entry) is required here: a plain
+# `awk '{print $2}'`/space-split takes only the first word of the value, and
+# `cut -d' ' -f2-` still breaks because the submodule *name* embedded in the
+# key defaults to the path, so a spaced path makes the key itself ambiguous
+# on spaces too. -z keeps key and value unambiguous regardless of spaces.
+SUBMODULE_PATHS=$(git config -z --file .gitmodules --get-regexp 'submodule\..*\.path' 2>/dev/null | tr '\0' '\n' | awk 'NR % 2 == 0')
 [ -z "$SUBMODULE_PATHS" ] && exit 0
 
 # Files touched by the last commit
@@ -26,7 +31,10 @@ LAST_FILES=$(git diff-tree --no-commit-id --name-only -r HEAD 2>/dev/null || tru
 [ -z "$LAST_FILES" ] && exit 0
 
 WARNED=0
-for SM in $SUBMODULE_PATHS; do
+# One path per line (paths may contain spaces), so read line-by-line instead
+# of word-splitting on $SUBMODULE_PATHS.
+while IFS= read -r SM; do
+  [ -z "$SM" ] && continue
   # Match submodule path exactly as a touched entry
   if printf '%s\n' "$LAST_FILES" | grep -qFx "$SM"; then
     [ -d "$SM" ] || continue
@@ -36,7 +44,9 @@ for SM in $SUBMODULE_PATHS; do
       WARNED=1
     fi
   fi
-done
+done <<EOF
+$SUBMODULE_PATHS
+EOF
 
 if [ "$WARNED" -eq 1 ]; then
   hikizan_metrics_log hook_fired post-commit submodule_unpushed warn "$SESSION_ID"
