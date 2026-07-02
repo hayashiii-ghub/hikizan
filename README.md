@@ -12,6 +12,7 @@ hikizan は Claude Code plugin / Agent Skills 対応の skill pack。動詞単�
 
 - repo: [https://github.com/hayashiii-ghub/hikizan](https://github.com/hayashiii-ghub/hikizan)
 - license: MIT
+- agent 向け作業ガイド: [AGENTS.md](AGENTS.md)
 
 ## core 7 skill
 
