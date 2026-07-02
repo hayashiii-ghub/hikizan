@@ -33,24 +33,16 @@ this is irreversible. confirm it is intended before running."
   exit 0
 fi
 
-# 2. force push to a protected branch -> deny (anchored on the git subcommand
-# so quoted strings and `git stash push` never trigger)
-if [ "$(hz_git_subcommand "$CMD")" = "push" ] && hikizan_push_has_force "$CMD"; then
+# 2. force-equivalent push to a protected branch -> deny (anchored on the git
+# subcommand so quoted strings and `git stash push` never trigger)
+if [ "$(hz_git_subcommand "$CMD")" = "push" ] && hikizan_push_is_forceful "$CMD"; then
   PUSHDIR=$(hz_push_dir "$CMD")
   [ -n "$PUSHDIR" ] && [ ! -d "$PUSHDIR" ] && PUSHDIR=""
   if [ -n "$PUSHDIR" ]; then BRANCH=$(git -C "$PUSHDIR" branch --show-current 2>/dev/null || true)
   else BRANCH=$(git branch --show-current 2>/dev/null || true); fi
-  PROTECTED='^(main|master|develop)$'
-  HIT=""
-  while IFS= read -r t; do
-    [ -z "$t" ] && continue
-    case "$t" in *[\*\?\[]*) HIT="$t (wildcard refspec)"; break ;; esac
-    if printf '%s' "$t" | grep -qE "$PROTECTED"; then HIT="$t"; break; fi
-  done <<EOF
-$(hikizan_push_targets "$CMD" "$BRANCH")
-EOF
+  HIT=$(hikizan_push_protected_hit "$CMD" "$BRANCH") || HIT=""
   if [ -n "$HIT" ]; then
-    hz_cursor_decision deny "force push targeting protected branch '$HIT'.
+    hz_cursor_decision deny "force-equivalent push (force / +refspec / delete / mirror) targeting protected branch '$HIT'.
 
 protected: main / master / develop. confirm explicitly before re-running."
     exit 0

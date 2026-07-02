@@ -20,6 +20,21 @@ assert_eq "-f in short cluster (-fv) detected"   "yes" "$(force 'git push -fv or
 assert_eq "trailing --force detected"            "yes" "$(force 'git push origin main --force')"
 assert_eq "-v alone is not force"                "no"  "$(force 'git push -v origin main')"
 
+# ── hikizan_push_is_forceful ──────────────────────────────────────────────
+forceful() { if hikizan_push_is_forceful "$1"; then echo yes; else echo no; fi; }
+
+assert_eq "plain push is not forceful"              "no"  "$(forceful 'git push origin main')"
+assert_eq "+force-update refspec is forceful"       "yes" "$(forceful 'git push origin +HEAD:main')"
+assert_eq "delete refspec :main is forceful"        "yes" "$(forceful 'git push origin :main')"
+assert_eq "--delete is forceful"                    "yes" "$(forceful 'git push --delete origin main')"
+assert_eq "-d is forceful"                          "yes" "$(forceful 'git push -d origin main')"
+assert_eq "--mirror is forceful"                    "yes" "$(forceful 'git push --mirror origin')"
+assert_eq "--prune is forceful"                      "yes" "$(forceful 'git push --prune origin main')"
+assert_eq "--force is forceful (delegated)"         "yes" "$(forceful 'git push --force origin main')"
+assert_eq "src:dst refspec is not forceful"         "no"  "$(forceful 'git push origin feature:main')"
+assert_eq "value of value-taking flag is not forceful" "no" "$(forceful 'git push -o +weird origin main')"
+assert_eq "trailing --delete is forceful"           "yes" "$(forceful 'git push origin main --delete')"
+
 # ── hikizan_push_targets ──────────────────────────────────────────────────
 tgt() { hikizan_push_targets "$1" "$2" | paste -sd, - ; }
 
@@ -45,5 +60,17 @@ GDIR="$(mktemp -d)"; : > "$GDIR/main"
 assert_eq "no glob expansion (cwd has file 'main')" "ma*n" \
   "$(cd "$GDIR" && hikizan_push_targets 'git push origin ma*n' feat)"
 rm -rf "$GDIR"
+
+# ── hikizan_push_protected_hit ────────────────────────────────────────────
+hit() { hikizan_push_protected_hit "$1" "$2" || true; }
+
+assert_eq "force-update refspec hits main"       "main"    "$(hit 'git push origin +HEAD:main' x)"
+assert_eq "delete refspec hits develop"          "develop" "$(hit 'git push origin :develop' x)"
+assert_eq "delete of non-protected branch: no hit" ""      "$(hit 'git push --delete origin feature' x)"
+assert_contains "--mirror hits regardless of target" "mirror" \
+  "$(hit 'git push --mirror origin' feature)"
+assert_contains "wildcard force refspec hit mentions wildcard" "wildcard" \
+  "$(hit 'git push --force origin refs/heads/*:refs/heads/*' x)"
+assert_eq "non-protected plain push: no hit"     ""        "$(hit 'git push origin feature' feature)"
 
 hz_test_summary
