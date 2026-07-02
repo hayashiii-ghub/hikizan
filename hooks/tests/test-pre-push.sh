@@ -54,6 +54,26 @@ hz_run_hook "$HOOK" "git push --force origin main" "$REPO_MAIN"
 assert_contains "deny reason names protected branch" "protected" \
   "$(printf '%s' "$HZ_OUT" | jq -r '.hookSpecificOutput.permissionDecisionReason // ""')"
 
+# force-equivalent pushes (no --force flag) targeting a protected branch -> deny
+hz_run_hook "$HOOK" "git push origin +HEAD:main" "$REPO_FEAT"
+assert_eq "+refspec to main -> deny" "deny" "$(hz_decision_of "$HZ_OUT")"
+
+hz_run_hook "$HOOK" "git push origin :main" "$REPO_FEAT"
+assert_eq "delete refspec :main -> deny" "deny" "$(hz_decision_of "$HZ_OUT")"
+
+hz_run_hook "$HOOK" "git push --delete origin main" "$REPO_FEAT"
+assert_eq "--delete origin main -> deny" "deny" "$(hz_decision_of "$HZ_OUT")"
+
+hz_run_hook "$HOOK" "git push --mirror origin" "$REPO_FEAT"
+assert_eq "--mirror -> deny" "deny" "$(hz_decision_of "$HZ_OUT")"
+
+hz_run_hook "$HOOK" "git push -d origin develop" "$REPO_FEAT"
+assert_eq "-d origin develop -> deny" "deny" "$(hz_decision_of "$HZ_OUT")"
+
+# delete of a non-protected branch is not a floor violation
+hz_run_hook "$HOOK" "git push --delete origin feature" "$REPO_FEAT"
+assert_eq "--delete origin feature -> allow" "allow" "$(hz_decision_of "$HZ_OUT")"
+
 # N-1: not actually a push — quoted message / other subcommand must pass through
 hz_run_hook "$HOOK" 'git commit -m "use --force push now"' "$REPO_MAIN"
 assert_eq "commit msg mentioning force push -> allow" "allow" "$(hz_decision_of "$HZ_OUT")"

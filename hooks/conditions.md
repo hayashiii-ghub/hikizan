@@ -8,7 +8,7 @@ Claude Code plugin の hooks で監視する条件 / 挙動 / 決定の一覧。
 |---|---|---|---|---|
 | SessionStart | matcher `startup` | セッション開始 (startup) | `templates/CLAUDE.md` の routing / ルールと active tier を stdout に出力し context 注入。tier=standard なら `templates/standard-preamble.md` (opt-out 前文) も注入。host repo は書き換えない | stdout (context) |
 | PreToolUse | `Bash(git push*)` | local が remote から N コミット遅れている (non-fast-forward) | `permissionDecision: "deny"` + 選択肢 (pull --rebase / 別 branch / abort) | JSON reason |
-| PreToolUse | `Bash(git push*)` | force 系 (`--force` / `--force-with-lease` / `-f` / `-fv` 等) が main / master / develop を対象にする | `permissionDecision: "deny"` + 確認要求 | JSON reason |
+| PreToolUse | `Bash(git push*)` | force 相当 (`--force` / `--force-with-lease` / `-f` / `-fv` に加え `+refspec` / `:branch` (削除) / `--delete`・`-d` / `--mirror` / `--prune`) が main / master / develop を対象にする | `permissionDecision: "deny"` + 確認要求 | JSON reason |
 | PreToolUse | `Bash(rm -*)` / `Bash(git reset*)` / `Bash(git clean*)` / `Bash(git checkout*)` | 不可逆操作 (`rm -rf` / `git reset --hard` / `git clean -f` / `git checkout` discard) | `permissionDecision: "ask"` (block でなく確認) | JSON reason |
 | PreToolUse | `Bash(gh pr create*)` | `--draft` / `-d` も `--reviewer` / `-r` も無い | `permissionDecision: "deny"` + 選択肢 | JSON reason |
 | PostToolUse | `Bash(git commit*)` | submodule pointer 変更ありで submodule 側が未 push | warning を出力 (block しない) | stderr (warn) |
@@ -32,8 +32,11 @@ force push の対象 branch は `scripts/lib/push-parse.sh` の `hikizan_push_ta
 - `git push --force origin HEAD:main` — refspec 右辺 (`main`) を対象として解決
 - `git push --force origin` — ref 省略時は current branch に fallback
 - `git -C <dir> push --force origin HEAD:develop` — `-C <dir>` を解決し、その repo の branch を見る
-- `command git push ...` / 複数 refspec / `+HEAD:main` / `:main` (削除) / `refs/heads/main`
+- `command git push ...` / 複数 refspec / `refs/heads/main`
+- `git push origin +HEAD:main` / `git push origin :main` (削除) — `--force` 系フラグが無くても、`+refspec` マーカーや空 src (`:branch`) の refspec は force 相当として同じ検査を受ける (`hikizan_push_is_forceful`)
+- `git push --delete origin main` / `git push -d origin main` も同様に force 相当として扱う
 - **glob を含む refspec** (例 `git push --force origin refs/heads/*:refs/heads/*`) は解決先が `*` 等のメタ文字を含むため、保護 branch にマッチしうると見なして保守的に **deny** する
+- **`--mirror` / `--prune`** は push 対象の branch を個別に列挙できない (全 ref を force 更新・削除しうる) ため、対象を特定せず保守的に **deny** する
 - ターゲット解決とコマンドのトークン化は `set -f` (noglob) 下で行い、cwd のファイル名に依存しない (決定論)
 
 破壊的コマンドの分類規約:

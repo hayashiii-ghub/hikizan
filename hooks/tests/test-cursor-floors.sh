@@ -35,6 +35,15 @@ assert_eq "force omitted-ref on main -> deny" "deny" "$(perm_of "$HZ_OUT")"
 run_cursor "git push --force origin HEAD:feature" "$REPO_FEAT"
 assert_eq "force to feature -> allow" "allow" "$(perm_of "$HZ_OUT")"
 
+run_cursor "git push origin +HEAD:main" "$REPO_MAIN"
+assert_eq "+refspec to main -> deny" "deny" "$(perm_of "$HZ_OUT")"
+
+run_cursor "git push --delete origin main" "$REPO_MAIN"
+assert_eq "--delete origin main -> deny" "deny" "$(perm_of "$HZ_OUT")"
+
+run_cursor "git push origin :feature" "$REPO_FEAT"
+assert_eq "delete refspec :feature -> allow" "allow" "$(perm_of "$HZ_OUT")"
+
 run_cursor "ls -la" "/tmp"
 assert_eq "benign -> allow" "allow" "$(perm_of "$HZ_OUT")"
 

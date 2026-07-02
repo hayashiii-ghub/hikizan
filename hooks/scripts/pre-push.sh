@@ -35,20 +35,12 @@ hz_git() { if [ -n "$PUSHDIR" ]; then git -C "$PUSHDIR" "$@"; else git "$@"; fi;
 
 BRANCH=$(hz_git branch --show-current 2>/dev/null || true)
 
-# (b) force push to a protected branch — cheap, no network, checked first.
-if hikizan_push_has_force "$COMMAND"; then
-  PROTECTED='^(main|master|develop)$'
-  HIT=""
-  while IFS= read -r t; do
-    [ -z "$t" ] && continue
-    case "$t" in *[\*\?\[]*) HIT="$t (wildcard refspec could match a protected branch)"; break ;; esac
-    if printf '%s' "$t" | grep -qE "$PROTECTED"; then HIT="$t"; break; fi
-  done <<EOF
-$(hikizan_push_targets "$COMMAND" "$BRANCH")
-EOF
+# (b) force-equivalent push to a protected branch — cheap, no network, checked first.
+if hikizan_push_is_forceful "$COMMAND"; then
+  HIT=$(hikizan_push_protected_hit "$COMMAND" "$BRANCH") || HIT=""
   if [ -n "$HIT" ]; then
     hikizan_metrics_log hook_fired pre-push force_protected block "$SESSION_ID"
-    hz_decision deny "force push targeting protected branch '$HIT'.
+    hz_decision deny "force-equivalent push (force / +refspec / delete / mirror) targeting protected branch '$HIT'.
 
 protected branches: main / master / develop. policy: require explicit user
 confirmation. abort and ask the user before re-running."
