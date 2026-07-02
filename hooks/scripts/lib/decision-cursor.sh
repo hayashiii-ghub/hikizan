@@ -10,6 +10,8 @@ hz_cursor_decision() {
       '{permission:$p, user_message:$r, agent_message:$r}'
   else
     printf '%s\n' "$reason" >&2
-    exit 2   # Cursor treats exit 2 as a block (fail-safe when jq is absent)
+    # defense-in-depth only: lib/guard.sh hz_require_jq already fails closed
+    # before before-shell.sh gets this far, so this normally never executes.
+    exit 2   # Cursor treats exit 2 as a block
   fi
 }

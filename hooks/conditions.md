@@ -10,7 +10,7 @@ Claude Code plugin の hooks で監視する条件 / 挙動 / 決定の一覧。
 | PreToolUse | `Bash(git push*)` | local が remote から N コミット遅れている (non-fast-forward) | `permissionDecision: "deny"` + 選択肢 (pull --rebase / 別 branch / abort) | JSON reason |
 | PreToolUse | `Bash(git push*)` | force 相当 (`--force` / `--force-with-lease` / `-f` / `-fv` に加え `+refspec` / `:branch` (削除) / `--delete`・`-d` / `--mirror` / `--prune`) が main / master / develop を対象にする | `permissionDecision: "deny"` + 確認要求 | JSON reason |
 | PreToolUse | `Bash(rm -*)` / `Bash(git reset*)` / `Bash(git clean*)` / `Bash(git checkout*)` | 不可逆操作 (`rm -rf` / `git reset --hard` / `git clean -f` / `git checkout` discard) | `permissionDecision: "ask"` (block でなく確認) | JSON reason |
-| PreToolUse | `Bash(gh pr create*)` | `--draft` / `-d` も `--reviewer` / `-r` も無い | `permissionDecision: "deny"` + 選択肢 | JSON reason |
+| PreToolUse | `Bash(gh pr create*)` | `--draft` / `-d` も `--reviewer` / `-r` も無い (flag 判定は quote-aware tokenizer によるトークン一致。引用文字列内の `-d` 等では発火・解除しない) | `permissionDecision: "deny"` + 選択肢 | JSON reason |
 | PostToolUse | `Bash(git commit*)` | submodule pointer 変更ありで submodule 側が未 push | warning を出力 (block しない) | stderr (warn) |
 
 ## 決定の出し方
@@ -20,7 +20,7 @@ Claude Code plugin の hooks で監視する条件 / 挙動 / 決定の一覧。
   を出して exit 0 する (公式推奨形、`scripts/lib/decision.sh` の `hz_decision`)。reason は Claude 本体 / ユーザに relay される。
   - `deny`: 操作を止め、reason を Claude に返す (non-ff / 保護 branch への force)。
   - `ask`: ユーザに確認ダイアログを出す (不可逆操作)。N 択の文言は reason に書く。
-  - jq 不在環境では `hz_decision` が legacy の stderr + exit 2 に degrade する (フェイルセーフ)。
+  - jq 不在は各 hook の entry で `scripts/lib/guard.sh` の `hz_require_jq` が stderr + exit 2 の fail-closed にする (PreToolUse 3 hook + Cursor adapter)。`hz_decision` / `hz_cursor_decision` 内の degrade は defense-in-depth として残るが、entry で先に止まるため通常到達しない。
 - **block 対象は PreToolUse のみ**。PostToolUse は副作用が完了済みのため warning に留める。
 - **判定は local 情報優先**。`git fetch --quiet` は実行するが、失敗時はローカル状態で判定を継続する。
 - **保護 branch は main / master / develop で固定**。プロジェクト拡張は将来 `.claude-plugin/config.json` 等で外部設定化できるが現時点では未対応。
@@ -49,7 +49,7 @@ force push の対象 branch は `scripts/lib/push-parse.sh` の `hikizan_push_ta
 
 決定論層の floor であり、prose の停止条件 (各 SKILL.md) と二重化する前提。以下は hook 単独ではカバーしない:
 
-- **compound command**: `cd x && rm -rf y` のように先頭が対象コマンドでない複合コマンドは `if` matcher (prefix) に一致せず発火しない (anchored 判定も head ≠ 対象で skip する)。skill 本文の停止条件で補完する。
+- **compound command**: `cd x && rm -rf y` のように先頭が対象コマンドでない複合コマンドは `if` matcher (prefix) に一致せず発火しない (anchored 判定も head ≠ 対象で skip する)。skill 本文の停止条件で補完する。pre-pr-create はトークン列上で `gh pr create` を探すため `cd x && gh pr create` も script 段では拾えるが、そもそも CC の `if` matcher (prefix) を通らなければ script に届かないため、この既知の限界自体は変わらない。
 - **`if` prefix に外れる rm**: `sudo rm -rf` / `/bin/rm -rf` / GNU 形の trailing flag (`rm dir -rf`) は CC の `if: "Bash(rm -*)"` に一致せず、CC では script に届かない。Cursor adapter (if なし) では `sudo rm -rf` は head 判定で拾うが、`/bin/rm` は拾わない。
 - **exotic な git 呼び出し**: 絶対パス `/usr/bin/git push` や alias 経由など、matcher の prefix に外れる形は素通りしうる (script 内は `hz_git_subcommand` による anchored 判定だが、`if` 段で発火しなければ script に届かない)。
 - **non-fast-forward の `-C` 解決**: force 保護は `-C <dir>` を解決するが、non-ff 検査の upstream 比較は cwd repo 基準が主。
@@ -110,6 +110,8 @@ bash hooks/tests/run.sh push-parse # 特定テストのみ
 | `test-pre-destructive.sh` | pre-destructive 統合 (ask/allow) |
 | `test-pre-pr-create.sh` | pre-pr-create 統合 (-d / -r / deny) |
 | `test-cursor-floors.sh` | cursor floors 統合 (force push deny / 破壊的操作 ask を Cursor I/O 経由で検査) |
+| `test-tokenize.sh` | quote-aware tokenizer (`hz_tokenize`) の単体 |
+| `test-jq-absent.sh` | jq 不在時の fail-closed (PreToolUse 3 hook + Cursor adapter は exit 2、session-context は noop) |
 
 ## 関連
 

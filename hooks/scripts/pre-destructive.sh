@@ -13,7 +13,10 @@ source "$HERE/lib/metrics.sh" 2>/dev/null || hikizan_metrics_log() { :; }
 source "$HERE/lib/destructive.sh"
 # shellcheck source=lib/decision.sh
 source "$HERE/lib/decision.sh"
+# shellcheck source=lib/guard.sh
+source "$HERE/lib/guard.sh"
 
+hz_require_jq
 JSON=$(cat)
 COMMAND=$(printf '%s' "$JSON" | jq -r '.tool_input.command // ""')
 SESSION_ID=$(printf '%s' "$JSON" | jq -r '.session_id // ""')

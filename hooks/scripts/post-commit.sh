@@ -10,8 +10,8 @@ set -uo pipefail
 source "$(dirname "$0")/lib/metrics.sh" 2>/dev/null || hikizan_metrics_log() { :; }
 
 JSON=$(cat)
-CWD=$(printf '%s' "$JSON" | jq -r '.cwd // ""')
-SESSION_ID=$(printf '%s' "$JSON" | jq -r '.session_id // ""')
+CWD=$(printf '%s' "$JSON" | jq -r '.cwd // ""' 2>/dev/null)
+SESSION_ID=$(printf '%s' "$JSON" | jq -r '.session_id // ""' 2>/dev/null)
 
 [ -n "$CWD" ] && cd "$CWD" 2>/dev/null
 
