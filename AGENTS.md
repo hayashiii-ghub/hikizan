@@ -28,11 +28,12 @@
 
 - skill 本体 (`skills/`) はハーネス agnostic に書く。Claude Code / Cursor / Codex 等の固有 API 名は、必要な注釈以外では本文に出さない。
 - `when_to_use` は CC 公式 frontmatter フィールド (`description` と合算で文字数上限に載るため短く保つ)。発動条件の正本は `description`。
-- **trigger 早見表は手動転記しない**。`README.md` / `docs/workflow.md` の `<!-- hikizan:triggers -->` 区間は `scripts/gen-trigger-docs.sh` が frontmatter から生成する。`description` / `when_to_use` を変えたら `bash scripts/gen-trigger-docs.sh` を再実行し、`gen-trigger-docs.sh --check` と `check-consistency.sh` で同期を検証する。
+- **trigger 早見表は手動転記しない**。`README.md` / `docs/workflow.md` の `<!-- hikizan:triggers -->` 区間は `scripts/gen-trigger-docs.sh` が frontmatter から生成する。`description` / `when_to_use` を変えたら `bash scripts/gen-trigger-docs.sh` を再実行し、`bash scripts/check-all.sh` で検証する。
 - `AGENTS.md` / `templates/CLAUDE.md` に skill の手順、出力形式、hook 条件を再掲しない。
 - 破壊的操作や force push は、ユーザの明示確認なしに進めない (skill の共通ルール + hooks の floors で二重化)。
 - 設計原則を skill 本文から参照するときは番号でなく名前で書く。
 - 決定論ロジック (hook scripts) を変えたら `hooks/tests/` を RED → GREEN で更新する。
+- 提出前に `bash scripts/check-all.sh` を回す。CI (`.github/workflows/ci.yml`) も同じ 1 コマンドを回す。
 
 ## Cursor Cloud specific instructions
 
