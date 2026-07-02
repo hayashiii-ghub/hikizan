@@ -61,6 +61,8 @@ npx skills add github:hayashiii-ghub/hikizan -g -a codex    # Codex
 
 `-g` で global、省略時は project local。配置先は Cursor `~/.cursor/skills/`、universal `~/.agents/skills/`。詳細は [vercel-labs/skills](https://github.com/vercel-labs/skills)。
 
+更新は `npx skills update` で行う (skill pack のみ。hooks / floors は含まない)。skill の rename や削除を含む更新 (例: 0.5.9 の `kouchiku` → `sekkei` / `jikkou` 分割) では、旧 skill のコピーが配置先に残って routing を奪うことがある。更新後、上の[trigger 早見表](#trigger-早見表)に無い skill が配置先に残っていたら `npx skills remove <旧 skill 名>` で削除する。
+
 Cursor には `beforeShellExecution` hook で CC と同じ floors (force push / 破壊的操作の停止) を移植できる。手順は `docs/cursor-floors.md`。floors を入れた環境は `HIKIZAN_TIER=standard` を宣言してよい。
 
 ## tier
