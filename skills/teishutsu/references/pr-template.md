@@ -38,7 +38,7 @@
 hikizan は squash merge なので、PR タイトルはそのまま main の commit subject になる。
 
 - 命令形か現在形で「何が変わるか」を機能名で 1 行 (例: `add naming norm doc`)。
-- 連番 (`PR-1`) や種別 prefix を付けない。
+- 連番 (`PR-1`) を付けない。prefix は `docs/naming.md`「commit subject」の scope prefix 規約に従う (`<scope>: <本文>` 可、`feat(x):` 形は不可)。
 - 末尾の `(#NN)` は squash 時に GitHub が自動付与するので手で書かない。
 
 ## Output Template

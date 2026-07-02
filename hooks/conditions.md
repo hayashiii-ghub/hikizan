@@ -29,11 +29,11 @@ Claude Code plugin の hooks で監視する条件 / 挙動 / 決定の一覧。
 
 force push の対象 branch は `scripts/lib/push-parse.sh` の `hikizan_push_targets` が解決する。awk による旧実装が素通しさせていた以下を閉じている (`tests/test-push-parse.sh`, `tests/test-pre-push.sh`):
 
-- `git push --force origin HEAD:main` — refspec 右辺 (`main`) を対象として解決
-- `git push --force origin` — ref 省略時は current branch に fallback
-- `git -C <dir> push --force origin HEAD:develop` — `-C <dir>` を解決し、その repo の branch を見る
+- `git push --force origin HEAD:main`：refspec 右辺 (`main`) を対象として解決
+- `git push --force origin`：ref 省略時は current branch に fallback
+- `git -C <dir> push --force origin HEAD:develop`：`-C <dir>` を解決し、その repo の branch を見る
 - `command git push ...` / 複数 refspec / `refs/heads/main`
-- `git push origin +HEAD:main` / `git push origin :main` (削除) — `--force` 系フラグが無くても、`+refspec` マーカーや空 src (`:branch`) の refspec は force 相当として同じ検査を受ける (`hikizan_push_is_forceful`)
+- `git push origin +HEAD:main` / `git push origin :main` (削除)：`--force` 系フラグが無くても、`+refspec` マーカーや空 src (`:branch`) の refspec は force 相当として同じ検査を受ける (`hikizan_push_is_forceful`)
 - `git push --delete origin main` / `git push -d origin main` も同様に force 相当として扱う
 - **glob を含む refspec** (例 `git push --force origin refs/heads/*:refs/heads/*`) は解決先が `*` 等のメタ文字を含むため、保護 branch にマッチしうると見なして保守的に **deny** する
 - **`--mirror` / `--prune`** は push 対象の branch を個別に列挙できない (全 ref を force 更新・削除しうる) ため、対象を特定せず保守的に **deny** する
@@ -115,12 +115,12 @@ bash hooks/tests/run.sh push-parse # 特定テストのみ
 
 ## 関連
 
-- `hooks.json` — 実体の hook 設定 (matcher / if / script 紐付け)
-- `scripts/session-context.sh` — SessionStart on `startup` (routing / tier を stdout で context 注入)
-- `scripts/pre-push.sh` — PreToolUse on `git push*`
-- `scripts/pre-destructive.sh` — PreToolUse on `rm` / `git reset` / `git clean` / `git checkout`
-- `scripts/pre-pr-create.sh` — PreToolUse on `gh pr create*`
-- `scripts/post-commit.sh` — PostToolUse on `git commit*`
-- `scripts/lib/push-parse.sh` / `destructive.sh` / `decision.sh` / `metrics.sh` — 共有ロジック
-- `templates/CLAUDE.md` — 追加される本文
-- `teishutsu` skill — hook と二重構造の通常フロー側
+- `hooks.json`：実体の hook 設定 (matcher / if / script 紐付け)
+- `scripts/session-context.sh`：SessionStart on `startup` (routing / tier を stdout で context 注入)
+- `scripts/pre-push.sh`：PreToolUse on `git push*`
+- `scripts/pre-destructive.sh`：PreToolUse on `rm` / `git reset` / `git clean` / `git checkout`
+- `scripts/pre-pr-create.sh`：PreToolUse on `gh pr create*`
+- `scripts/post-commit.sh`：PostToolUse on `git commit*`
+- `scripts/lib/push-parse.sh` / `destructive.sh` / `decision.sh` / `decision-cursor.sh` / `guard.sh` / `tokenize.sh` / `metrics.sh`：共有ロジック
+- `templates/CLAUDE.md`：追加される本文
+- `teishutsu` skill：hook と二重構造の通常フロー側
