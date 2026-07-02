@@ -61,6 +61,17 @@ assert_eq "no glob expansion (cwd has file 'main')" "ma*n" \
   "$(cd "$GDIR" && hikizan_push_targets 'git push origin ma*n' feat)"
 rm -rf "$GDIR"
 
+# ── hikizan_push_remote ────────────────────────────────────────────────────
+remote() { hikizan_push_remote "$1"; }
+
+assert_eq "explicit remote"                      "origin"   "$(remote 'git push origin main')"
+assert_eq "no args -> no remote"                 ""         "$(remote 'git push')"
+assert_eq "flags before positional don't confuse" "origin"  "$(remote 'git push --force origin HEAD:main')"
+assert_eq "--repo value wins"                    "upstream" "$(remote 'git push --repo upstream main')"
+assert_eq "--repo=value wins"                    "upstream" "$(remote 'git push --repo=upstream')"
+assert_eq "git -C prefix"                        "other"    "$(remote 'git -C /tmp/x push other feat')"
+assert_eq "value-taking flag skip"               "other"    "$(remote 'git push -o opt other main')"
+
 # ── hikizan_push_protected_hit ────────────────────────────────────────────
 hit() { hikizan_push_protected_hit "$1" "$2" || true; }
 

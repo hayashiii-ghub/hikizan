@@ -128,6 +128,42 @@ hikizan_push_targets() {
   done
 }
 
+# hikizan_push_remote "<command>" -> print the remote the push targets, or
+# nothing when the command names none (git then uses the branch upstream).
+hikizan_push_remote() {
+  local cmd="$1"
+  local seen_push=0 repo_flag=0 repo_val="" want_repo_val=0 skip_next=0 tok _g
+  local -a positionals=()
+
+  case $- in *f*) _g=1 ;; *) _g=0 ;; esac; set -f
+  for tok in $cmd; do
+    if [ "$want_repo_val" = "1" ]; then want_repo_val=0; repo_val="$tok"; continue; fi
+    if [ "$skip_next" = "1" ]; then skip_next=0; continue; fi
+    if [ "$seen_push" = "0" ]; then
+      [ "$tok" = "push" ] && seen_push=1
+      continue
+    fi
+    case "$tok" in
+      --repo=*)                                  repo_flag=1; repo_val="${tok#--repo=}" ;;
+      --repo)                                    repo_flag=1; want_repo_val=1 ;;
+      -o|--push-option|--receive-pack|--exec)    skip_next=1 ;;  # value-taking
+      --*) : ;;
+      -*)  : ;;
+      *)   positionals+=("$tok") ;;
+    esac
+  done
+  [ "$_g" = 0 ] && set +f
+
+  if [ "$repo_flag" = "1" ]; then
+    printf '%s' "$repo_val"
+    return 0
+  fi
+
+  if [ "${#positionals[@]}" -ge 1 ]; then
+    printf '%s' "${positionals[0]}"
+  fi
+}
+
 # hikizan_push_protected_hit "<command>" "<current_branch>" -> print a
 # human-readable description of the protected-branch hit and exit 0, or
 # print nothing and exit 1. Single home for the protected-branch regex, in

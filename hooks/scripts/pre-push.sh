@@ -53,15 +53,20 @@ fi
 
 # (a) non-fast-forward check — needs an upstream, so do it after the cheap path.
 [ -z "$BRANCH" ] && { hikizan_metrics_log hook_fired pre-push none allow "$SESSION_ID"; exit 0; }
-hz_git fetch --quiet 2>/dev/null || true
-UPSTREAM="origin/$BRANCH"
+# Resolve the remote the push actually targets: explicit remote on the
+# command line, then the branch's configured remote, then origin.
+REMOTE=$(hikizan_push_remote "$COMMAND")
+[ -z "$REMOTE" ] && REMOTE=$(hz_git config "branch.$BRANCH.remote" 2>/dev/null || true)
+[ -z "$REMOTE" ] && REMOTE=origin
+hz_git fetch --quiet "$REMOTE" 2>/dev/null || true
+UPSTREAM="$REMOTE/$BRANCH"
 if hz_git rev-parse --verify "$UPSTREAM" >/dev/null 2>&1; then
   BEHIND=$(hz_git rev-list --count "HEAD..$UPSTREAM" 2>/dev/null || printf '0')
   if [ "$BEHIND" -gt 0 ] 2>/dev/null; then
     hikizan_metrics_log hook_fired pre-push nff block "$SESSION_ID"
     hz_decision deny "non-fast-forward push on branch '$BRANCH': local is $BEHIND commit(s) behind $UPSTREAM.
 
-options: 1) git pull --rebase origin $BRANCH then push  2) push to a new branch  3) abort.
+options: 1) git pull --rebase $REMOTE $BRANCH then push  2) push to a new branch  3) abort.
 hook will not auto-decide; confirm explicitly in your next message."
     exit 0
   fi
