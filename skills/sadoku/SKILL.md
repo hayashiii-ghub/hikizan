@@ -1,8 +1,8 @@
 ---
 name: sadoku
-description: "Use this skill when the user wants code reviewed or findings simplified — including the phrasings レビューして, コードレビュー, 整理して, simplify. Activate after implementation, when reviewing a git diff before opening a PR, when reviewing an existing module or whole codebase (no diff needed), or when restructuring messy findings — even when the user doesn't say 'review' explicitly. レビュー系の語 (レビューして / コードレビュー) は通常レビュー、整理系の語 (整理して / simplify) のみ simplify findings を起動する。通常レビューの対象は diff でも指定範囲のコードでもよい。"
+description: "Use this skill when the user wants code reviewed or findings simplified — including the phrasings レビューして, コードレビュー, コード整理して, simplify. Activate after implementation, when reviewing a git diff before opening a PR, when reviewing an existing module or whole codebase (no diff needed), or when restructuring messy review findings — even when the user doesn't say 'review' explicitly. レビュー系の語 (レビューして / コードレビュー) は通常レビュー、整理系の語 (コード整理して / simplify) のみ simplify findings を起動する。対象はコード (diff / 指定範囲) とレビュー findings に限る。用語の整理は tansaku、文章の整理・推敲は kaku に渡す。"
 license: MIT
-when_to_use: "PR確認, レビュー, code review, プロジェクトレビュー, 整理, simplify"
+when_to_use: "PR確認, レビュー, code review, プロジェクトレビュー, コード整理, simplify"
 ---
 
 # sadoku (査読)
@@ -31,7 +31,7 @@ when_to_use: "PR確認, レビュー, code review, プロジェクトレビュ�
 | モード | きっかけ |
 | --- | --- |
 | 通常レビュー | 「レビューして」「コードレビュー」 |
-| simplify | 「整理して」「simplify」「スリム化したい」(明示されたときだけ。「コードレビュー」では起動しない) |
+| simplify | 「コード整理して」「simplify」「スリム化したい」(明示されたときだけ。「コードレビュー」では起動しない) |
 
 通常レビューのレビュー対象は 2 種類。手順は共通で、入口と深さの起点だけ違う:
 

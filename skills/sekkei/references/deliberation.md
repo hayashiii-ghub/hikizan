@@ -51,11 +51,7 @@
 
 ## Minimal Approach の判定
 
-`Minimal Approach:` を書く前に `minimal-approach.md` を読む。
-
-- issue 文の動詞 (「追加する」「換装する」等) と名詞句を抽出し、要求から直接読める規模 (ファイル数 / 行数 / step 数) を概算する
-- plan が要求から直接読める規模の 2 倍以上 → 引き算した最小版を併記し、defer した項目を明示
-- 2 倍未満 → "minimal already" と明記
+判定手順と defer 項目の書き方は `minimal-approach.md` の「Minimal Approach の判定」が正本。`Minimal Approach:` を書く前に必ず読む。
 
 ## Structure 図 / Interface sketch の指針 (どちらも任意)
 
