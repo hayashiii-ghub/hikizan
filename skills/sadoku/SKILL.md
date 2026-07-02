@@ -48,7 +48,7 @@ diff があるだけでは始めない。状態から起動するときは 1 行
 2. 深さを決める。diff レビューは変更行数で: 50 行以内かテスト変更のみ → Quick / 50〜500 行 → Standard / 500 行超か security に触れる → Deep。範囲レビューは対象規模で: 単一 file → Quick / 1 module → Standard / subsystem 以上か security を含む → Deep
 3. 実装者の説明・PR 本文・前段の報告は鵜呑みにしない。finding の根拠は強い順に採る: ①テストの pass/fail ②diff ③周辺コード ④検証ログ ⑤実装者のメモ
 4. 下の「停止条件」を上から順に対象 (diff / 範囲) に当てる。該当したら作業を止めてユーザに確認する
-5. Standard 以上で security / architecture に触れる対象なら、subagent (`agents/reviewer-security.md` / `agents/reviewer-architecture.md`、他ハーネスでは `references/agents/` の同一コピー) を起動する (最大 3 並列、条件は `references/persona-catalog.md`)。**起動時に「脅威モデル / 設計意図 (何を守り、何を受容しているか)」を渡す** (手順 1 で CONTEXT.md 優先で抽出したもの) — これが無いと subagent が勝手な基準で採否判定し、懸念の羅列になる。返ってきた finding は自分で対象を読み直す / テストを再実行して裏取りしてから採用する
+5. Standard 以上で security / architecture に触れる対象なら、subagent (`agents/reviewer-security.md` / `agents/reviewer-architecture.md`、他ハーネスでは `references/agents/` の同一コピー) を起動する (最大 3 並列、条件は `references/persona-catalog.md`)。**起動時に「脅威モデル / 設計意図 (何を守り、何を受容しているか)」を渡す** (手順 1 で CONTEXT.md 優先で抽出したもの)。これが無いと subagent が勝手な基準で採否判定し、懸念の羅列になる。返ってきた finding は自分で対象を読み直す / テストを再実行して裏取りしてから採用する
 6. 「merge 後 / 運用中に壊れる一番現実的なシナリオ」を 1 つ書く。Quick では省略してよいが、bugfix / 挙動変更 / business rule / API / security に触れる対象では Quick でも書く
 7. UI / style / レイアウトに触れる対象なら、視覚エビデンスを取る (web project かつ `sitesnap` があるとき。shot で撮って Read で読み戻し、check で overflow / console / a11y の合否を見る)。撮れない環境は「視覚未確認」と明記する
 8. subagent を起動したら `references/synthesis.md` の手順で 1 本に統合する (重複排除 → 採否で仕分け → 軸横断 top-N → 翻訳 → verdict → アクションメニュー)。下の「報告」を埋めて返す

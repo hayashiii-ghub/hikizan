@@ -1,6 +1,6 @@
-# synthesis (統合) — 出口契約
+# synthesis (統合) の出口契約
 
-複数 reviewer の構造化データを、user に返す 1 本のレビューへ統合する controller (sadoku 本体) の手順。**入口が diff でもプロジェクト全体でも、出口はこの形で揃える** — これがレビューの質を LLM の匙加減から契約に移す層。
+複数 reviewer の構造化データを、user に返す 1 本のレビューへ統合する controller (sadoku 本体) の手順。**入口が diff でもプロジェクト全体でも、出口はこの形で揃える**。これがレビューの質を LLM の匙加減から契約に移す層になる。
 
 subagent は軸ごとの構造化データ (finding + 判定 + severity + ripple + 該当なし) を返すだけ。優先順位づけ・重複排除・翻訳・総評は subagent に持たせず、ここで controller が一度だけやる。
 

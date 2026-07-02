@@ -19,7 +19,7 @@ hikizan は Claude Code plugin / Agent Skills 対応の skill pack。動詞単�
 | --- | --- | --- | --- |
 | `tansaku` | 探索 | 探す | code map / impact scope / terminology scan |
 | `sadoku` | 査読 | 見る | code review / simplify findings |
-| `sekkei` | 設計 | 考える・決める | 設計判断 / 評価 / 計画策定 |
+| `sekkei` | 設計 | 考える・決める | 設計判断 / 評価 / 計画立案 |
 | `jikkou` | 実行 | 作る・直す | 計画実行 / root cause diagnosis |
 | `shiken` | 試験 | 試す | TDD discipline / PRUNE |
 | `teishutsu` | 提出 | 出す | PR 本文ドラフト / PR 提出フロー (remote / submodule / parent / cwd-aware gh) |

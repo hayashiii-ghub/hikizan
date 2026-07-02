@@ -299,4 +299,4 @@ flowchart LR
 
 ---
 
-*Cursor のプレビューで Mermaid が描画されない場合は、拡張機能「Markdown Preview Mermaid Support」等の利用を検討してください。*
+*Cursor のプレビューで Mermaid が描画されないときは、拡張機能「Markdown Preview Mermaid Support」等を使う。*
