@@ -107,6 +107,8 @@ bash hooks/tests/run.sh push-parse # 特定テストのみ
 | `test-pre-destructive.sh` | pre-destructive 統合 (ask/allow) |
 | `test-pre-pr-create.sh` | pre-pr-create 統合 (-d / -r / deny) |
 | `test-cursor-floors.sh` | cursor floors 統合 (force push deny / 破壊的操作 ask を Cursor I/O 経由で検査) |
+| `test-tokenize.sh` | quote-aware tokenizer (`hz_tokenize`) の単体 |
+| `test-jq-absent.sh` | jq 不在時の fail-closed (PreToolUse 3 hook + Cursor adapter は exit 2、session-context は noop) |
 
 ## 関連
 
