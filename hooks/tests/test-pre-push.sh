@@ -89,8 +89,13 @@ rm -rf "$REPO_MAIN" "$REPO_FEAT"
 # branch.<name>.remote -> origin) that the non-ff check uses.
 hz_mkrepo_with_remotes() { # -> path of work repo; sets HZ_BARE_ORIGIN / HZ_BARE_OTHER
   local bare_o bare_x work clone
-  bare_o="$(mktemp -d)"; git init -q --bare "$bare_o"
-  bare_x="$(mktemp -d)"; git init -q --bare "$bare_x"
+  # -b main pins the bare repos' HEAD to refs/heads/main regardless of the
+  # host's init.defaultBranch (e.g. still "master" on some CI runners) — a
+  # mismatch there leaves HEAD dangling once "main" is pushed, and the later
+  # `git clone` below fails to check anything out ("remote HEAD refers to
+  # nonexistent ref"), silently breaking the "origin ahead" setup.
+  bare_o="$(mktemp -d)"; git init -q --bare -b main "$bare_o"
+  bare_x="$(mktemp -d)"; git init -q --bare -b main "$bare_x"
   work="$(mktemp -d)"
   git -C "$work" init -q
   git -C "$work" config user.email t@example.com
