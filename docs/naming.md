@@ -43,6 +43,8 @@ minimal-approach-ladder
 - 50〜72 字を目安に収める。超える説明は本文へ送る。
 - 本文が要るときは、subject の後に空行を 1 つ置いてから書く。
 - 末尾に `Co-Authored-By:` の footer を残す (共同作業の記録)。
+- 先頭に scope prefix を付けてよい: `<scope>: <本文>`。scope は skill 名 (`sadoku`) か領域 (`docs` / `hooks` / `scripts` / `skills` / `templates` / `chore`) の 1 語。`feat(x):` のような種別+括弧の形は使わない。
+- issue / PR 番号 (`(#NN)`) を subject に手で書かない (squash 時に GitHub が付ける)。
 
 ```
 add naming norm doc (0.5.1)
