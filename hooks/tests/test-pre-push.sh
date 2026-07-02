@@ -81,4 +81,56 @@ hz_run_hook "$HOOK" "git stash push -m wip" "$REPO_MAIN"
 assert_eq "git stash push -> allow" "allow" "$(hz_decision_of "$HZ_OUT")"
 
 rm -rf "$REPO_MAIN" "$REPO_FEAT"
+
+# ── non-ff remote resolution ──────────────────────────────────────────────
+# fixture: two bare remotes (origin / other) plus a work clone in sync with
+# both, then origin alone is advanced by a third clone so only origin is
+# ahead of work's main. Exercises the remote resolution order (explicit ->
+# branch.<name>.remote -> origin) that the non-ff check uses.
+hz_mkrepo_with_remotes() { # -> path of work repo; sets HZ_BARE_ORIGIN / HZ_BARE_OTHER
+  local bare_o bare_x work clone
+  bare_o="$(mktemp -d)"; git init -q --bare "$bare_o"
+  bare_x="$(mktemp -d)"; git init -q --bare "$bare_x"
+  work="$(mktemp -d)"
+  git -C "$work" init -q
+  git -C "$work" config user.email t@example.com
+  git -C "$work" config user.name tester
+  git -C "$work" commit -q --allow-empty -m init
+  git -C "$work" branch -M main
+  git -C "$work" remote add origin "$bare_o"
+  git -C "$work" remote add other "$bare_x"
+  git -C "$work" push -q origin main
+  git -C "$work" push -q other main
+  # advance origin only, from a separate clone, so origin is ahead of work
+  clone="$(mktemp -d)"
+  git clone -q "$bare_o" "$clone"
+  git -C "$clone" config user.email t@example.com
+  git -C "$clone" config user.name tester
+  git -C "$clone" commit -q --allow-empty -m "origin ahead"
+  git -C "$clone" push -q origin main
+  rm -rf "$clone"
+  HZ_BARE_ORIGIN="$bare_o"
+  HZ_BARE_OTHER="$bare_x"
+  printf '%s' "$work"
+}
+
+WORK="$(hz_mkrepo_with_remotes)"
+
+# origin alone is ahead; pushing to the unrelated fork remote must not deny
+hz_run_hook "$HOOK" "git push other main" "$WORK"
+assert_eq "push to other (only origin ahead) -> allow" "allow" "$(hz_decision_of "$HZ_OUT")"
+
+# explicit origin target keeps the old pinned behavior
+hz_run_hook "$HOOK" "git push origin main" "$WORK"
+assert_eq "push to origin (origin ahead) -> deny" "deny" "$(hz_decision_of "$HZ_OUT")"
+assert_contains "deny reason names the resolved remote" "origin" \
+  "$(printf '%s' "$HZ_OUT" | jq -r '.hookSpecificOutput.permissionDecisionReason // ""')"
+
+# no explicit remote -> falls back to branch.<name>.remote config
+git -C "$WORK" config branch.main.remote other
+hz_run_hook "$HOOK" "git push" "$WORK"
+assert_eq "config fallback to other (not ahead) -> allow" "allow" "$(hz_decision_of "$HZ_OUT")"
+
+rm -rf "$WORK" "$HZ_BARE_ORIGIN" "$HZ_BARE_OTHER"
+
 hz_test_summary
