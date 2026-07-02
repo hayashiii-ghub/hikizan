@@ -163,7 +163,7 @@ flowchart TB
 | skill | 起動トリガー |
 |---|---|
 | `tansaku` | 探索, 全体像把握, 影響範囲調査, 用語整理 |
-| `sadoku` | PR確認, レビュー, code review, プロジェクトレビュー, 整理, simplify |
+| `sadoku` | PR確認, レビュー, code review, プロジェクトレビュー, コード整理, simplify |
 | `sekkei` | 設計判断, 方針決め, design decision, kill or keep, 計画立案 |
 | `jikkou` | 計画実行, 実装, エラー診断, root cause, バグ修正 |
 | `shiken` | TDD, テスト先行, テストから書く |
@@ -185,7 +185,7 @@ trigger 表は「どう呼ばれうるか」の定義。実際の起動経路は
 |---|---|---|
 | 会話内の自動ルーティング | `sekkei` / `jikkou` / `sadoku` / `teishutsu` | ユーザの発話・セッション状態から発火する主動線 |
 | エージェント実行 (goal コマンド / VM など) | `shiken` | 自律実行の中で TDD 層として使われる。ローカルの metrics には残らない |
-| ユーザの明示起動のみ | `tansaku` | 実装に移る前にユーザが全体像を把握したいときだけ呼ぶ。自動発火しないのが正常 |
+| ユーザの明示起動 + `sekkei` からの handoff | `tansaku` | 実装前にユーザが全体像を掴みたいとき、または sekkei が判断前の情報不足で差し戻すとき (§7)。会話の自動ルーティングでの発火が少ないのは正常 |
 
 `~/.hikizan/metrics.jsonl` が観測できるのはこのマシンの会話セッションだけ。起動回数の多寡だけで skill の要否を判断しない。
 
