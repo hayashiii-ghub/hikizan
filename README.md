@@ -25,7 +25,7 @@ hikizan は Claude Code plugin / Agent Skills 対応の skill pack。動詞単�
 | `teishutsu` | 提出 | 出す | PR 本文ドラフト / PR 提出フロー (remote / submodule / parent / cwd-aware gh) |
 | `kaku` | 書く | 書く・直す | 日本語文章の執筆 / 推敲 (規範は `docs/writing-style.md`) |
 
-各 SKILL.md は「共通ルール block + モード表 + 番号付き手順 + やってはいけないこと + 穴埋め報告」に絞り、手順詳細は `references/` に置く。`sekkei` が設計・計画を controller として保持し、承認後の実行と原因診断は `jikkou`、TDD は `shiken`、レビューは `sadoku`、提出は `teishutsu`、探索は `tansaku`、文章は `kaku` に渡す。
+各 SKILL.md は「共通ルール block + モード表 (複数モードの skill のみ) + 番号付き手順 + やってはいけないこと + 穴埋め報告」に絞り、手順詳細は `references/` に置く。`sekkei` が設計・計画を controller として保持し、承認後の実行と原因診断は `jikkou`、TDD は `shiken`、レビューは `sadoku`、提出は `teishutsu`、探索は `tansaku`、文章は `kaku` に渡す。
 
 ユーティリティ skill `init` (`/hikizan:init`) は規約を project の CLAUDE.md に手動で書き込みたい時だけ使う (model 自動起動は無効)。
 
