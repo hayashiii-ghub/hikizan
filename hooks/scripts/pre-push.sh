@@ -15,7 +15,10 @@ source "$HERE/lib/push-parse.sh"
 source "$HERE/lib/destructive.sh"   # for hz_git_subcommand
 # shellcheck source=lib/decision.sh
 source "$HERE/lib/decision.sh"
+# shellcheck source=lib/guard.sh
+source "$HERE/lib/guard.sh"
 
+hz_require_jq
 JSON=$(cat)
 COMMAND=$(printf '%s' "$JSON" | jq -r '.tool_input.command // ""')
 CWD=$(printf '%s' "$JSON" | jq -r '.cwd // ""')

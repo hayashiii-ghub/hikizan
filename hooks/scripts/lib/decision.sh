@@ -6,8 +6,9 @@
 #   hz_decision ask  "reason..."   -> prompt the user to confirm
 #   hz_decision allow "reason..."  -> explicit allow (rarely needed)
 #
-# Fallback: if jq is missing the hook could not have parsed its stdin either,
-# so we degrade to the legacy stderr + exit-2 block to stay fail-safe.
+# Fallback: defense-in-depth only. The entry guard (lib/guard.sh hz_require_jq)
+# already fails closed before a hook gets this far, so this degrade path
+# normally never executes.
 hz_decision() {
   local decision="$1" reason="$2"
   if command -v jq >/dev/null 2>&1; then

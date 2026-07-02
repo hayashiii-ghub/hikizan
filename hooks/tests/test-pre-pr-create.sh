@@ -29,4 +29,24 @@ hz_run_hook "$HOOK" "gh pr create" "/tmp"
 assert_contains "deny reason mentions reviewer" "reviewer" \
   "$(printf '%s' "$HZ_OUT" | jq -r '.hookSpecificOutput.permissionDecisionReason // ""')"
 
+# quote-aware tokenizer: flag-like substrings inside quoted title/body text
+# must not count as a real --draft / --reviewer flag.
+hz_run_hook "$HOOK" 'gh pr create --title "mention --draft here" --body x' "/tmp"
+assert_eq "quoted --draft in title -> deny" "deny" "$(hz_decision_of "$HZ_OUT")"
+
+hz_run_hook "$HOOK" 'gh pr create --title "add -d flag" --body "see -r"' "/tmp"
+assert_eq "quoted -d/-r in title/body -> deny" "deny" "$(hz_decision_of "$HZ_OUT")"
+
+hz_run_hook "$HOOK" 'gh pr create -d --title t' "/tmp"
+assert_eq "-d as a real token -> allow" "allow" "$(hz_decision_of "$HZ_OUT")"
+
+hz_run_hook "$HOOK" 'gh pr create --reviewer alice --title "-d"' "/tmp"
+assert_eq "--reviewer real token, quoted -d in title -> allow" "allow" "$(hz_decision_of "$HZ_OUT")"
+
+hz_run_hook "$HOOK" 'cd /tmp && gh pr create --draft' "/tmp"
+assert_eq "compound command still finds gh pr create --draft -> allow" "allow" "$(hz_decision_of "$HZ_OUT")"
+
+hz_run_hook "$HOOK" 'echo "gh pr create"' "/tmp"
+assert_eq "gh pr create only inside quotes -> allow" "allow" "$(hz_decision_of "$HZ_OUT")"
+
 hz_test_summary

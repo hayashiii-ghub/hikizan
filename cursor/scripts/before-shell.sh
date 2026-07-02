@@ -18,7 +18,10 @@ source "$LIB/push-parse.sh"
 source "$LIB/destructive.sh"
 # shellcheck source=../../hooks/scripts/lib/decision-cursor.sh
 source "$LIB/decision-cursor.sh"
+# shellcheck source=../../hooks/scripts/lib/guard.sh
+source "$LIB/guard.sh"
 
+hz_require_jq
 JSON=$(cat)
 CMD=$(printf '%s' "$JSON" | jq -r '.command // ""')
 CWD=$(printf '%s' "$JSON" | jq -r '.cwd // ""')
