@@ -2,16 +2,21 @@
 
 Cursor の `beforeShellExecution` hook に hikizan の floors (保護 branch への force push → deny、不可逆操作 → ask) を移植した adapter。加えて `cursor/rules/hikizan.mdc` (always-apply rule) が routing 規約と standard-tier の opt-out 前文を配布する。背景・評価・限界は `docs/cursor-floors.md` を参照。
 
-## install (primary: Cursor plugin)
+## install の経路
 
-repo root に `.cursor-plugin/plugin.json` があるため、hikizan repo を Cursor plugin として参照すると floors hooks (`cursor/hooks.json` 経由の `before-shell.sh`) と前文 rule (`cursor/rules/hikizan.mdc`) が自動で入る。手順は Cursor 側の plugin 参照方法に従う (repo を plugin source として登録)。
+repo root に `.cursor-plugin/plugin.json` があり、plugin としてロードされれば floors hooks (`cursor/hooks.json` 経由の `before-shell.sh`) と前文 rule (`cursor/rules/hikizan.mdc`) が一緒に入る。ただし **Cursor には任意の git repo から個人が直接 plugin を入れる経路が無い** (CC の `/plugin marketplace add` 相当は未提供)。使える経路は 2 つ:
+
+1. **Team Marketplace (チーム利用)**: admin が Dashboard → Plugins → Add Marketplace → Import from Repo で本 repo の URL を import すると、チームメンバーが plugin として install できる。Enable Auto Refresh を有効にすると追跡 branch への push に自動追従する
+2. **手動配線 (個人利用)**: 下の fallback 手順
+
+公式 Cursor Marketplace への掲載は未提出。掲載されれば `/add-plugin` で誰でも入るようになる。
 
 - `cursor/rules/hikizan.mdc` は `alwaysApply: true` の rule で、常時 context に載る。ここに routing 規約 (`templates/CLAUDE.md`) と standard tier の opt-out 前文 (`templates/standard-preamble.md`) が入っているため、CC の SessionStart hook が届かない Cursor でも opt-out 前文が届く。guided のまま使いたい場合はこの rule を外せばよい (`docs/cursor-floors.md`「tier への含意」)。
 - `.cursor-plugin/plugin.json` の `hooks` / `rules` パスは plugin root (= repo root) 相対。
 
 ## install (fallback: 手動 hooks.json)
 
-plugin 参照ができない環境向けの手動配線。この場合、前文 rule は自動では届かないため `cursor/rules/hikizan.mdc` を別途 project の rules に置くか、opt-out 無しの guided tier として運用する。
+個人利用の手動配線。この場合、前文 rule は自動では届かないため `cursor/rules/hikizan.mdc` を別途 project の rules に置くか、opt-out 無しの guided tier として運用する。
 
 1. hikizan repo を clone する (`npx skills add` は skills/ しか配置しないため、floors は repo から直接参照する)。
 2. `~/.cursor/hooks.json` (user) または `<project>/.cursor/hooks.json` に登録する。**`command` は本 repo 内 `cursor/scripts/before-shell.sh` の絶対パスにする**。同梱の `cursor/hooks.json` は plugin 用 (plugin root 相対) で、手動配線ではそのままでは動かない:

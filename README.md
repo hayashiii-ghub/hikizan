@@ -29,19 +29,18 @@ hikizan は Claude Code plugin / Agent Skills 対応の skill pack。動詞単�
 
 ユーティリティ skill `init` (`/hikizan:init`) は規約を project の CLAUDE.md に手動で書き込みたい時だけ使う (model 自動起動は無効)。
 
-## 配布チャネルは 1 ハーネスに 1 つ
+## install
 
-hikizan は 2 つの配布チャネルを持つが、**1 つのハーネスにはどちらか一方だけ**で入れる。両方入れると skill が二重定義され、古い側に誤 route する (実際に過去発生した障害)。
+対応ハーネスは Claude Code / Codex / Cursor の 3 つ。**1 つのハーネスには 1 つのチャネルだけ**で入れる。skill を 2 経路で入れると二重定義になり、古い側に誤 route する (実際に過去発生した障害)。
 
-| ハーネス | 推奨チャネル | 入れない方 |
+| ハーネス | 入るもの | 方法 |
 | --- | --- | --- |
-| Claude Code | `/plugin` (hooks=floors も同時に入る) | `npx skills add` は併用しない |
-| Codex | plugin (`.codex-plugin/`、skills + floors + 前文が同梱) | `npx skills add -a codex` は併用しない |
-| Cursor 等 | `npx skills add` (skill pack のみ。Cursor plugin は floors + 前文 rule で、skill は含まない) | なし |
+| Claude Code | skills + floors + 前文 | `/plugin` 2 コマンド (下記) |
+| Codex | skills + floors + 前文 | `codex plugin` 2 コマンド (下記) |
+| Cursor | skills は skill pack、floors + 前文 rule は手動配線 | 下記 + `cursor/README.md` |
+| その他の harness | skills のみ (tier は `guided` 既定) | `npx skills add` (下記) |
 
-> Claude Code で一度 `/plugin` で入れたら、同じ環境で `npx skills add -a claude-code` は実行しない。逆も同様。Codex も plugin で入れたら `npx skills add -a codex` は実行しない。
-
-### install (Claude Code plugin)
+### Claude Code
 
 ```bash
 # Claude Code セッション内で実行
@@ -49,31 +48,40 @@ hikizan は 2 つの配布チャネルを持つが、**1 つのハーネスに�
 /plugin install hikizan@hikizan
 ```
 
-`.git` 付き HTTPS URL を明示すると SSH key 未設定環境でも clone できる。開発・検証時は `claude --plugin-dir ./hikizan` で直接読み込む。skill は namespace 規約で `/hikizan:tansaku` … `/hikizan:teishutsu` として呼ばれる。
+skills + floors + 前文がまとめて入る。`.git` 付き HTTPS URL を明示すると SSH key 未設定環境でも clone できる。開発・検証時は `claude --plugin-dir ./hikizan` で直接読み込む。skill は namespace 規約で `/hikizan:tansaku` … `/hikizan:teishutsu` として呼ばれる。`npx skills add -a claude-code` は併用しない。
 
-### install (skill pack / Cursor 等)
-
-hikizan は [Agent Skills 標準](https://agentskills.io) に沿った skill pack でもある。plugin チャネルの無いハーネスへはこちらで配置する (hooks は付かないため tier は `guided` 既定)。Codex は plugin (`codex/README.md`) が skills を同梱するので、こちらは plugin が使えない環境の fallback。
-
-```bash
-npx skills add github:hayashiii-ghub/hikizan -g -a cursor   # Cursor
-npx skills add github:hayashiii-ghub/hikizan -g -a codex    # Codex (fallback)
-```
-
-`-g` で global、省略時は project local。配置先は Cursor `~/.cursor/skills/`、universal `~/.agents/skills/`。詳細は [vercel-labs/skills](https://github.com/vercel-labs/skills)。
-
-更新は `npx skills update` で行う (skill pack のみ。hooks / floors は含まない)。skill の rename や削除を含む更新 (例: 0.5.9 の `kouchiku` → `sekkei` / `jikkou` 分割) では、旧 skill のコピーが配置先に残って routing を奪うことがある。更新後、下の[trigger 早見表](#trigger-早見表)に無い skill が配置先に残っていたら `npx skills remove <旧 skill 名>` で削除する。
-
-Cursor は `.cursor-plugin/plugin.json` で repo を plugin として参照すると、CC と同じ floors (`beforeShellExecution` hook、force push / 破壊的操作の停止) と always-apply の前文 rule (`cursor/rules/hikizan.mdc`) が一緒に入り、standard tier が成立する。手順は `cursor/README.md` / `docs/cursor-floors.md`。floors を入れた環境は `HIKIZAN_TIER=standard` を宣言してよい。
-
-Codex は plugin (`.codex-plugin/`) で skills + floors + 前文が一括で入る。CC と同じ floors (force push deny / 破壊的操作 ask / 非 draft PR deny) と SessionStart hook 経由の前文が同梱され、`HIKIZAN_TIER=standard` を宣言できる。
+### Codex
 
 ```bash
 codex plugin marketplace add hayashiii-ghub/hikizan
 codex plugin install hikizan
 ```
 
-詳細と fallback (手動 hooks.json) は `codex/README.md`。
+skills + floors (force push deny / 破壊的操作 ask / 非 draft PR deny) + SessionStart 経由の前文がまとめて入り、`HIKIZAN_TIER=standard` を宣言できる。特定 version への固定は `--ref v0.7.1`。詳細と fallback (手動 hooks.json) は `codex/README.md`。`npx skills add -a codex` は併用しない。
+
+### Cursor
+
+Cursor には任意の git repo から個人が直接 plugin を入れる経路が無い (公式 Marketplace への掲載は未提出)。skills と floors を別々に入れる:
+
+```bash
+npx skills add github:hayashiii-ghub/hikizan -g -a cursor   # skills (配置先 ~/.cursor/skills/)
+```
+
+floors (`beforeShellExecution` hook) と前文 rule (`cursor/rules/hikizan.mdc`) は手動配線か、チーム利用なら Team Marketplace の repo import で入れる。手順は `cursor/README.md` / `docs/cursor-floors.md`。floors を入れた環境は `HIKIZAN_TIER=standard` を宣言してよい。
+
+### その他の harness (skill pack)
+
+hikizan は [Agent Skills 標準](https://agentskills.io) に沿った skill pack でもあり、対応 harness なら skills だけ入れられる (hooks は付かないため tier は `guided` 既定):
+
+```bash
+npx skills add github:hayashiii-ghub/hikizan -g   # universal (配置先 ~/.agents/skills/)
+```
+
+`-g` で global、省略時は project local。詳細は [vercel-labs/skills](https://github.com/vercel-labs/skills)。
+
+### 更新 (skill pack 経路のみ)
+
+更新は `npx skills update` で行う (skill pack のみ。hooks / floors は含まない)。skill の rename や削除を含む更新 (例: 0.5.9 の `kouchiku` → `sekkei` / `jikkou` 分割) では、旧 skill のコピーが配置先に残って routing を奪うことがある。更新後、下の[trigger 早見表](#trigger-早見表)に無い skill が配置先に残っていたら `npx skills remove <旧 skill 名>` で削除する。
 
 ## tier
 
@@ -122,7 +130,7 @@ hikizan は orchestration / LSP 本体を抱え込まない。必要なら公式
 
 ## quick start
 
-1. Claude Code で install (上記)。別ハーネスは [install (skill pack)](#install-skill-pack--cursor--codex)。
+1. Claude Code で install (上記)。別ハーネス含む全チャネルは [install](#install)。
 2. `コードレビューして` → `/hikizan:sadoku` が通常レビューを実行。
 3. 他の trigger は上の [trigger 早見表](#trigger-早見表) を参照。
 
