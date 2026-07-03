@@ -11,33 +11,40 @@
 # an omitted ref (defaults to the current branch), and `git -C <dir>` /
 # `command git` prefixes before the `push` verb.
 #
-# Every `for tok in $cmd` loop disables pathname expansion (set -f) so the
-# verdict can never depend on what files happen to sit in the cwd.
+# Tokenizing goes through hz_tokenize (lib/tokenize.sh), a quote-aware char
+# scanner — plain word-splitting (`for tok in $cmd`) doesn't strip quote
+# characters, so a quoted branch name or flag (`origin "main"`) would leave
+# a literal `"` in the token and defeat the exact-match checks below. It
+# also never pathname-expands, so the verdict can never depend on what
+# files happen to sit in the cwd.
+command -v hz_tokenize >/dev/null 2>&1 || source "$(dirname "${BASH_SOURCE[0]}")/tokenize.sh"
 
 # hz_push_dir "<command>" -> print the value of a `-C <dir>` argument that
 # precedes the push verb, or nothing.
 hz_push_dir() {
-  local prev="" tok out="" _g; case $- in *f*) _g=1 ;; *) _g=0 ;; esac; set -f
-  for tok in $1; do
+  local prev="" tok out=""
+  while IFS= read -r tok; do
     [ "$tok" = "push" ] && break
     if [ "$prev" = "-C" ]; then out="$tok"; break; fi
     prev="$tok"
-  done
-  [ "$_g" = 0 ] && set +f
+  done <<EOF
+$(hz_tokenize "$1")
+EOF
   printf '%s' "$out"
 }
 
 # hikizan_push_has_force "<command>" -> exit 0 if a force flag is present.
 hikizan_push_has_force() {
-  local tok rc=1 _g; case $- in *f*) _g=1 ;; *) _g=0 ;; esac; set -f
-  for tok in $1; do
+  local tok rc=1
+  while IFS= read -r tok; do
     case "$tok" in
       --force|--force-with-lease|--force-with-lease=*) rc=0; break ;;
       --*) : ;;              # any other long flag is not a force flag
       -*f*|-*F*) rc=0; break ;; # short cluster containing f (e.g. -f, -fv, -vf)
     esac
-  done
-  [ "$_g" = 0 ] && set +f
+  done <<EOF
+$(hz_tokenize "$1")
+EOF
   return $rc
 }
 
@@ -48,9 +55,8 @@ hikizan_push_has_force() {
 hikizan_push_is_forceful() {
   hikizan_push_has_force "$1" && return 0
 
-  local seen_push=0 skip_next=0 tok rc=1 _g
-  case $- in *f*) _g=1 ;; *) _g=0 ;; esac; set -f
-  for tok in $1; do
+  local seen_push=0 skip_next=0 tok rc=1
+  while IFS= read -r tok; do
     if [ "$skip_next" = "1" ]; then skip_next=0; continue; fi
     if [ "$seen_push" = "0" ]; then
       [ "$tok" = "push" ] && seen_push=1
@@ -67,8 +73,9 @@ hikizan_push_is_forceful() {
       :*)                                      rc=0; break ;; # delete refspec (empty src)
       *)                                       : ;;
     esac
-  done
-  [ "$_g" = 0 ] && set +f
+  done <<EOF
+$(hz_tokenize "$1")
+EOF
   return $rc
 }
 
@@ -87,11 +94,10 @@ _hz_norm_ref() {
 # branch name (one per line) the push would update.
 hikizan_push_targets() {
   local cmd="$1" cur="$2"
-  local seen_push=0 repo_flag=0 skip_next=0 tok _g
+  local seen_push=0 repo_flag=0 skip_next=0 tok
   local -a positionals=()
 
-  case $- in *f*) _g=1 ;; *) _g=0 ;; esac; set -f
-  for tok in $cmd; do
+  while IFS= read -r tok; do
     if [ "$skip_next" = "1" ]; then skip_next=0; continue; fi
     if [ "$seen_push" = "0" ]; then
       [ "$tok" = "push" ] && seen_push=1
@@ -105,8 +111,9 @@ hikizan_push_targets() {
       -*)  : ;;
       *)   positionals+=("$tok") ;;
     esac
-  done
-  [ "$_g" = 0 ] && set +f
+  done <<EOF
+$(hz_tokenize "$cmd")
+EOF
 
   local -a refspecs=()
   if [ "$repo_flag" = "1" ]; then
@@ -132,11 +139,10 @@ hikizan_push_targets() {
 # nothing when the command names none (git then uses the branch upstream).
 hikizan_push_remote() {
   local cmd="$1"
-  local seen_push=0 repo_flag=0 repo_val="" want_repo_val=0 skip_next=0 tok _g
+  local seen_push=0 repo_flag=0 repo_val="" want_repo_val=0 skip_next=0 tok
   local -a positionals=()
 
-  case $- in *f*) _g=1 ;; *) _g=0 ;; esac; set -f
-  for tok in $cmd; do
+  while IFS= read -r tok; do
     if [ "$want_repo_val" = "1" ]; then want_repo_val=0; repo_val="$tok"; continue; fi
     if [ "$skip_next" = "1" ]; then skip_next=0; continue; fi
     if [ "$seen_push" = "0" ]; then
@@ -151,8 +157,9 @@ hikizan_push_remote() {
       -*)  : ;;
       *)   positionals+=("$tok") ;;
     esac
-  done
-  [ "$_g" = 0 ] && set +f
+  done <<EOF
+$(hz_tokenize "$cmd")
+EOF
 
   if [ "$repo_flag" = "1" ]; then
     printf '%s' "$repo_val"
@@ -172,9 +179,8 @@ hikizan_push_protected_hit() {
   local cmd="$1" cur="$2"
   local PROTECTED='^(main|master|develop)$'
 
-  local seen_push=0 tok has_mirror=0 has_prune=0 _g
-  case $- in *f*) _g=1 ;; *) _g=0 ;; esac; set -f
-  for tok in $cmd; do
+  local seen_push=0 tok has_mirror=0 has_prune=0
+  while IFS= read -r tok; do
     if [ "$seen_push" = "0" ]; then
       [ "$tok" = "push" ] && seen_push=1
       continue
@@ -183,8 +189,9 @@ hikizan_push_protected_hit() {
       --mirror) has_mirror=1 ;;
       --prune)  has_prune=1 ;;
     esac
-  done
-  [ "$_g" = 0 ] && set +f
+  done <<EOF
+$(hz_tokenize "$cmd")
+EOF
 
   if [ "$has_mirror" = "1" ]; then
     printf '%s' "--mirror (updates and prunes every ref, including protected branches)"; return 0

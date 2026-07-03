@@ -35,6 +35,11 @@ assert_eq "src:dst refspec is not forceful"         "no"  "$(forceful 'git push 
 assert_eq "value of value-taking flag is not forceful" "no" "$(forceful 'git push -o +weird origin main')"
 assert_eq "trailing --delete is forceful"           "yes" "$(forceful 'git push origin main --delete')"
 
+# quote-aware floors: a quoted branch name or flag must not smuggle a literal
+# quote character into the token and defeat the exact-match checks below.
+assert_eq "--force with quoted branch is forceful"  "yes" "$(forceful 'git push --force origin "main"')"
+assert_eq "quoted --mirror is forceful"              "yes" "$(forceful 'git push "--mirror" origin')"
+
 # ── hikizan_push_targets ──────────────────────────────────────────────────
 tgt() { hikizan_push_targets "$1" "$2" | paste -sd, - ; }
 
@@ -54,6 +59,12 @@ assert_eq "delete refspec :main"                 "main"          "$(tgt 'git pus
 assert_eq "refs/heads/ stripped"                 "main"          "$(tgt 'git push origin refs/heads/main' x)"
 assert_eq "multiple refspecs"                    "main,develop"  "$(tgt 'git push origin main develop' x)"
 assert_eq "--repo value not treated as ref"      "main"          "$(tgt 'git push --repo origin main' x)"
+
+# quote-aware floors: quoting a refspec token must not leave literal quote
+# characters in the resolved target name.
+assert_eq "quoted branch name -> main"           "main"          "$(tgt 'git push --force origin "main"' feat)"
+assert_eq "quoted refspec HEAD:\"main\" -> main" "main"          "$(tgt 'git push --force origin HEAD:"main"' feat)"
+assert_eq "single-quoted branch name -> main"    "main"          "$(tgt "git push origin 'main'" feat)"
 
 # A-2: target resolution must be deterministic — never glob-expand against cwd.
 GDIR="$(mktemp -d)"; : > "$GDIR/main"
@@ -83,5 +94,9 @@ assert_contains "--mirror hits regardless of target" "mirror" \
 assert_contains "wildcard force refspec hit mentions wildcard" "wildcard" \
   "$(hit 'git push --force origin refs/heads/*:refs/heads/*' x)"
 assert_eq "non-protected plain push: no hit"     ""        "$(hit 'git push origin feature' feature)"
+
+# quote-aware floors: quoting the target/--delete/:dst must still hit main.
+assert_contains "--delete quoted main hits"      "main"    "$(hit 'git push origin --delete "main"' x)"
+assert_contains "quoted delete refspec :\"main\" hits" "main" "$(hit 'git push origin :"main"' x)"
 
 hz_test_summary
