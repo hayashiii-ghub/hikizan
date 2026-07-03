@@ -75,4 +75,4 @@ pure logic (`push-parse.sh` / `destructive.sh` / `pr-create.sh`) は CC hooks �
 
 floors が Cursor にも置けるようになったため、tier は「floors の有無」ではなく「skill の手順をレールとして使うか、opt-out (手順自由・出口固定) で使うか」を表す軸として一貫する。floors を入れ、かつタスクの回し方が強いモデルを使う Cursor 環境は `HIKIZAN_TIER=standard` を宣言してよい (CC と同じ理屈)。floors 未導入、またはタスクの回し方が強くないモデル (VM で走らせる類) は `guided` 既定のまま。skill の番号付き手順がレールとして機能する。
 
-standard の opt-out 前文はこれまで CC の SessionStart hook 専用だったが、Cursor plugin の always-apply rule (`cursor/rules/hikizan.mdc`) で Cursor にも届くようになった。guided のまま使いたい場合は、この rule を project の rules から外せば opt-out 無しで運用できる。
+standard の opt-out 前文は、Cursor では always-apply rule (`cursor/rules/hikizan.mdc`) で届く。前文は CLAUDE.md / AGENTS.md 相当の常駐コンテンツで、rules はその Cursor 版なので、これが正規の配り方になる。むしろ CC / Codex の方が「plugin が常駐 context を静的に差し込む口が無い」ため SessionStart hook の実行時注入で代用している側 (Cursor にも `sessionStart` hook の `additional_context` はあるが、rule の方が Plugins 画面から見える・外せるので採用しない)。guided のまま使いたい場合は、この rule を project の rules から外せば opt-out 無しで運用できる。tier の切替が CC / Codex は `HIKIZAN_TIER` 環境変数、Cursor は rule の有無、と手段が違う点に注意。

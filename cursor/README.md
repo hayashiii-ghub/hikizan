@@ -11,7 +11,7 @@ Cursor の Plugins 画面で GitHub repo `hayashiii-ghub/hikizan` を plugin と
 - チーム配布は Team Marketplace (Dashboard → Plugins → Add Marketplace → Import from Repo。Enable Auto Refresh で追跡 branch に自動追従)
 - 公式 Cursor Marketplace への掲載は未提出
 
-- `cursor/rules/hikizan.mdc` は `alwaysApply: true` の rule で、常時 context に載る。ここに routing 規約 (`templates/CLAUDE.md`) と standard tier の opt-out 前文 (`templates/standard-preamble.md`) が入っているため、CC の SessionStart hook が届かない Cursor でも opt-out 前文が届く。guided のまま使いたい場合はこの rule を外せばよい (`docs/cursor-floors.md`「tier への含意」)。
+- `cursor/rules/hikizan.mdc` は `alwaysApply: true` の rule で、常時 context に載る。中身は routing 規約 (`templates/CLAUDE.md`) + standard tier の opt-out 前文 (`templates/standard-preamble.md`)、つまり CLAUDE.md / AGENTS.md 相当のコンテンツで、rules はその Cursor 版なのでこれが正規の配り方 (Cursor には `sessionStart` hook の `additional_context` 注入もあるが、rule の方が Plugins 画面から見える・外せるので採用)。guided のまま使いたい場合はこの rule を外せばよい (`docs/cursor-floors.md`「tier への含意」)。
 - `.cursor-plugin/plugin.json` の `hooks` / `rules` パスは plugin root (= repo root) 相対。
 
 ## install (fallback: 手動 hooks.json)
