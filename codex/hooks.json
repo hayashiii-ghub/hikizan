@@ -1,0 +1,22 @@
+{
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          { "type": "command", "command": "/abs/path/to/hikizan/hooks/scripts/pre-push.sh", "statusMessage": "checking push preconditions..." },
+          { "type": "command", "command": "/abs/path/to/hikizan/hooks/scripts/pre-destructive.sh", "statusMessage": "checking destructive op..." },
+          { "type": "command", "command": "/abs/path/to/hikizan/hooks/scripts/pre-pr-create.sh", "statusMessage": "checking PR create preconditions..." }
+        ]
+      }
+    ],
+    "SessionStart": [
+      {
+        "matcher": "startup|resume",
+        "hooks": [
+          { "type": "command", "command": "/abs/path/to/hikizan/codex/scripts/session-context.sh" }
+        ]
+      }
+    ]
+  }
+}
