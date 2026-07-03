@@ -1,17 +1,32 @@
 # Codex 向け floors adapter (codex/)
 
-Codex CLI は 2026 に hooks (PreToolUse / SessionStart) が GA。入力 (`tool_input.command` / `cwd` /
-`session_id`) と出力 (`hookSpecificOutput.permissionDecision`) が Claude Code と完全に同一のため、
-CC の floor スクリプト (`hooks/scripts/pre-push.sh` / `pre-destructive.sh` / `pre-pr-create.sh`) を
-**そのまま再利用**する。Codex 用に複製した判定ロジックは無い。
+Codex CLI は v0.117+ で plugin が first-class、v0.128 で plugin 同梱 hooks が GA。入力
+(`tool_input.command` / `cwd` / `session_id`) と出力 (`hookSpecificOutput.permissionDecision`) が
+Claude Code と完全に同一のため、CC の floor スクリプト (`hooks/scripts/pre-push.sh` /
+`pre-destructive.sh` / `pre-pr-create.sh`) を**そのまま再利用**する。Codex 用に複製した判定ロジックは
+無い。
 
-## install
+## install (plugin、推奨)
+
+`.codex-plugin/plugin.json` が repo root にあるので、personal marketplace
+(`~/.agents/plugins/marketplace.json`) に本 repo を git source として登録し `/plugins` から install
+すると、skills 6 個 + floors hooks + 前文 (SessionStart) が一括で入る。`npx skills add -a codex` も
+`~/.codex/hooks.json` への絶対パス手書きも不要。
+
+**実 Codex 環境での plugin ロードは未 live 検証**。特に、repo 直下の `hooks/hooks.json` (CC 用、
+`${CLAUDE_PLUGIN_ROOT}` と CC 固有の `if` を使う) を Codex の auto-detect が拾わないことは、
+`.codex-plugin/plugin.json` の明示 `hooks` field (`./codex/hooks.json`) が auto-detect を置換する
+前提に依存しており、この置換の挙動は docs に明記が無いため未検証。
+
+## install (fallback: 手動 `~/.codex/hooks.json`)
+
+plugin が使えない環境向けの fallback。
 
 1. hikizan repo を clone する (`npx skills add` は skills/ しか配置しないため、floors は repo から
    直接参照する)。
 2. `~/.codex/hooks.json` (または `<repo>/.codex/hooks.json`。`config.toml` でも可) に登録する。
-   **`command` は本 repo 内スクリプトの絶対パスにする**。同梱の `codex/hooks.json` は形を示す
-   テンプレで、`/abs/path/to/hikizan` のままでは動かない:
+   **`command` は本 repo 内スクリプトの絶対パスにする**。同梱の `codex/hooks.json` は plugin 経由の
+   `${PLUGIN_ROOT}` 版のため、手動 install では下記のような絶対パス版に置き換える:
 
    ```json
    {

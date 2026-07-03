@@ -143,13 +143,33 @@ done
 fail=$((fail || transcription_missing))
 [ "$transcription_missing" -eq 0 ] && echo "✔ skill names transcribed in README.md / templates/CLAUDE.md / plugin.json description"
 
-# 8. Cursor plugin manifest version must track the CC plugin version.
+# 8. Cursor and Codex plugin manifest versions must track the CC plugin version.
 cc_ver="$(awk -F'"' '/"version":/{print $4; exit}' "$ROOT/.claude-plugin/plugin.json")"
 cur_ver="$(awk -F'"' '/"version":/{print $4; exit}' "$ROOT/.cursor-plugin/plugin.json")"
-if [ "$cc_ver" != "$cur_ver" ]; then
-  echo "✘ .cursor-plugin/plugin.json version ($cur_ver) != .claude-plugin ($cc_ver)"; fail=1
+cx_ver="$(awk -F'"' '/"version":/{print $4; exit}' "$ROOT/.codex-plugin/plugin.json")"
+if [ "$cc_ver" != "$cur_ver" ] || [ "$cc_ver" != "$cx_ver" ]; then
+  echo "✘ plugin manifest versions drift: claude=$cc_ver cursor=$cur_ver codex=$cx_ver"; fail=1
 else
-  echo "✔ cursor/claude plugin manifest versions match ($cc_ver)"
+  echo "✔ cursor/codex/claude plugin manifest versions match ($cc_ver)"
 fi
+
+# 9. Hook wiring parity: the CC and Codex hook configs must wire the same set
+#    of pre-* floor scripts, and each harness config must wire its own session
+#    context / adapter entry point. Cursor wires a single adapter
+#    (before-shell.sh) whose floor set is covered by hooks/tests instead.
+cc_floors="$(grep -o 'pre-[a-z-]*\.sh' "$ROOT/hooks/hooks.json" | sort -u)"
+cx_floors="$(grep -o 'pre-[a-z-]*\.sh' "$ROOT/codex/hooks.json" | sort -u)"
+wiring=0
+[ -n "$cc_floors" ] || { echo "✘ hooks/hooks.json wires no pre-* floor scripts"; wiring=1; }
+if [ "$cc_floors" != "$cx_floors" ]; then
+  echo "✘ floor script sets differ between hooks/hooks.json and codex/hooks.json"
+  diff <(printf '%s\n' "$cc_floors") <(printf '%s\n' "$cx_floors") | sed 's/^/    /'
+  wiring=1
+fi
+grep -q 'session-context\.sh' "$ROOT/hooks/hooks.json" || { echo "✘ hooks/hooks.json does not wire session-context.sh"; wiring=1; }
+grep -q 'codex/scripts/session-context\.sh' "$ROOT/codex/hooks.json" || { echo "✘ codex/hooks.json does not wire codex/scripts/session-context.sh"; wiring=1; }
+grep -q 'before-shell\.sh' "$ROOT/cursor/hooks.json" || { echo "✘ cursor/hooks.json does not wire before-shell.sh"; wiring=1; }
+fail=$((fail || wiring))
+[ "$wiring" -eq 0 ] && echo "✔ hook wiring parity (CC/Codex floor set, per-harness entry points)"
 
 exit "$fail"

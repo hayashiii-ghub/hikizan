@@ -30,6 +30,7 @@ hook を単体で動かすときの gotcha:
 - 設計原則を skill 本文から参照するときは番号でなく名前で書く。
 - 識別子は `docs/naming.md`、日本語散文は `docs/writing-style.md` に従う。
 - **skill を足す / 減らすときは連動編集を全部通す**: (1) `skills/<name>/SKILL.md` (2) 共通ルール block を既存 skill から byte 単位でコピー (3) `scripts/check-consistency.sh` の `CORE` (4) `scripts/gen-trigger-docs.sh` の `ORDER` (5) `README.md` の skill 表 (6) `.claude-plugin/plugin.json` と `marketplace.json` の description (7) `docs/workflow.md` の役割境界・handoff (8) `bash scripts/gen-trigger-docs.sh` 再生成 → `bash scripts/check-all.sh` が緑になるまで直す (lint がこの一覧を強制する)。
+- **version bump**は `.claude-plugin/plugin.json` だけ編集し、`bash scripts/gen-manifests.sh` で他 2 manifest を再生成する。`.cursor-plugin/plugin.json` / `.codex-plugin/plugin.json` は生成物なので手で編集しない。
 
 ## Safety
 
