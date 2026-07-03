@@ -80,7 +80,7 @@ assert_contains "session-context: additionalContext mentions hikizan" "hikizan" 
 CTX_STD="$(HIKIZAN_TIER=standard bash -c "printf '%s' \"\$1\" | bash \"\$2\"" _ \
   "$(jq -nc '{session_id:"s", cwd:"/tmp", hook_event_name:"SessionStart", source:"startup"}')" \
   "$SESSION_CONTEXT" 2>/dev/null | jq -r '.hookSpecificOutput.additionalContext // ""' 2>/dev/null)"
-PREAMBLE_LINE1="$(head -1 "$ROOT/templates/standard-preamble.md")"
+PREAMBLE_LINE1="$(head -1 "$ROOT/context/standard-preamble.md")"
 assert_contains "session-context: standard tier includes preamble" "$PREAMBLE_LINE1" "$CTX_STD"
 
 CTX_GUIDED="$(HIKIZAN_TIER=guided bash -c "printf '%s' \"\$1\" | bash \"\$2\"" _ \

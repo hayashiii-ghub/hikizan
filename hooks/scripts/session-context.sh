@@ -18,8 +18,8 @@ SESSION_ID=$(printf '%s' "$JSON" | jq -r '.session_id // ""' 2>/dev/null)
 
 TIER="${HIKIZAN_TIER:-standard}"
 PLUGIN_ROOT="${CLAUDE_PLUGIN_ROOT:-}"
-TEMPLATE="$PLUGIN_ROOT/templates/routing.md"
-PREAMBLE="$PLUGIN_ROOT/templates/standard-preamble.md"
+TEMPLATE="$PLUGIN_ROOT/context/routing.md"
+PREAMBLE="$PLUGIN_ROOT/context/standard-preamble.md"
 
 if [ -n "$PLUGIN_ROOT" ] && [ -f "$TEMPLATE" ]; then
   cat "$TEMPLATE"

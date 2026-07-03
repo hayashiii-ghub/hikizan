@@ -1,7 +1,7 @@
 # プロジェクト文書の形式
 
 hikizan が配る repo の AGENTS.md の正本と、README の役割境界。
-AGENTS.md のスケルトンは `templates/AGENTS.md`。
+AGENTS.md のスケルトンは本書末尾の「スケルトン」節。
 README の節構成は各 project の裁量とし、ここでは境界だけ定める (固定の skeleton は持たない)。
 
 ## 原則
@@ -42,3 +42,57 @@ agents.md の popular sections (project overview / build & test / code style / t
 - AGENTS.md の H2 が英語で、必須 5 節があるか。
 - Safety に破壊的操作 / デプロイの確認点があるか。
 - AGENTS.md が hikizan の docs に依存せず単体で読めるか。
+
+## スケルトン
+
+````markdown
+# AGENTS.md
+
+[このリポジトリで作業する agent の入口。1 行で何の repo かを書く。]
+詳細は各 SoT に従う。
+
+## Overview
+
+[何を解決する repo か 1-2 行。]
+[主要な技術スタック (言語 / framework / ランタイム)。README と重複させない。]
+
+## Setup
+
+[依存のインストールと起動を、そのまま貼れるコマンドで書く。]
+
+```bash
+[依存インストール]
+[dev サーバ / ビルド起動]
+```
+
+## Test
+
+[テストの回し方。緑の最終行がどう出るかまで書く。]
+
+```bash
+[テストコマンド]
+```
+
+## Conventions
+
+- commit / branch / PR: 機能名で呼ぶ。kebab-case。独自の連番を作らない。
+- code style: [formatter / linter のコマンド。これが正]。
+- [この repo 固有の言語規約があれば 1 行]。
+
+## Safety
+
+- [破壊的操作 / 本番デプロイ / migration など、止まって確認すべきこと]。
+- [この repo 特有のハマりどころ]。
+
+<!-- 任意: SoT が多い repo だけ。詳細はここに再掲せず参照先を指す -->
+## Routing
+
+| やること | SoT |
+| --- | --- |
+| [領域] | [file] |
+
+<!-- 任意: 公開 CLI / ライブラリだけ。agent が「使う」側の情報 -->
+## Tool usage
+
+[When to use / 主要コマンド / Output 形式 / Error codes / Common tasks]
+````

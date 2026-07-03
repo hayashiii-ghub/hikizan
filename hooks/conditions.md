@@ -6,7 +6,7 @@ Claude Code plugin の hooks で監視する条件 / 挙動 / 決定の一覧。
 
 | event | matcher / if | 条件 | 決定 | reason 伝達 |
 |---|---|---|---|---|
-| SessionStart | matcher `startup` | セッション開始 (startup) | `templates/routing.md` の routing / ルールと active tier を stdout に出力し context 注入。tier=standard なら `templates/standard-preamble.md` (opt-out 前文) も注入。host repo は書き換えない | stdout (context) |
+| SessionStart | matcher `startup` | セッション開始 (startup) | `context/routing.md` の routing / ルールと active tier を stdout に出力し context 注入。tier=standard なら `context/standard-preamble.md` (opt-out 前文) も注入。host repo は書き換えない | stdout (context) |
 | PreToolUse | `Bash(git push*)` | local が push 先 remote から N コミット遅れている (non-fast-forward)。remote はコマンドの明示 remote → branch.<name>.remote → origin の順に解決 | `permissionDecision: "deny"` + 選択肢 (pull --rebase / 別 branch / abort) | JSON reason |
 | PreToolUse | `Bash(git push*)` | force 相当 (`--force` / `--force-with-lease` / `-f` / `-fv` に加え `+refspec` / `:branch` (削除) / `--delete`・`-d` / `--mirror` / `--prune`) が main / master / develop を対象にする | `permissionDecision: "deny"` + 確認要求 | JSON reason |
 | PreToolUse | `Bash(rm -*)` / `Bash(git reset*)` / `Bash(git clean*)` / `Bash(git checkout*)` | 不可逆操作 (`rm -rf` / `git reset --hard` / `git clean -f` / `git checkout` discard) | `permissionDecision: "ask"` (block でなく確認) | JSON reason |
@@ -89,7 +89,7 @@ jq -r 'select(.condition == "destructive")' ~/.hikizan/metrics.jsonl | wc -l
 ## SessionStart の補足
 
 - SessionStart(startup) hook の **stdout を CC が context 注入**する仕組みを使う。host repo の `CLAUDE.md` は書き換えない (常に installed version と同期、汚染なし)。ファイルとして残したいユーザは `/hikizan:init`。
-- 注入内容の単一ソースは `templates/routing.md` + active tier (`HIKIZAN_TIER`、既定 `standard`)。tier=standard のときだけ `templates/standard-preamble.md` (opt-out 前文: 手順は自由、出口と floors は固定) を続けて注入する。guided はレール (skill の番号付き手順) をそのまま使うため前文なし。
+- 注入内容の単一ソースは `context/routing.md` + active tier (`HIKIZAN_TIER`、既定 `standard`)。tier=standard のときだけ `context/standard-preamble.md` (opt-out 前文: 手順は自由、出口と floors は固定) を続けて注入する。guided はレール (skill の番号付き手順) をそのまま使うため前文なし。
 - `resume` / `clear` / `compact` では実行しない (matcher が `startup` のみ)。
 
 ## テスト
@@ -121,5 +121,5 @@ bash hooks/tests/run.sh push-parse # 特定テストのみ
 - `scripts/pre-destructive.sh`：PreToolUse on `rm` / `git reset` / `git clean` / `git checkout`
 - `scripts/pre-pr-create.sh`：PreToolUse on `gh pr create*`
 - `scripts/lib/push-parse.sh` / `destructive.sh` / `pr-create.sh` / `decision.sh` / `decision-cursor.sh` / `guard.sh` / `tokenize.sh` / `metrics.sh`：共有ロジック
-- `templates/routing.md`：追加される本文
+- `context/routing.md`：追加される本文
 - `teishutsu` skill：hook と二重構造の通常フロー側

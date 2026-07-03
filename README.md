@@ -83,7 +83,7 @@ npx skills add github:hayashiii-ghub/hikizan -g   # universal (配置先 ~/.agen
 
 tier は「環境構築時にどこまで仕組みを用意したか」を表す。skill 本文は両 tier 共通 (弱いモデル基準のレール) で、違いは opt-out 前文の有無だけ。
 
-- **standard** (hooks=floors のある環境)：SessionStart hook (`session-context.sh`) が routing / ルールに加えて **opt-out 前文** (`templates/standard-preamble.md`：手順は自由、出口は固定) を注入する。Claude Code の `/plugin` は既定でこれ。host repo の CLAUDE.md は書き換えない。
+- **standard** (hooks=floors のある環境)：SessionStart hook (`session-context.sh`) が routing / ルールに加えて **opt-out 前文** (`context/standard-preamble.md`：手順は自由、出口は固定) を注入する。Claude Code の `/plugin` は既定でこれ。host repo の CLAUDE.md は書き換えない。
 - **guided** (floors 未導入の環境・タスクの回し方が強くないモデル)：skill の番号付き手順を上から実行する。`HIKIZAN_TIER` 環境変数で tier を上書きできる。
 - ファイルとして規約を残したい場合のみ `/hikizan:init` で project の CLAUDE.md に追記する。
 
@@ -150,12 +150,12 @@ hikizan/
 │   │   └── lib/           ← push-parse / destructive / decision / decision-cursor / metrics
 │   └── tests/             ← 自己完結 test runner (run.sh + test-*.sh)
 ├── scripts/               ← gen-trigger-docs.sh / check-consistency.sh
-├── templates/             ← CLAUDE.md (routing/ルールの単一ソース、注入 & /hikizan:init が共用)
+├── context/               ← 常駐 context の正本 (routing.md + standard-preamble.md、注入 & rule 生成 & /hikizan:init が共用)
 │                            standard-preamble.md (standard tier 専用の opt-out 前文)
 │                            AGENTS.md (他 project へ配る AGENTS スケルトン)
 ├── skills/                ← SKILL.md (SoT) + references/
 │   ├── tansaku / sadoku / sekkei / jikkou / teishutsu / kaku / init
-└── docs/                  ← workflow.md / principles.md / writing-style.md / naming.md / doc-format.md / cursor-floors.md
+└── docs/                  ← workflow.md / principles.md / writing-style.md / naming.md / doc-format.md
 ```
 
 ## version

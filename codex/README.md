@@ -79,8 +79,8 @@ matcher は tool 名の regex (CC の `if` prefix のような per-hook 条件�
 
 ## SessionStart / 前文
 
-`codex/scripts/session-context.sh` は CC の `session-context.sh` と単一ソース (`templates/routing.md` +
-`templates/standard-preamble.md`) を共有し、出力の envelope だけ Codex 形式
+`codex/scripts/session-context.sh` は CC の `session-context.sh` と単一ソース (`context/routing.md` +
+`context/standard-preamble.md`) を共有し、出力の envelope だけ Codex 形式
 (`{"hookSpecificOutput":{"hookEventName":"SessionStart","additionalContext":"..."}}`) にしたもの。
 `HIKIZAN_TIER=standard` (既定) では routing/ルールに加えて opt-out 前文が additionalContext に入る。
 `HIKIZAN_TIER=guided` では前文は入らない。
