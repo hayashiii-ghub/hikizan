@@ -25,4 +25,12 @@ hz_run_hook "$HOOK" "rm -rf node_modules" "/tmp"
 assert_contains "ask reason is human-readable" "irreversible" \
   "$(printf '%s' "$HZ_OUT" | jq -r '.hookSpecificOutput.permissionDecisionReason // ""')"
 
+# quote-aware floors: quoting the flag must not smuggle a literal quote
+# character past the anchored checks and skip the ask.
+hz_run_hook "$HOOK" 'rm "-rf" /tmp/x' "/tmp"
+assert_eq "quoted rm -rf -> ask" "ask" "$(hz_decision_of "$HZ_OUT")"
+
+hz_run_hook "$HOOK" 'git reset "--hard"' "/tmp"
+assert_eq "quoted git reset --hard -> ask" "ask" "$(hz_decision_of "$HZ_OUT")"
+
 hz_test_summary

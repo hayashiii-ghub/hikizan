@@ -53,4 +53,13 @@ assert_eq "git checkout .gitignore (pathspec)" "no" "$(hit 'git checkout .gitign
 # Label is human-readable
 assert_contains "rm label mentions delete" "delete" "$(lbl 'rm -rf x')"
 
+# quote-aware floors: quoting a flag or subcommand must not smuggle a
+# literal quote character into the token and defeat these anchored checks.
+assert_eq "quoted rm -rf flag"        "yes" "$(hit 'rm "-rf" /tmp/x')"
+assert_eq "quoted git reset --hard"   "yes" "$(hit 'git reset "--hard"')"
+assert_eq "quoted git clean -f"       "yes" "$(hit 'git clean "-f"')"
+assert_eq "quoted git checkout --force" "yes" "$(hit 'git checkout "--force"')"
+assert_eq "quoted head token (git)"   "yes" "$(hit '"git" reset --hard')"
+assert_eq "quoted subcommand (reset)" "yes" "$(hit 'git "reset" --hard')"
+
 hz_test_summary

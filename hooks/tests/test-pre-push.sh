@@ -80,6 +80,20 @@ assert_eq "commit msg mentioning force push -> allow" "allow" "$(hz_decision_of 
 hz_run_hook "$HOOK" "git stash push -m wip" "$REPO_MAIN"
 assert_eq "git stash push -> allow" "allow" "$(hz_decision_of "$HZ_OUT")"
 
+# quote-aware floors: quoting the branch/flag must not smuggle a literal
+# quote character past the exact-match protected-branch checks.
+hz_run_hook "$HOOK" 'git push --force origin "main"' "$REPO_MAIN"
+assert_eq "force quoted main -> deny" "deny" "$(hz_decision_of "$HZ_OUT")"
+
+hz_run_hook "$HOOK" 'git push origin --delete "main"' "$REPO_MAIN"
+assert_eq "--delete quoted main -> deny" "deny" "$(hz_decision_of "$HZ_OUT")"
+
+hz_run_hook "$HOOK" 'git push origin :"main"' "$REPO_MAIN"
+assert_eq "delete refspec quoted main -> deny" "deny" "$(hz_decision_of "$HZ_OUT")"
+
+hz_run_hook "$HOOK" 'git push "--mirror" origin' "$REPO_MAIN"
+assert_eq "quoted --mirror -> deny" "deny" "$(hz_decision_of "$HZ_OUT")"
+
 rm -rf "$REPO_MAIN" "$REPO_FEAT"
 
 # ── non-ff remote resolution ──────────────────────────────────────────────
