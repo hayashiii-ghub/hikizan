@@ -40,7 +40,7 @@ If pivot: 「Cursor には floors を置けない、guided で守る」→「CC 
 | `hooks/scripts/lib/decision-cursor.sh` | Cursor permission JSON emitter (CC の `decision.sh` の Cursor 版、pure logic は共通) |
 | `cursor/hooks.json` | adapter を登録する hooks.json テンプレ (plugin root 相対の command) |
 | `hooks/tests/test-cursor-floors.sh` | Cursor 形式 input → permission output の glue テスト |
-| `.cursor-plugin/plugin.json` | Cursor plugin manifest。`rules` / `hooks` を repo から自動配置する |
+| `.cursor-plugin/plugin.json` | Cursor plugin manifest。`rules` / `hooks` を repo から自動配置する。`scripts/gen-manifests.sh` の生成物 (手で編集しない) |
 | `cursor/rules/hikizan.mdc` | always-apply 前文 rule。`scripts/gen-cursor-rule.sh` が `templates/CLAUDE.md` + `templates/standard-preamble.md` から生成する |
 
 pure logic (`push-parse.sh` / `destructive.sh` / `pr-create.sh`) は CC hooks と**同一ファイルを再利用**しており、二重実装ではない。Cursor adapter は force push deny / 破壊的操作 ask / 非 draft PR deny の 3 floor を持つ。

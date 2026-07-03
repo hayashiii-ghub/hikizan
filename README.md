@@ -36,9 +36,10 @@ hikizan は 2 つの配布チャネルを持つが、**1 つのハーネスに�
 | ハーネス | 推奨チャネル | 入れない方 |
 | --- | --- | --- |
 | Claude Code | `/plugin` (hooks=floors も同時に入る) | `npx skills add` は併用しない |
-| Cursor / Codex 等 | `npx skills add` (skill pack のみ、hooks なし) | なし |
+| Codex | plugin (`.codex-plugin/`、skills + floors + 前文が同梱) | `npx skills add -a codex` は併用しない |
+| Cursor 等 | `npx skills add` (skill pack のみ。Cursor plugin は floors + 前文 rule で、skill は含まない) | なし |
 
-> Claude Code で一度 `/plugin` で入れたら、同じ環境で `npx skills add -a claude-code` は実行しない。逆も同様。
+> Claude Code で一度 `/plugin` で入れたら、同じ環境で `npx skills add -a claude-code` は実行しない。逆も同様。Codex も plugin で入れたら `npx skills add -a codex` は実行しない。
 
 ### install (Claude Code plugin)
 
@@ -50,13 +51,13 @@ hikizan は 2 つの配布チャネルを持つが、**1 つのハーネスに�
 
 `.git` 付き HTTPS URL を明示すると SSH key 未設定環境でも clone できる。開発・検証時は `claude --plugin-dir ./hikizan` で直接読み込む。skill は namespace 規約で `/hikizan:tansaku` … `/hikizan:teishutsu` として呼ばれる。
 
-### install (skill pack / Cursor / Codex)
+### install (skill pack / Cursor 等)
 
-hikizan は [Agent Skills 標準](https://agentskills.io) に沿った skill pack でもある。Claude Code 以外のハーネスへはこちらで配置する (hooks は付かないため tier は `guided` 既定)。
+hikizan は [Agent Skills 標準](https://agentskills.io) に沿った skill pack でもある。plugin チャネルの無いハーネスへはこちらで配置する (hooks は付かないため tier は `guided` 既定)。Codex は plugin (`codex/README.md`) が skills を同梱するので、こちらは plugin が使えない環境の fallback。
 
 ```bash
 npx skills add github:hayashiii-ghub/hikizan -g -a cursor   # Cursor
-npx skills add github:hayashiii-ghub/hikizan -g -a codex    # Codex
+npx skills add github:hayashiii-ghub/hikizan -g -a codex    # Codex (fallback)
 ```
 
 `-g` で global、省略時は project local。配置先は Cursor `~/.cursor/skills/`、universal `~/.agents/skills/`。詳細は [vercel-labs/skills](https://github.com/vercel-labs/skills)。
@@ -65,7 +66,7 @@ npx skills add github:hayashiii-ghub/hikizan -g -a codex    # Codex
 
 Cursor は `.cursor-plugin/plugin.json` で repo を plugin として参照すると、CC と同じ floors (`beforeShellExecution` hook、force push / 破壊的操作の停止) と always-apply の前文 rule (`cursor/rules/hikizan.mdc`) が一緒に入り、standard tier が成立する。手順は `cursor/README.md` / `docs/cursor-floors.md`。floors を入れた環境は `HIKIZAN_TIER=standard` を宣言してよい。
 
-Codex CLI (2026 の hooks) には `codex/` の `hooks.json` で CC と同じ floors (force push deny / 破壊的操作 ask / 非 draft PR deny) を移植できる。手順は `codex/README.md`。前文も SessionStart hook で配布され、`HIKIZAN_TIER=standard` を宣言できる。
+Codex は plugin (`.codex-plugin/`) で skills + floors + 前文が一括で入る。CC と同じ floors (force push deny / 破壊的操作 ask / 非 draft PR deny) と SessionStart hook 経由の前文が同梱され、`HIKIZAN_TIER=standard` を宣言できる。手順は `codex/README.md`。
 
 ## tier
 
