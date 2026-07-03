@@ -103,7 +103,7 @@ Workflow 節は「過程の trace」。読む人がここだけ見れば、ど�
 
 ## Writing Checks
 
-PR 本文の日本語は `../../kaku/references/writing-style.md` の規範に従う。以下はその要点。
+PR 本文の日本語は `../../shippitsu/references/writing-style.md` の規範に従う。以下はその要点。
 
 1. **結論先出し**：1 文目で「何が変わったか」が分かる
 2. **1 段落 1 主張**：読み手に並列処理させない

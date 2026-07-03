@@ -1,14 +1,14 @@
 ---
-name: kaku
+name: shippitsu
 description: "Use this skill when the user wants to write or revise Japanese prose — technical docs, articles, READMEs, explanations — including the phrasings 書いて, 文章書いて, 執筆, 推敲, リライト, 文章直して. Activate when drafting or rewriting Japanese text against a writing norm. Code review goes to sadoku instead."
 license: MIT
 when_to_use: "執筆, 推敲, リライト, 文章を書く"
 ---
 
-# kaku (書く)
+# shippitsu (執筆)
 
 ```
-🌲 Using /kaku for [purpose taken from trigger context].
+🌲 Using /shippitsu for [purpose taken from trigger context].
 ```
 
 日本語の文章を書く / 推敲する skill。文章規範は `references/writing-style.md` に従う。コードのレビューは `sadoku`、PR 本文は `teishutsu`、リポジトリ外の人間に配る PDF は `pdfmint` に渡す (markdown が既定、PDF 化は配布先次第)。
@@ -23,17 +23,17 @@ core skill (init を除く全 skill) 共通。`scripts/check-consistency.sh` が
 - 秘密情報 (token / email / チーム外の実名) を PR 本文・commit message に書かない。出す前に grep で確認する
 - PR / branch / step は機能名か issue 名で呼ぶ。PR-1 のような独自の連番を作らない (詳細は skills/teishutsu/references/naming.md)
 - 別の skill に渡すときは 1 行で書く: `handoff: [skill] / brief: [1 文] / evidence: [file:line かコマンド出力]`
-- 日本語の文章は skills/kaku/references/writing-style.md の規範に従う
+- 日本語の文章は skills/shippitsu/references/writing-style.md の規範に従う
 <!-- hikizan:contract:end -->
 
 ## 2 つのモード
 
 | モード | きっかけ |
 | --- | --- |
-| 執筆 | 「文章書いて」「執筆」「README 書いて」/ 新規に日本語の文を書く |
+| 新規 | 「文章書いて」「執筆」「README 書いて」/ 新規に日本語の文を書く |
 | 推敲 | 「推敲」「リライト」「文章直して」/ 既存の文を規範に沿って直す |
 
-## 手順 (執筆)
+## 手順 (新規)
 
 1. 何を・誰に・どの形式 (PR 本文 / docs / 記事 / README) で書くかを 1 文で確認する
 2. 結論を先に置く。1 文目で「何が言いたいか」が分かる構成にする
@@ -63,7 +63,7 @@ core skill (init を除く全 skill) 共通。`scripts/check-consistency.sh` が
 
 [1 文: 何をどう書いた / 直したか、いまどういう状態か]
 
-- mode: [執筆 / 推敲]
+- mode: [新規 / 推敲]
 - target: [何を・どの形式で]
 - norm check: [当てた節 → 直した箇所 / 違反なし]
 - next: [teishutsu / sadoku / pdfmint で PDF 化 / 完了]

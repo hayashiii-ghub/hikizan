@@ -7,7 +7,7 @@ description: tansaku / sadoku / sekkei / jikkou / teishutsu の境界、トリ�
 
 > **目的:** skill の境界・起動トリガー・handoff を 1 箇所で確認できるようにする。
 >
-> **対象範囲:** 実装パイプラインの 5 skill (`tansaku` / `sekkei` / `jikkou` / `sadoku` / `teishutsu`)。文章作成の `kaku` はこの pipeline から独立して動く (起動語は下の生成トリガー表に含む、詳細は `../skills/kaku/SKILL.md`)。個別の手順・mode 定義の正本は各 `SKILL.md`。本書はその転記をしない。
+> **対象範囲:** 実装パイプラインの 5 skill (`tansaku` / `sekkei` / `jikkou` / `sadoku` / `teishutsu`)。文章作成の `shippitsu` はこの pipeline から独立して動く (起動語は下の生成トリガー表に含む、詳細は `../skills/shippitsu/SKILL.md`)。個別の手順・mode 定義の正本は各 `SKILL.md`。本書はその転記をしない。
 
 ---
 
@@ -61,7 +61,7 @@ skill 単位の起動トリガー早見表は frontmatter から生成する (�
 | `sekkei` | 設計判断, 方針決め, design decision, kill or keep, 計画立案 |
 | `jikkou` | 計画実行, 実装, エラー診断, root cause, バグ修正 |
 | `teishutsu` | PR提出, PR出す, PR ready, PR文書いて, PR description, submission, PR open |
-| `kaku` | 執筆, 推敲, リライト, 文章を書く |
+| `shippitsu` | 執筆, 推敲, リライト, 文章を書く |
 
 各 skill の mode 別トリガーと遷移は `docs/workflow.md`、発動条件の正本は各 SKILL.md frontmatter `description`。
 <!-- hikizan:triggers:end -->

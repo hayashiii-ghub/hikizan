@@ -23,9 +23,9 @@ hikizan は Claude Code plugin / Agent Skills 対応の skill pack。動詞単�
 | `sekkei` | 設計 | 考える・決める | 設計判断 / 評価 / 計画立案 |
 | `jikkou` | 実行 | 作る・直す | 計画実行 / root cause diagnosis / TDD 実装 |
 | `teishutsu` | 提出 | 出す | PR 本文ドラフト / PR 提出フロー (remote / submodule / parent / cwd-aware gh) |
-| `kaku` | 書く | 書く・直す | 日本語文章の執筆 / 推敲 (規範は `skills/kaku/references/writing-style.md`) |
+| `shippitsu` | 執筆 | 書く・直す | 日本語文章の執筆 / 推敲 (規範は `skills/shippitsu/references/writing-style.md`) |
 
-各 SKILL.md は「共通ルール block + モード表 (複数モードの skill のみ) + 番号付き手順 + やってはいけないこと + 穴埋め報告」に絞り、手順詳細は `references/` に置く。`sekkei` が設計・計画を controller として保持し、承認後の実行と原因診断は `jikkou`、TDD は `jikkou` の TDD 実装モード、レビューは `sadoku`、提出は `teishutsu`、探索は `tansaku`、文章は `kaku` に渡す。
+各 SKILL.md は「共通ルール block + モード表 (複数モードの skill のみ) + 番号付き手順 + やってはいけないこと + 穴埋め報告」に絞り、手順詳細は `references/` に置く。`sekkei` が設計・計画を controller として保持し、承認後の実行と原因診断は `jikkou`、TDD は `jikkou` の TDD 実装モード、レビューは `sadoku`、提出は `teishutsu`、探索は `tansaku`、文章は `shippitsu` に渡す。
 
 ユーティリティ skill `init` (`/hikizan:init`) は規約を project の CLAUDE.md に手動で書き込みたい時だけ使う (model 自動起動は無効)。
 
@@ -112,7 +112,7 @@ tier は「環境構築時にどこまで仕組みを用意したか」を表す
 | `sekkei` | 設計判断, 方針決め, design decision, kill or keep, 計画立案 |
 | `jikkou` | 計画実行, 実装, エラー診断, root cause, バグ修正 |
 | `teishutsu` | PR提出, PR出す, PR ready, PR文書いて, PR description, submission, PR open |
-| `kaku` | 執筆, 推敲, リライト, 文章を書く |
+| `shippitsu` | 執筆, 推敲, リライト, 文章を書く |
 
 各 skill の mode 別トリガーと遷移は `docs/workflow.md`、発動条件の正本は各 SKILL.md frontmatter `description`。
 <!-- hikizan:triggers:end -->
@@ -152,8 +152,8 @@ hikizan/
 ├── scripts/               ← gen-trigger-docs.sh / check-consistency.sh
 ├── context/               ← 常駐 context の正本 (routing.md + standard-preamble.md、注入 & rule 生成 & /hikizan:init が共用)
 ├── skills/                ← SKILL.md (SoT) + references/
-│   ├── tansaku / sadoku / sekkei / jikkou / teishutsu / kaku / init
-│   │                        (命名規範は teishutsu/references/naming.md、文章規範は kaku/references/writing-style.md)
+│   ├── tansaku / sadoku / sekkei / jikkou / teishutsu / shippitsu / init
+│   │                        (命名規範は teishutsu/references/naming.md、文章規範は shippitsu/references/writing-style.md)
 └── docs/                  ← workflow.md / principles.md / doc-format.md
 ```
 
