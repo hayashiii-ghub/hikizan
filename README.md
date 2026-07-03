@@ -1,6 +1,6 @@
 # hikizan
 
-hikizan は Claude Code plugin / Agent Skills 対応の skill pack。動詞単位で分割した 7 つの主要 skill と、認知負荷を抑える運用方針を提供する。
+hikizan は Claude Code plugin / Agent Skills 対応の skill pack。動詞単位で分割した主要 skill と、認知負荷を抑える運用方針を提供する。
 
 設計の出発点は「AI agent が長く自走しすぎても、逐一確認を挟まれすぎても作業のテンポが落ちる」という不満。hikizan はその塩梅を **3 つの部品** で取る:
 
@@ -14,19 +14,18 @@ hikizan は Claude Code plugin / Agent Skills 対応の skill pack。動詞単�
 - license: MIT
 - agent 向け作業ガイド: [AGENTS.md](AGENTS.md)
 
-## core 7 skill
+## core skill
 
 | skill | 漢字 | 動詞 | 担当 |
 | --- | --- | --- | --- |
 | `tansaku` | 探索 | 探す | code map / impact scope / terminology scan |
 | `sadoku` | 査読 | 見る | code review / simplify findings |
 | `sekkei` | 設計 | 考える・決める | 設計判断 / 評価 / 計画立案 |
-| `jikkou` | 実行 | 作る・直す | 計画実行 / root cause diagnosis |
-| `shiken` | 試験 | 試す | TDD discipline / PRUNE |
+| `jikkou` | 実行 | 作る・直す | 計画実行 / root cause diagnosis / TDD 実装 |
 | `teishutsu` | 提出 | 出す | PR 本文ドラフト / PR 提出フロー (remote / submodule / parent / cwd-aware gh) |
 | `kaku` | 書く | 書く・直す | 日本語文章の執筆 / 推敲 (規範は `docs/writing-style.md`) |
 
-各 SKILL.md は「共通ルール block + モード表 (複数モードの skill のみ) + 番号付き手順 + やってはいけないこと + 穴埋め報告」に絞り、手順詳細は `references/` に置く。`sekkei` が設計・計画を controller として保持し、承認後の実行と原因診断は `jikkou`、TDD は `shiken`、レビューは `sadoku`、提出は `teishutsu`、探索は `tansaku`、文章は `kaku` に渡す。
+各 SKILL.md は「共通ルール block + モード表 (複数モードの skill のみ) + 番号付き手順 + やってはいけないこと + 穴埋め報告」に絞り、手順詳細は `references/` に置く。`sekkei` が設計・計画を controller として保持し、承認後の実行と原因診断は `jikkou`、TDD は `jikkou` の TDD 実装モード、レビューは `sadoku`、提出は `teishutsu`、探索は `tansaku`、文章は `kaku` に渡す。
 
 ユーティリティ skill `init` (`/hikizan:init`) は規約を project の CLAUDE.md に手動で書き込みたい時だけ使う (model 自動起動は無効)。
 
@@ -62,7 +61,7 @@ npx skills add github:hayashiii-ghub/hikizan -g -a codex    # Codex
 
 `-g` で global、省略時は project local。配置先は Cursor `~/.cursor/skills/`、universal `~/.agents/skills/`。詳細は [vercel-labs/skills](https://github.com/vercel-labs/skills)。
 
-更新は `npx skills update` で行う (skill pack のみ。hooks / floors は含まない)。skill の rename や削除を含む更新 (例: 0.5.9 の `kouchiku` → `sekkei` / `jikkou` 分割) では、旧 skill のコピーが配置先に残って routing を奪うことがある。更新後、上の[trigger 早見表](#trigger-早見表)に無い skill が配置先に残っていたら `npx skills remove <旧 skill 名>` で削除する。
+更新は `npx skills update` で行う (skill pack のみ。hooks / floors は含まない)。skill の rename や削除を含む更新 (例: 0.5.9 の `kouchiku` → `sekkei` / `jikkou` 分割) では、旧 skill のコピーが配置先に残って routing を奪うことがある。更新後、下の[trigger 早見表](#trigger-早見表)に無い skill が配置先に残っていたら `npx skills remove <旧 skill 名>` で削除する。
 
 Cursor には `beforeShellExecution` hook で CC と同じ floors (force push / 破壊的操作の停止) を移植できる。手順は `docs/cursor-floors.md`。floors を入れた環境は `HIKIZAN_TIER=standard` を宣言してよい。
 
@@ -84,7 +83,6 @@ tier は「環境構築時にどこまで仕組みを用意したか」を表す
 | `pre-push` | PreToolUse `git push` | non-fast-forward / 保護 branch への force を `deny` |
 | `pre-destructive` | PreToolUse `rm` / `git reset` / `clean` / `checkout` | 不可逆操作を `ask` (確認要求) |
 | `pre-pr-create` | PreToolUse `gh pr create` | draft / reviewer 未指定を `deny` |
-| `post-commit` | PostToolUse `git commit` | submodule 未 push を warning |
 
 決定は公式の JSON `permissionDecision` 形式 (`deny` / `ask`)。発火条件マトリクスと既知の限界は `hooks/conditions.md` (SoT)。決定論ロジックは `hooks/tests/` で回帰検査する (`bash hooks/tests/run.sh`)。発火イベントは `~/.hikizan/metrics.jsonl` に記録 (`HIKIZAN_METRICS_DIR` で変更可)。
 
@@ -99,7 +97,6 @@ tier は「環境構築時にどこまで仕組みを用意したか」を表す
 | `sadoku` | PR確認, レビュー, code review, プロジェクトレビュー, コード整理, simplify |
 | `sekkei` | 設計判断, 方針決め, design decision, kill or keep, 計画立案 |
 | `jikkou` | 計画実行, 実装, エラー診断, root cause, バグ修正 |
-| `shiken` | TDD, テスト先行, テストから書く |
 | `teishutsu` | PR提出, PR出す, PR ready, PR文書いて, PR description, submission, PR open |
 | `kaku` | 執筆, 推敲, リライト, 文章を書く |
 
@@ -135,7 +132,7 @@ hikizan/
 ├── cursor/                ← Cursor 用 floors adapter (before-shell.sh / hooks.json テンプレ)
 ├── hooks/
 │   ├── hooks.json / conditions.md
-│   ├── scripts/           ← session-context / pre-push / pre-destructive / pre-pr-create / post-commit
+│   ├── scripts/           ← session-context / pre-push / pre-destructive / pre-pr-create
 │   │   └── lib/           ← push-parse / destructive / decision / decision-cursor / metrics
 │   └── tests/             ← 自己完結 test runner (run.sh + test-*.sh)
 ├── scripts/               ← gen-trigger-docs.sh / check-consistency.sh
@@ -143,7 +140,7 @@ hikizan/
 │                            standard-preamble.md (standard tier 専用の opt-out 前文)
 │                            AGENTS.md (他 project へ配る AGENTS スケルトン)
 ├── skills/                ← SKILL.md (SoT) + references/
-│   ├── tansaku / sadoku / sekkei / jikkou / shiken / teishutsu / kaku / init
+│   ├── tansaku / sadoku / sekkei / jikkou / teishutsu / kaku / init
 └── docs/                  ← workflow.md / principles.md / writing-style.md / naming.md / doc-format.md / cursor-floors.md
 ```
 

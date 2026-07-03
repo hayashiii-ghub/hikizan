@@ -11,12 +11,12 @@ when_to_use: "探索, 全体像把握, 影響範囲調査, 用語整理"
 🌲 Using /tansaku for [purpose taken from trigger context].
 ```
 
-調べて報告する skill。実装と設計判断はしない。設計と計画は `sekkei`、実行は `jikkou`、テスト先行の実装は `shiken`、レビューは `sadoku`、提出は `teishutsu` に渡す。
+調べて報告する skill。実装と設計判断はしない。設計と計画は `sekkei`、実行 (テスト先行の実装含む) は `jikkou`、レビューは `sadoku`、提出は `teishutsu` に渡す。
 
 <!-- hikizan:contract:start -->
 ## 共通ルール
 
-core 7 skill (init を除く全 skill) 共通。`scripts/check-consistency.sh` が 7 skill で同一であることを検査する。
+core skill (init を除く全 skill) 共通。`scripts/check-consistency.sh` が全 core skill で同一であることを検査する。
 
 - 元に戻せない操作 (削除 / force push / reset --hard / git clean) は、実行する前にユーザに確認する
 - 「pass した」「確認した」と書くときは、コマンド出力の最終行をそのまま貼る。出力なしで完了と書かない
@@ -66,7 +66,7 @@ core 7 skill (init を除く全 skill) 共通。`scripts/check-consistency.sh` �
 - CONTEXT.md: [追記 / 新規の diff 提案 (承認待ち) / 変更なし]
 - Unknowns:
   - [コードと docs だけでは分からないこと]
-- next: [sekkei / shiken に渡す / 調査のみで完了]
+- next: [sekkei / jikkou に渡す / 調査のみで完了]
 
 worktree 内 (`git rev-parse --git-dir` と `--git-common-dir` の正規化結果が異なる) なら `worktree: [branch]` を 1 行足す。
 

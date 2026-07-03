@@ -42,8 +42,7 @@ ACTUAL="$(jq -r '
   [$ev.key, (.if // $entry.matcher), (.args[0] | split("/") | last)] | join("|")
 ' "$HOOKS_JSON" | sort)"
 
-EXPECTED='PostToolUse|Bash(git commit*)|post-commit.sh
-PreToolUse|Bash(gh pr create*)|pre-pr-create.sh
+EXPECTED='PreToolUse|Bash(gh pr create*)|pre-pr-create.sh
 PreToolUse|Bash(git checkout*)|pre-destructive.sh
 PreToolUse|Bash(git clean*)|pre-destructive.sh
 PreToolUse|Bash(git push*)|pre-push.sh

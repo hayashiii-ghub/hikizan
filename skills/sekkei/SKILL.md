@@ -11,12 +11,12 @@ when_to_use: "設計判断, 方針決め, design decision, kill or keep, 計画�
 🌲 Using /sekkei for [purpose taken from trigger context].
 ```
 
-考えて決める skill。コードは触らない。決めた計画の実行と原因診断は `jikkou`、調べるのは `tansaku`、テスト先行の実装は `shiken`、レビューは `sadoku`、提出は `teishutsu` に渡す。
+考えて決める skill。コードは触らない。決めた計画の実行と原因診断 (テスト先行の実装含む) は `jikkou`、調べるのは `tansaku`、レビューは `sadoku`、提出は `teishutsu` に渡す。
 
 <!-- hikizan:contract:start -->
 ## 共通ルール
 
-core 7 skill (init を除く全 skill) 共通。`scripts/check-consistency.sh` が 7 skill で同一であることを検査する。
+core skill (init を除く全 skill) 共通。`scripts/check-consistency.sh` が全 core skill で同一であることを検査する。
 
 - 元に戻せない操作 (削除 / force push / reset --hard / git clean) は、実行する前にユーザに確認する
 - 「pass した」「確認した」と書くときは、コマンド出力の最終行をそのまま貼る。出力なしで完了と書かない
@@ -80,7 +80,7 @@ core 7 skill (init を除く全 skill) 共通。`scripts/check-consistency.sh` �
 - 前提: [設計が前提とする事実 (file:line)。未確認は ⚠] (通常検討のみ)
 - open question: [事実で決まらず user に確認した分岐 / なし]
 - scope: [解決すること / out-of-scope]
-- next: [jikkou (計画承認後) / shiken / sadoku / なし]
+- next: [jikkou (計画承認後) / sadoku / なし]
 
 worktree 内 (`git rev-parse --git-dir` と `--git-common-dir` の正規化結果が異なる) なら `worktree: [branch]` を 1 行足す。
 

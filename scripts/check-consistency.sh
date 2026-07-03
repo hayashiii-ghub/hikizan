@@ -18,11 +18,12 @@ extract() { awk -v s="$START" -v e="$END" '$0==s{f=1;next} $0==e{f=0} f' "$1"; }
 
 # Core workflow skills carry the shared contract. Utility skills (e.g. init)
 # are exempt — they have no contract block.
-CORE="sekkei jikkou tansaku sadoku shiken teishutsu kaku"
+CORE="sekkei jikkou tansaku sadoku teishutsu kaku"
 UTILITY="init"
 
 fail=0
 ref=""
+ref_set=0
 ref_file=""
 count=0
 
@@ -42,8 +43,8 @@ for f in "$ROOT"/skills/*/SKILL.md; do
   fi
 
   blk="$(extract "$f")"
-  if [ -z "$ref" ]; then
-    ref="$blk"; ref_file="$name"
+  if [ "$ref_set" -eq 0 ]; then
+    ref="$blk"; ref_file="$name"; ref_set=1
   elif [ "$blk" != "$ref" ]; then
     echo "✘ $name: 共通ルール block differs from $ref_file"
     diff <(printf '%s\n' "$ref") <(printf '%s\n' "$blk") | sed 's/^/    /' | head -20

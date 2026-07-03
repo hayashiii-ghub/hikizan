@@ -11,12 +11,12 @@ when_to_use: "PR確認, レビュー, code review, プロジェクトレビュ�
 🌲 Using /sadoku for [purpose taken from trigger context].
 ```
 
-コード (diff または指定範囲) を見る skill。見つけた問題を直すのは `jikkou`、設計から見直すなら `sekkei`、テスト先行の実装は `shiken`、提出は `teishutsu` に渡す。
+コード (diff または指定範囲) を見る skill。見つけた問題を直すのは `jikkou` (テスト先行の実装は `jikkou` の TDD 実装モード)、設計から見直すなら `sekkei`、提出は `teishutsu` に渡す。
 
 <!-- hikizan:contract:start -->
 ## 共通ルール
 
-core 7 skill (init を除く全 skill) 共通。`scripts/check-consistency.sh` が 7 skill で同一であることを検査する。
+core skill (init を除く全 skill) 共通。`scripts/check-consistency.sh` が全 core skill で同一であることを検査する。
 
 - 元に戻せない操作 (削除 / force push / reset --hard / git clean) は、実行する前にユーザに確認する
 - 「pass した」「確認した」と書くときは、コマンド出力の最終行をそのまま貼る。出力なしで完了と書かない

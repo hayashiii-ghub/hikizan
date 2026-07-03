@@ -84,6 +84,6 @@ simplify findings は **発見と提案まで**。実装は jikkou に handoff �
 ## 他原則との関係
 
 - **引き算原則** の operationalization (meta-principle を per-PR の判定基準に落とす)
-- **shiken の PRUNE** と相補: PRUNE は test 専用、simplify findings は production code 専用
+- **jikkou の TDD 実装モードの PRUNE** と相補: PRUNE は test 専用、simplify findings は production code 専用
 - **sadoku の純化** を守る: sadoku は実装しない、発見と提案のみ
 - **評価=環境変化** と整合: handoff 後の実装結果 (整理後 diff + test pass) を verification log として残す

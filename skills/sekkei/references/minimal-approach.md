@@ -72,7 +72,3 @@ LLM agent は「丁寧に網羅する」方向に偏る場合がある。issue �
 ### 出典
 
 ponytail (github.com/DietrichGebert/ponytail) のラダーの概念を hikizan 向けに再構成した。逐語コピーはしない。
-
-## 関連
-
-- `skills/sekkei/SKILL.md` Hard Rules：命名規約側の引き算
