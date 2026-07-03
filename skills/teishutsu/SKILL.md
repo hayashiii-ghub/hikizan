@@ -21,9 +21,9 @@ core skill (init を除く全 skill) 共通。`scripts/check-consistency.sh` が
 - 元に戻せない操作 (削除 / force push / reset --hard / git clean) は、実行する前にユーザに確認する
 - 「pass した」「確認した」と書くときは、コマンド出力の最終行をそのまま貼る。出力なしで完了と書かない
 - 秘密情報 (token / email / チーム外の実名) を PR 本文・commit message に書かない。出す前に grep で確認する
-- PR / branch / step は機能名か issue 名で呼ぶ。PR-1 のような独自の連番を作らない (詳細は docs/naming.md)
+- PR / branch / step は機能名か issue 名で呼ぶ。PR-1 のような独自の連番を作らない (詳細は skills/teishutsu/references/naming.md)
 - 別の skill に渡すときは 1 行で書く: `handoff: [skill] / brief: [1 文] / evidence: [file:line かコマンド出力]`
-- 日本語の文章は docs/writing-style.md の規範に従う
+- 日本語の文章は skills/kaku/references/writing-style.md の規範に従う
 <!-- hikizan:contract:end -->
 
 ## 2 つのモード
@@ -70,3 +70,4 @@ core skill (init を除く全 skill) 共通。`scripts/check-consistency.sh` が
 ## references/
 
 - `pr-template.md`：PR 本文の形式 (6 セクション template / 文章チェック / PII scan / 粒度ルール)
+- `naming.md`：識別子の命名規範 (branch / commit subject / PR タイトル / issue タイトル)

@@ -28,7 +28,7 @@ hook を単体で動かすときの gotcha:
 - **trigger 早見表は手動転記しない**。`README.md` / `docs/workflow.md` の `<!-- hikizan:triggers -->` 区間は `scripts/gen-trigger-docs.sh` が frontmatter から生成する。`description` / `when_to_use` を変えたら `bash scripts/gen-trigger-docs.sh` を再実行し、`bash scripts/check-all.sh` で検証する。
 - `AGENTS.md` / `context/routing.md` に skill の手順、出力形式、hook 条件を再掲しない。
 - 設計原則を skill 本文から参照するときは番号でなく名前で書く。
-- 識別子は `docs/naming.md`、日本語散文は `docs/writing-style.md` に従う。
+- 識別子は `skills/teishutsu/references/naming.md`、日本語散文は `skills/kaku/references/writing-style.md` に従う。
 - **skill を足す / 減らすときは連動編集を全部通す**: (1) `skills/<name>/SKILL.md` (2) 共通ルール block を既存 skill から byte 単位でコピー (3) `scripts/check-consistency.sh` の `CORE` (4) `scripts/gen-trigger-docs.sh` の `ORDER` (5) `README.md` の skill 表 (6) `.claude-plugin/plugin.json` と `marketplace.json` の description (7) `docs/workflow.md` の役割境界・handoff (8) `bash scripts/gen-trigger-docs.sh` 再生成 → `bash scripts/check-all.sh` が緑になるまで直す (lint がこの一覧を強制する)。
 - **version bump**は `.claude-plugin/plugin.json` だけ編集し、`bash scripts/gen-manifests.sh` で他 2 manifest を再生成する。`.cursor-plugin/plugin.json` / `.codex-plugin/plugin.json` は生成物なので手で編集しない。
 
@@ -55,6 +55,8 @@ hook を単体で動かすときの gotcha:
 | hook の block / warning 条件を変える | `hooks/conditions.md` と `hooks/hooks.json` (ロジックは `hooks/scripts/lib/`、検査は `hooks/tests/`) |
 | 利用先 project に注入する routing / ルール文を変える | `context/routing.md` (注入 `session-context.sh` と `/hikizan:init` の単一ソース) |
 | standard tier への opt-out 前文 (手順自由・出口固定) を変える | `context/standard-preamble.md` (`session-context.sh` が tier=standard のときだけ注入) |
+| 識別子 (branch / commit / PR / issue) の命名規範を変える | `skills/teishutsu/references/naming.md` |
+| 日本語文章規範を変える | `skills/kaku/references/writing-style.md` |
 | 設計原則を変える | `docs/principles.md` |
 | 人間向け説明 / install / 公開情報を変える | `README.md` |
 | 他 project へ配る AGENTS.md の形式 / README の役割境界を変える | `docs/doc-format.md` (正本、AGENTS.md スケルトン込み) |
