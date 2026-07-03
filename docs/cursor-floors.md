@@ -69,7 +69,7 @@ pure logic (`push-parse.sh` / `destructive.sh` / `pr-create.sh`) は CC hooks �
 - **実 Cursor 環境では未検証**。glue は本 repo の test runner で検査済みだが、実際の Cursor が想定通り stdin JSON を渡し permission を解釈するかはライブ確認が必要。relying する前に Cursor 上で 1 度 deny / ask を目視すること。
 - non-fast-forward 検査は移植していない (CC の pre-push のみ)。Cursor adapter は force push deny / 破壊的操作 ask / 非 draft PR deny の 3 floor を持つ (pre-pr-create も移植済み)。
 - compound command (`cd x && rm -rf y`) と exotic な git 呼び出しの限界は CC hooks と同じ (`hooks/conditions.md`「既知の限界」参照)。
-- Cursor plugin (`.cursor-plugin/`) で floors hooks と前文 rule を配布する。実 Cursor での plugin ロードは未 live 検証。
+- Cursor plugin (`.cursor-plugin/`) で floors hooks と前文 rule を配布するが、**個人が任意の git repo から直接 plugin を入れる経路は Cursor に無い** (経路は Team Marketplace import か手動配線。`cursor/README.md`)。公式 Cursor Marketplace への掲載は未提出。実 Cursor での plugin ロードは未 live 検証。
 
 ## tier への含意
 
