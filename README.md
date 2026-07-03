@@ -37,7 +37,7 @@ hikizan は Claude Code plugin / Agent Skills 対応の skill pack。動詞単�
 | --- | --- | --- |
 | Claude Code | skills + floors + 前文 | `/plugin` 2 コマンド (下記) |
 | Codex | skills + floors + 前文 | `codex plugin` 2 コマンド (下記) |
-| Cursor | skills は skill pack、floors + 前文 rule は手動配線 | 下記 + `cursor/README.md` |
+| Cursor | skills + subagents + floors + 前文 rule | Plugins 画面で GitHub repo を追加 (下記) |
 | その他の harness | skills のみ (tier は `guided` 既定) | `npx skills add` (下記) |
 
 ### Claude Code
@@ -61,13 +61,9 @@ skills + floors (force push deny / 破壊的操作 ask / 非 draft PR deny) + Se
 
 ### Cursor
 
-Cursor には任意の git repo から個人が直接 plugin を入れる経路が無い (公式 Marketplace への掲載は未提出)。skills と floors を別々に入れる:
+Cursor の Plugins 画面で GitHub repo `hayashiii-ghub/hikizan` を plugin として追加する。manifest の floors (`beforeShellExecution` hook) + 前文 rule (`cursor/rules/hikizan.mdc`) に加えて `skills/` と `agents/` も auto-discover されるため、skills + subagents までまとめて入り、`HIKIZAN_TIER=standard` を宣言できる (実 Cursor で load と floors の発火を確認済み)。
 
-```bash
-npx skills add github:hayashiii-ghub/hikizan -g -a cursor   # skills (配置先 ~/.cursor/skills/)
-```
-
-floors (`beforeShellExecution` hook) と前文 rule (`cursor/rules/hikizan.mdc`) は手動配線か、チーム利用なら Team Marketplace の repo import で入れる。手順は `cursor/README.md` / `docs/cursor-floors.md`。floors を入れた環境は `HIKIZAN_TIER=standard` を宣言してよい。
+追加時の commit に固定されるので、更新は Plugins 画面から行う。古い版が残ると旧 skill が routing を奪うため、更新後は重複 install が無いか確認する。詳細は `cursor/README.md`。`npx skills add -a cursor` は併用しない。
 
 ### その他の harness (skill pack)
 

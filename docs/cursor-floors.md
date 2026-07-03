@@ -64,12 +64,12 @@ pure logic (`push-parse.sh` / `destructive.sh` / `pr-create.sh`) は CC hooks �
    `cursor/hooks.json` は相対パスのテンプレ。実環境では絶対パスにする。
 3. `jq` が要る (CC hooks と同じ)。
 
-## 現状の限界 / 未検証
+## 現状の限界 / 検証状況
 
-- **実 Cursor 環境では未検証**。glue は本 repo の test runner で検査済みだが、実際の Cursor が想定通り stdin JSON を渡し permission を解釈するかはライブ確認が必要。relying する前に Cursor 上で 1 度 deny / ask を目視すること。
+- **実 Cursor 環境で live 検証済み (2026-07-03)**: GitHub 追加での plugin load (skills / subagents / rules の認識) と floors の deny / ask 発火を目視確認した。glue の回帰は本 repo の test runner で継続検査する。
 - non-fast-forward 検査は移植していない (CC の pre-push のみ)。Cursor adapter は force push deny / 破壊的操作 ask / 非 draft PR deny の 3 floor を持つ (pre-pr-create も移植済み)。
 - compound command (`cd x && rm -rf y`) と exotic な git 呼び出しの限界は CC hooks と同じ (`hooks/conditions.md`「既知の限界」参照)。
-- Cursor plugin (`.cursor-plugin/`) で floors hooks と前文 rule を配布するが、**個人が任意の git repo から直接 plugin を入れる経路は Cursor に無い** (経路は Team Marketplace import か手動配線。`cursor/README.md`)。公式 Cursor Marketplace への掲載は未提出。実 Cursor での plugin ロードは未 live 検証。
+- Cursor plugin (`.cursor-plugin/`) は Plugins 画面から GitHub repo を追加して入れる (manifest の rules / hooks に加えて `skills/` / `agents/` も auto-discover される。`cursor/README.md`)。install は追加時の commit SHA に固定されるため、更新は Plugins 画面から行う。公式 Cursor Marketplace への掲載は未提出。
 
 ## tier への含意
 
