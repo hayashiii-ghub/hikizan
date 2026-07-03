@@ -11,7 +11,7 @@ ROOT="$DIR/../.."
 # keep test runs off the real metrics file
 export HIKIZAN_METRICS_DIR="$(mktemp -d)"
 
-PREAMBLE_LINE1="$(head -1 "$ROOT/templates/standard-preamble.md")"
+PREAMBLE_LINE1="$(head -1 "$ROOT/context/standard-preamble.md")"
 
 # standard tier (default)
 OUT="$(printf '{}' | env CLAUDE_PLUGIN_ROOT="$ROOT" bash "$SCRIPT")"

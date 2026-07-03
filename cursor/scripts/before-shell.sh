@@ -8,7 +8,7 @@
 # Cursor permission JSON via lib/decision-cursor.sh. Absence of output = allow.
 #
 # Install: point ~/.cursor/hooks.json (or <project>/.cursor/hooks.json) at this
-# script's absolute path. See docs/cursor-floors.md.
+# script's absolute path. See cursor/README.md.
 
 set -uo pipefail
 LIB="$(cd "$(dirname "$0")/../../hooks/scripts/lib" && pwd)"

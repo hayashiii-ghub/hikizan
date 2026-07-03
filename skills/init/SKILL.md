@@ -15,7 +15,7 @@ hikizan の routing / safety を、利用先 project の `CLAUDE.md` に重複�
 
 ## やること
 
-1. plugin の `templates/routing.md` (= 注入と同一の単一ソース) を読む。Claude Code では `${CLAUDE_PLUGIN_ROOT}/templates/routing.md`。
+1. plugin の `context/routing.md` (= 注入と同一の単一ソース) を読む。Claude Code では `${CLAUDE_PLUGIN_ROOT}/context/routing.md`。
 2. 利用先 project 直下の `CLAUDE.md` を確認する。
    - 無ければ template の内容で新規作成する。
    - marker 区間 (`<!-- hikizan:conventions:start -->` 〜 `<!-- hikizan:conventions:end -->`) があれば、その区間を template の現内容で置き換える (内容が同一なら「最新です」と報告して終了)。
@@ -28,4 +28,4 @@ hikizan の routing / safety を、利用先 project の `CLAUDE.md` に重複�
 - 既存 `CLAUDE.md` の hikizan 以外の内容を書き換えない (追記のみ)。
 - 書き換えてよいのは hikizan の marker 区間 (旧形式では `## hikizan Conventions` 節) だけ。それ以外の既存内容に触れない。
 - 書き込み先 path を user に明示してから書く (破壊的でないが host repo を変更するため)。
-- template を本 skill 本文に転記しない (単一ソースは `templates/routing.md`)。
+- template を本 skill 本文に転記しない (単一ソースは `context/routing.md`)。

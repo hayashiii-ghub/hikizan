@@ -1,6 +1,19 @@
 # Cursor 向け floors adapter (cursor/)
 
-Cursor の `beforeShellExecution` hook に hikizan の floors (保護 branch への force push → deny、不可逆操作 → ask) を移植した adapter。加えて `cursor/rules/hikizan.mdc` (always-apply rule) が routing 規約と standard-tier の opt-out 前文を配布する。背景・評価・限界は `docs/cursor-floors.md` を参照。
+Cursor の `beforeShellExecution` hook に hikizan の floors (保護 branch への force push → deny、不可逆操作 → ask、非 draft PR → deny) を移植した adapter。加えて `cursor/rules/hikizan.mdc` (always-apply rule) が routing 規約と standard-tier の opt-out 前文を配布する。
+
+## 構成ファイル
+
+| 成果物 | 内容 |
+| --- | --- |
+| `cursor/scripts/before-shell.sh` | `beforeShellExecution` adapter。破壊的操作 → ask、保護 branch への force push → deny、非 draft PR (reviewer 無し) → deny |
+| `hooks/scripts/lib/decision-cursor.sh` | Cursor permission JSON emitter (CC の `decision.sh` の Cursor 版、pure logic は共通) |
+| `cursor/hooks.json` | adapter を登録する hooks config (plugin root 相対の command) |
+| `hooks/tests/test-cursor-floors.sh` | Cursor 形式 input → permission output の glue テスト |
+| `.cursor-plugin/plugin.json` | Cursor plugin manifest。`scripts/gen-manifests.sh` の生成物 (手で編集しない) |
+| `cursor/rules/hikizan.mdc` | always-apply 前文 rule。`scripts/gen-cursor-rule.sh` が `context/routing.md` + `context/standard-preamble.md` から生成する (手で編集しない) |
+
+pure logic (`push-parse.sh` / `destructive.sh` / `pr-create.sh`) は CC hooks と**同一ファイルを再利用**しており、二重実装ではない。
 
 ## install (GitHub から plugin 追加、推奨)
 
@@ -10,9 +23,7 @@ Cursor の Plugins 画面で GitHub repo `hayashiii-ghub/hikizan` を plugin と
 - 追加時の commit SHA に固定される (`~/.cursor/plugins/marketplaces/github.com/<owner>/<repo>/<sha>/` に clone される)。更新は Plugins 画面から行い、**古い版が残っていたら Uninstall する** (削除済みの旧 skill が routing を奪うため)
 - チーム配布は Team Marketplace (Dashboard → Plugins → Add Marketplace → Import from Repo。Enable Auto Refresh で追跡 branch に自動追従)
 - 公式 Cursor Marketplace への掲載は未提出
-
-- `cursor/rules/hikizan.mdc` は `alwaysApply: true` の rule で、常時 context に載る。中身は routing 規約 (`templates/routing.md`) + standard tier の opt-out 前文 (`templates/standard-preamble.md`)、つまり CLAUDE.md / AGENTS.md 相当のコンテンツで、rules はその Cursor 版なのでこれが正規の配り方 (Cursor には `sessionStart` hook の `additional_context` 注入もあるが、rule の方が Plugins 画面から見える・外せるので採用)。guided のまま使いたい場合はこの rule を外せばよい (`docs/cursor-floors.md`「tier への含意」)。
-- `.cursor-plugin/plugin.json` の `hooks` / `rules` パスは plugin root (= repo root) 相対。
+- `.cursor-plugin/plugin.json` の `hooks` / `rules` パスは plugin root (= repo root) 相対
 
 ## install (fallback: 手動 hooks.json)
 
@@ -35,9 +46,16 @@ plugin 追加が使えない環境向けの手動配線。この場合、前文 
 3. `jq` が必要 (CC hooks と同じ)。
 4. script は repo 内の `hooks/scripts/lib/` を相対参照するため、`cursor/` ディレクトリ単体をコピーしての利用は不可 (repo ごと置く)。
 
-## 注意
+## tier への含意
+
+floors が Cursor にも置けるため、tier は「floors の有無」ではなく「skill の手順をレールとして使うか、opt-out (手順自由・出口固定) で使うか」を表す軸として一貫する。floors を入れ、かつタスクの回し方が強いモデルを使う Cursor 環境は `HIKIZAN_TIER=standard` を宣言してよい (CC と同じ理屈)。floors 未導入、またはタスクの回し方が強くないモデルは `guided` 既定のまま。skill の番号付き手順がレールとして機能する。
+
+standard の opt-out 前文は、Cursor では always-apply rule (`cursor/rules/hikizan.mdc`) で届く。前文は CLAUDE.md / AGENTS.md 相当の常駐コンテンツで、rules はその Cursor 版なので、これが正規の配り方になる。むしろ CC / Codex の方が「plugin が常駐 context を静的に差し込む口が無い」ため SessionStart hook の実行時注入で代用している側 (Cursor にも `sessionStart` hook の `additional_context` はあるが、rule の方が Plugins 画面から見える・外せるので採用しない)。guided のまま使いたい場合は、この rule を project の rules から外せば opt-out 無しで運用できる。tier の切替が CC / Codex は `HIKIZAN_TIER` 環境変数、Cursor は rule の有無、と手段が違う点に注意。
+
+## 注意 / 既知の限界
 
 - **実 Cursor 環境で live 検証済み (2026-07-03)**: GitHub 追加での plugin load と floors の deny / ask 発火を目視確認した (glue の回帰は `hooks/tests/test-cursor-floors.sh` で継続検査)。
 - 判定ロジックは CC hooks と同一ファイル (`hooks/scripts/lib/push-parse.sh` / `destructive.sh`) を再利用しており、head / subcommand に anchored で、引用文字列内の `--force` 等では発火しない。
-- floors を入れた環境は `HIKIZAN_TIER=standard` を宣言してよい (`docs/cursor-floors.md`「tier への含意」)。
-- `cursor/rules/hikizan.mdc` は `scripts/gen-cursor-rule.sh` の生成物。手で編集しない (`templates/routing.md` / `templates/standard-preamble.md` を直す)。
+- non-fast-forward 検査は移植していない (CC の pre-push のみ)。Cursor adapter が持つのは force push deny / 破壊的操作 ask / 非 draft PR deny の 3 floor。
+- compound command (`cd x && rm -rf y`) と exotic な git 呼び出しの限界は CC hooks と同じ (`hooks/conditions.md`「既知の限界」参照)。
+- `cursor/rules/hikizan.mdc` は `scripts/gen-cursor-rule.sh` の生成物。手で編集しない (`context/routing.md` / `context/standard-preamble.md` を直す)。

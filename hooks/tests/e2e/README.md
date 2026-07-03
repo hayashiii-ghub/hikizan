@@ -29,6 +29,6 @@ bash hooks/tests/e2e/bench.sh         # フル実測 (課金あり)
 
 standard と guided の overhead 差を見て、Claude Code の **既定 tier** を確定する。
 
-**決定 (2026-06-10)**: CC 既定 = `standard`。根拠は「CC には hooks の floors があり、出口契約 + floors が二重に効くため手順を自由化しても worst-case を防げる」。実装は `session-context.sh` の `HIKIZAN_TIER` 既定値 (= `standard`) と `templates/standard-preamble.md` (opt-out 前文) に固定済み。E2E ベンチの定量確認 (overhead < +15%) は未実測のため、回したら本節に数値を追記する。`guided` にしたい環境は `HIKIZAN_TIER=guided` で opt-in。
+**決定 (2026-06-10)**: CC 既定 = `standard`。根拠は「CC には hooks の floors があり、出口契約 + floors が二重に効くため手順を自由化しても worst-case を防げる」。実装は `session-context.sh` の `HIKIZAN_TIER` 既定値 (= `standard`) と `context/standard-preamble.md` (opt-out 前文) に固定済み。E2E ベンチの定量確認 (overhead < +15%) は未実測のため、回したら本節に数値を追記する。`guided` にしたい環境は `HIKIZAN_TIER=guided` で opt-in。
 
 > 注: 本ベンチは prompt を read-mostly に保ち (「実装しない」「push しない」)、bare run でも安全かつ安価にしている。実装まで走らせる重い計測をしたい場合は prompt を編集する。
