@@ -2,7 +2,7 @@
   "version": 1,
   "hooks": {
     "beforeShellExecution": [
-      { "command": "./scripts/before-shell.sh" }
+      { "command": "./cursor/scripts/before-shell.sh" }
     ]
   }
 }

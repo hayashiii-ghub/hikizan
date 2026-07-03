@@ -8,5 +8,6 @@ rc=0
 bash "$ROOT/hooks/tests/run.sh" || rc=1
 bash "$ROOT/scripts/check-consistency.sh" || rc=1
 bash "$ROOT/scripts/gen-trigger-docs.sh" --check || rc=1
+bash "$ROOT/scripts/gen-cursor-rule.sh" --check || rc=1
 if [ "$rc" -eq 0 ]; then echo "✔ check-all: all suites passed"; else echo "✘ check-all: failures above"; fi
 exit "$rc"

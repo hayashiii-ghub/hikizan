@@ -143,4 +143,13 @@ done
 fail=$((fail || transcription_missing))
 [ "$transcription_missing" -eq 0 ] && echo "✔ skill names transcribed in README.md / templates/CLAUDE.md / plugin.json description"
 
+# 8. Cursor plugin manifest version must track the CC plugin version.
+cc_ver="$(awk -F'"' '/"version":/{print $4; exit}' "$ROOT/.claude-plugin/plugin.json")"
+cur_ver="$(awk -F'"' '/"version":/{print $4; exit}' "$ROOT/.cursor-plugin/plugin.json")"
+if [ "$cc_ver" != "$cur_ver" ]; then
+  echo "✘ .cursor-plugin/plugin.json version ($cur_ver) != .claude-plugin ($cc_ver)"; fail=1
+else
+  echo "✔ cursor/claude plugin manifest versions match ($cc_ver)"
+fi
+
 exit "$fail"
