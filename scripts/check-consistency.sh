@@ -123,7 +123,7 @@ fail=$((fail || reverse_mismatch))
 
 # 7. skill name transcription: every CORE + UTILITY skill name must still be
 #    mentioned in README.md, and every CORE name must appear in
-#    templates/CLAUDE.md (the routing table there is CORE-only by design —
+#    templates/routing.md (the routing table there is CORE-only by design —
 #    UTILITY/init is manually invoked, not auto-routed, per README.md) and in
 #    .claude-plugin/plugin.json's description. Presence only — a
 #    removed/renamed skill's stale mention elsewhere is not checked here
@@ -133,7 +133,7 @@ for name in $CORE $UTILITY; do
   grep -qF "$name" "$ROOT/README.md" || { echo "✘ README.md does not mention skill $name"; transcription_missing=1; }
 done
 for name in $CORE; do
-  grep -qF "$name" "$ROOT/templates/CLAUDE.md" || { echo "✘ templates/CLAUDE.md does not mention skill $name"; transcription_missing=1; }
+  grep -qF "$name" "$ROOT/templates/routing.md" || { echo "✘ templates/routing.md does not mention skill $name"; transcription_missing=1; }
 done
 plugin_json="$ROOT/.claude-plugin/plugin.json"
 plugin_desc="$(awk -F'"' '/"description":/{print $4; exit}' "$plugin_json")"
@@ -141,7 +141,7 @@ for name in $CORE; do
   case "$plugin_desc" in *"$name"*) ;; *) echo "✘ .claude-plugin/plugin.json description does not mention skill $name"; transcription_missing=1 ;; esac
 done
 fail=$((fail || transcription_missing))
-[ "$transcription_missing" -eq 0 ] && echo "✔ skill names transcribed in README.md / templates/CLAUDE.md / plugin.json description"
+[ "$transcription_missing" -eq 0 ] && echo "✔ skill names transcribed in README.md / templates/routing.md / plugin.json description"
 
 # 8. Cursor and Codex plugin manifest versions must track the CC plugin version.
 cc_ver="$(awk -F'"' '/"version":/{print $4; exit}' "$ROOT/.claude-plugin/plugin.json")"

@@ -6,7 +6,7 @@ set -uo pipefail
 HERE="$(dirname "$0")"
 ROOT="$(cd "$HERE/../.." && pwd)"   # hikizan repo root (codex/scripts/ -> ../..)
 TIER="${HIKIZAN_TIER:-standard}"
-TEMPLATE="$ROOT/templates/CLAUDE.md"
+TEMPLATE="$ROOT/templates/routing.md"
 PREAMBLE="$ROOT/templates/standard-preamble.md"
 command -v jq >/dev/null 2>&1 || exit 0
 [ -f "$TEMPLATE" ] || exit 0

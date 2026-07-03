@@ -275,7 +275,7 @@ flowchart LR
 | jikkou                       | `../skills/jikkou/SKILL.md`                                                       |
 | teishutsu                    | `../skills/teishutsu/SKILL.md`                                                    |
 | hook 設定 / 停止条件マトリクス | `../hooks/conditions.md`, `../hooks/hooks.json`     |
-| CLAUDE.md テンプレ           | `../templates/CLAUDE.md`                                                          |
+| CLAUDE.md テンプレ           | `../templates/routing.md`                                                          |
 
 各 skill 配下の references/ 一覧は、ここでは二重管理せず各 `SKILL.md` 末尾の `## references/` 節を正本とする。
 
