@@ -11,7 +11,7 @@ Cursor の Plugins 画面で GitHub repo `hayashiii-ghub/hikizan` を plugin と
 - チーム配布は Team Marketplace (Dashboard → Plugins → Add Marketplace → Import from Repo。Enable Auto Refresh で追跡 branch に自動追従)
 - 公式 Cursor Marketplace への掲載は未提出
 
-- `cursor/rules/hikizan.mdc` は `alwaysApply: true` の rule で、常時 context に載る。中身は routing 規約 (`templates/CLAUDE.md`) + standard tier の opt-out 前文 (`templates/standard-preamble.md`)、つまり CLAUDE.md / AGENTS.md 相当のコンテンツで、rules はその Cursor 版なのでこれが正規の配り方 (Cursor には `sessionStart` hook の `additional_context` 注入もあるが、rule の方が Plugins 画面から見える・外せるので採用)。guided のまま使いたい場合はこの rule を外せばよい (`docs/cursor-floors.md`「tier への含意」)。
+- `cursor/rules/hikizan.mdc` は `alwaysApply: true` の rule で、常時 context に載る。中身は routing 規約 (`templates/routing.md`) + standard tier の opt-out 前文 (`templates/standard-preamble.md`)、つまり CLAUDE.md / AGENTS.md 相当のコンテンツで、rules はその Cursor 版なのでこれが正規の配り方 (Cursor には `sessionStart` hook の `additional_context` 注入もあるが、rule の方が Plugins 画面から見える・外せるので採用)。guided のまま使いたい場合はこの rule を外せばよい (`docs/cursor-floors.md`「tier への含意」)。
 - `.cursor-plugin/plugin.json` の `hooks` / `rules` パスは plugin root (= repo root) 相対。
 
 ## install (fallback: 手動 hooks.json)
@@ -40,4 +40,4 @@ plugin 追加が使えない環境向けの手動配線。この場合、前文 
 - **実 Cursor 環境で live 検証済み (2026-07-03)**: GitHub 追加での plugin load と floors の deny / ask 発火を目視確認した (glue の回帰は `hooks/tests/test-cursor-floors.sh` で継続検査)。
 - 判定ロジックは CC hooks と同一ファイル (`hooks/scripts/lib/push-parse.sh` / `destructive.sh`) を再利用しており、head / subcommand に anchored で、引用文字列内の `--force` 等では発火しない。
 - floors を入れた環境は `HIKIZAN_TIER=standard` を宣言してよい (`docs/cursor-floors.md`「tier への含意」)。
-- `cursor/rules/hikizan.mdc` は `scripts/gen-cursor-rule.sh` の生成物。手で編集しない (`templates/CLAUDE.md` / `templates/standard-preamble.md` を直す)。
+- `cursor/rules/hikizan.mdc` は `scripts/gen-cursor-rule.sh` の生成物。手で編集しない (`templates/routing.md` / `templates/standard-preamble.md` を直す)。

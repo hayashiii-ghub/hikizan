@@ -26,7 +26,7 @@ hook を単体で動かすときの gotcha:
 - floors (force push deny / 破壊的操作 ask / 非 draft PR deny) は CC / Cursor / Codex の 3 harness で同一の pure-logic lib (`hooks/scripts/lib/`, `hooks/scripts/pre-*.sh`) を共有し、harness ごとの adapter (`cursor/`, `codex/`) は I/O glue のみを持つ。
 - `when_to_use` は CC 公式 frontmatter フィールド (`description` と合算で文字数上限に載るため短く保つ)。発動条件の正本は `description`。
 - **trigger 早見表は手動転記しない**。`README.md` / `docs/workflow.md` の `<!-- hikizan:triggers -->` 区間は `scripts/gen-trigger-docs.sh` が frontmatter から生成する。`description` / `when_to_use` を変えたら `bash scripts/gen-trigger-docs.sh` を再実行し、`bash scripts/check-all.sh` で検証する。
-- `AGENTS.md` / `templates/CLAUDE.md` に skill の手順、出力形式、hook 条件を再掲しない。
+- `AGENTS.md` / `templates/routing.md` に skill の手順、出力形式、hook 条件を再掲しない。
 - 設計原則を skill 本文から参照するときは番号でなく名前で書く。
 - 識別子は `docs/naming.md`、日本語散文は `docs/writing-style.md` に従う。
 - **skill を足す / 減らすときは連動編集を全部通す**: (1) `skills/<name>/SKILL.md` (2) 共通ルール block を既存 skill から byte 単位でコピー (3) `scripts/check-consistency.sh` の `CORE` (4) `scripts/gen-trigger-docs.sh` の `ORDER` (5) `README.md` の skill 表 (6) `.claude-plugin/plugin.json` と `marketplace.json` の description (7) `docs/workflow.md` の役割境界・handoff (8) `bash scripts/gen-trigger-docs.sh` 再生成 → `bash scripts/check-all.sh` が緑になるまで直す (lint がこの一覧を強制する)。
@@ -53,7 +53,7 @@ hook を単体で動かすときの gotcha:
 | 専門家レビュー subagent を変える | `agents/reviewer-*.md` (正)、`skills/sadoku/references/agents/*` (fallback、同一内容) |
 | PR 本文ドラフト / PR 提出フローを変える | `skills/teishutsu/SKILL.md` |
 | hook の block / warning 条件を変える | `hooks/conditions.md` と `hooks/hooks.json` (ロジックは `hooks/scripts/lib/`、検査は `hooks/tests/`) |
-| 利用先 project に注入する routing / ルール文を変える | `templates/CLAUDE.md` (注入 `session-context.sh` と `/hikizan:init` の単一ソース) |
+| 利用先 project に注入する routing / ルール文を変える | `templates/routing.md` (注入 `session-context.sh` と `/hikizan:init` の単一ソース) |
 | standard tier への opt-out 前文 (手順自由・出口固定) を変える | `templates/standard-preamble.md` (`session-context.sh` が tier=standard のときだけ注入) |
 | 設計原則を変える | `docs/principles.md` |
 | 人間向け説明 / install / 公開情報を変える | `README.md` |
