@@ -66,7 +66,14 @@ npx skills add github:hayashiii-ghub/hikizan -g -a codex    # Codex (fallback)
 
 Cursor は `.cursor-plugin/plugin.json` で repo を plugin として参照すると、CC と同じ floors (`beforeShellExecution` hook、force push / 破壊的操作の停止) と always-apply の前文 rule (`cursor/rules/hikizan.mdc`) が一緒に入り、standard tier が成立する。手順は `cursor/README.md` / `docs/cursor-floors.md`。floors を入れた環境は `HIKIZAN_TIER=standard` を宣言してよい。
 
-Codex は plugin (`.codex-plugin/`) で skills + floors + 前文が一括で入る。CC と同じ floors (force push deny / 破壊的操作 ask / 非 draft PR deny) と SessionStart hook 経由の前文が同梱され、`HIKIZAN_TIER=standard` を宣言できる。手順は `codex/README.md`。
+Codex は plugin (`.codex-plugin/`) で skills + floors + 前文が一括で入る。CC と同じ floors (force push deny / 破壊的操作 ask / 非 draft PR deny) と SessionStart hook 経由の前文が同梱され、`HIKIZAN_TIER=standard` を宣言できる。
+
+```bash
+codex plugin marketplace add hayashiii-ghub/hikizan
+codex plugin install hikizan
+```
+
+詳細と fallback (手動 hooks.json) は `codex/README.md`。
 
 ## tier
 
