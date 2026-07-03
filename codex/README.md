@@ -13,6 +13,29 @@ Claude Code と完全に同一のため、CC の floor スクリプト (`hooks/s
 すると、skills 6 個 + floors hooks + 前文 (SessionStart) が一括で入る。`npx skills add -a codex` も
 `~/.codex/hooks.json` への絶対パス手書きも不要。
 
+1. `~/.agents/plugins/marketplace.json` に entry を書く (無ければ新規作成):
+
+   ```json
+   {
+     "name": "hikizan",
+     "plugins": [
+       {
+         "name": "hikizan",
+         "source": {
+           "source": "url",
+           "url": "https://github.com/hayashiii-ghub/hikizan.git",
+           "ref": "main"
+         }
+       }
+     ]
+   }
+   ```
+
+   `ref` は tag (例 `v0.7.0`) に固定してもよい。既に別の marketplace.json を使っている場合は
+   `plugins` 配列に上の entry を追記する。
+2. Codex を再起動し、`/plugins` で marketplace `hikizan` から install する。
+3. `jq` が必要 (CC / Cursor と同じ)。
+
 **実 Codex 環境での plugin ロードは未 live 検証**。特に、repo 直下の `hooks/hooks.json` (CC 用、
 `${CLAUDE_PLUGIN_ROOT}` と CC 固有の `if` を使う) を Codex の auto-detect が拾わないことは、
 `.codex-plugin/plugin.json` の明示 `hooks` field (`./codex/hooks.json`) が auto-detect を置換する
