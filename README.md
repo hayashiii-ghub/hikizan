@@ -63,7 +63,7 @@ npx skills add github:hayashiii-ghub/hikizan -g -a codex    # Codex
 
 更新は `npx skills update` で行う (skill pack のみ。hooks / floors は含まない)。skill の rename や削除を含む更新 (例: 0.5.9 の `kouchiku` → `sekkei` / `jikkou` 分割) では、旧 skill のコピーが配置先に残って routing を奪うことがある。更新後、下の[trigger 早見表](#trigger-早見表)に無い skill が配置先に残っていたら `npx skills remove <旧 skill 名>` で削除する。
 
-Cursor には `beforeShellExecution` hook で CC と同じ floors (force push / 破壊的操作の停止) を移植できる。手順は `docs/cursor-floors.md`。floors を入れた環境は `HIKIZAN_TIER=standard` を宣言してよい。
+Cursor は `.cursor-plugin/plugin.json` で repo を plugin として参照すると、CC と同じ floors (`beforeShellExecution` hook、force push / 破壊的操作の停止) と always-apply の前文 rule (`cursor/rules/hikizan.mdc`) が一緒に入り、standard tier が成立する。手順は `cursor/README.md` / `docs/cursor-floors.md`。floors を入れた環境は `HIKIZAN_TIER=standard` を宣言してよい。
 
 Codex CLI (2026 の hooks) には `codex/` の `hooks.json` で CC と同じ floors (force push deny / 破壊的操作 ask / 非 draft PR deny) を移植できる。手順は `codex/README.md`。前文も SessionStart hook で配布され、`HIKIZAN_TIER=standard` を宣言できる。
 

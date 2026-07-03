@@ -38,8 +38,10 @@ If pivot: 「Cursor には floors を置けない、guided で守る」→「CC 
 | --- | --- |
 | `cursor/scripts/before-shell.sh` | `beforeShellExecution` adapter。破壊的操作 → ask、保護 branch への force push → deny、非 draft PR (reviewer 無し) → deny |
 | `hooks/scripts/lib/decision-cursor.sh` | Cursor permission JSON emitter (CC の `decision.sh` の Cursor 版、pure logic は共通) |
-| `cursor/hooks.json` | adapter を登録する hooks.json テンプレ |
+| `cursor/hooks.json` | adapter を登録する hooks.json テンプレ (plugin root 相対の command) |
 | `hooks/tests/test-cursor-floors.sh` | Cursor 形式 input → permission output の glue テスト |
+| `.cursor-plugin/plugin.json` | Cursor plugin manifest。`rules` / `hooks` を repo から自動配置する |
+| `cursor/rules/hikizan.mdc` | always-apply 前文 rule。`scripts/gen-cursor-rule.sh` が `templates/CLAUDE.md` + `templates/standard-preamble.md` から生成する |
 
 pure logic (`push-parse.sh` / `destructive.sh` / `pr-create.sh`) は CC hooks と**同一ファイルを再利用**しており、二重実装ではない。Cursor adapter は force push deny / 破壊的操作 ask / 非 draft PR deny の 3 floor を持つ。
 
@@ -67,8 +69,10 @@ pure logic (`push-parse.sh` / `destructive.sh` / `pr-create.sh`) は CC hooks �
 - **実 Cursor 環境では未検証**。glue は本 repo の test runner で検査済みだが、実際の Cursor が想定通り stdin JSON を渡し permission を解釈するかはライブ確認が必要。relying する前に Cursor 上で 1 度 deny / ask を目視すること。
 - non-fast-forward 検査は移植していない (CC の pre-push のみ)。Cursor adapter は force push deny / 破壊的操作 ask / 非 draft PR deny の 3 floor を持つ (pre-pr-create も移植済み)。
 - compound command (`cd x && rm -rf y`) と exotic な git 呼び出しの限界は CC hooks と同じ (`hooks/conditions.md`「既知の限界」参照)。
-- Cursor 配布で floors を自動配置する仕組みは無い (手動 hooks.json)。skill pack と floors を 1 コマンドで入れる導線は今後の課題。
+- Cursor plugin (`.cursor-plugin/`) で floors hooks と前文 rule を配布する。実 Cursor での plugin ロードは未 live 検証。
 
 ## tier への含意
 
 floors が Cursor にも置けるようになったため、tier は「floors の有無」ではなく「skill の手順をレールとして使うか、opt-out (手順自由・出口固定) で使うか」を表す軸として一貫する。floors を入れ、かつタスクの回し方が強いモデルを使う Cursor 環境は `HIKIZAN_TIER=standard` を宣言してよい (CC と同じ理屈)。floors 未導入、またはタスクの回し方が強くないモデル (VM で走らせる類) は `guided` 既定のまま。skill の番号付き手順がレールとして機能する。
+
+standard の opt-out 前文はこれまで CC の SessionStart hook 専用だったが、Cursor plugin の always-apply rule (`cursor/rules/hikizan.mdc`) で Cursor にも届くようになった。guided のまま使いたい場合は、この rule を project の rules から外せば opt-out 無しで運用できる。
