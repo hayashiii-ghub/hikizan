@@ -1,12 +1,12 @@
 # 命名規範
 
-hikizan が作る識別子の正本。
+hikizan の skill が作る識別子の正本。`teishutsu` が PR / branch を名付ける前に読む。
 対象は branch 名 / commit subject / PR タイトル / issue タイトル。
-散文の書き方は `docs/writing-style.md` が定める。
+散文の書き方は `../../kaku/references/writing-style.md` が定める。
 ここは「名前」だけを定める。
 
 由来は hikizan 自身の運用から抽出したもので、外部出典は無い。
-原則 #10「認知負荷の削減」の具体化として、名前の揺れを減らす。
+原則「認知負荷の削減」の具体化として、名前の揺れを減らす。
 
 付けたら、最後の「点検」を当てる。
 直すのは規範に外れた名前だけ。
@@ -32,7 +32,7 @@ tansaku-mermaid-views
 minimal-approach-ladder
 ```
 
-- 種別 prefix (`feature/` `fix/` 等) は付けない。hikizan は機能名だけで足りる規模。
+- 種別 prefix (`feature/` `fix/` 等) は付けない。機能名だけで branch / PR / issue の対応が取れる。
 - 日付や作業者名を入れない。
 
 ## commit subject
@@ -43,7 +43,7 @@ minimal-approach-ladder
 - 50〜72 字を目安に収める。超える説明は本文へ送る。
 - 本文が要るときは、subject の後に空行を 1 つ置いてから書く。
 - 末尾に `Co-Authored-By:` の footer を残す (共同作業の記録)。
-- 先頭に scope prefix を付けてよい: `<scope>: <本文>`。scope は skill 名 (`sadoku`) か領域 (`docs` / `hooks` / `scripts` / `skills` / `templates` / `chore`) の 1 語。`feat(x):` のような種別+括弧の形は使わない。
+- 先頭に scope prefix を付けてよい: `<scope>: <本文>`。scope は skill 名 (`sadoku`) か領域 (`docs` / `hooks` / `scripts` / `skills` / `context` / `chore`) の 1 語。`feat(x):` のような種別+括弧の形は使わない。
 - issue / PR 番号 (`(#NN)`) を subject に手で書かない (squash 時に GitHub が付ける)。
 
 ```
@@ -54,7 +54,7 @@ Co-Authored-By: Claude Opus 4.8 <noreply@anthropic.com>
 
 ## PR タイトル
 
-hikizan は squash merge なので、PR タイトルはそのまま main の commit subject になる。
+squash merge 運用では PR タイトルがそのまま main の commit subject になる (hikizan もこの運用)。
 だから commit subject と同じ規則で付ける。
 
 - 連番 (`PR-1`) でなく機能名で呼ぶ。一意性は GitHub の `#番号` で足りる。
