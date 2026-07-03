@@ -107,8 +107,9 @@ bash hooks/tests/run.sh push-parse # 特定テストのみ
 | `test-pre-push.sh` | pre-push 統合 (deny/allow 決定) |
 | `test-destructive.sh` | 不可逆操作の分類 |
 | `test-pre-destructive.sh` | pre-destructive 統合 (ask/allow) |
+| `test-pr-create.sh` | `hz_is_pr_create` / `hz_prcreate_needs_review` の単体 (quote-aware) |
 | `test-pre-pr-create.sh` | pre-pr-create 統合 (-d / -r / deny) |
-| `test-cursor-floors.sh` | cursor floors 統合 (force push deny / 破壊的操作 ask を Cursor I/O 経由で検査) |
+| `test-cursor-floors.sh` | cursor floors 統合 (force push deny / 破壊的操作 ask / 非 draft PR deny を Cursor I/O 経由で検査) |
 | `test-tokenize.sh` | quote-aware tokenizer (`hz_tokenize`) の単体 |
 | `test-jq-absent.sh` | jq 不在時の fail-closed (PreToolUse 3 hook + Cursor adapter は exit 2、session-context は noop) |
 
@@ -119,6 +120,6 @@ bash hooks/tests/run.sh push-parse # 特定テストのみ
 - `scripts/pre-push.sh`：PreToolUse on `git push*`
 - `scripts/pre-destructive.sh`：PreToolUse on `rm` / `git reset` / `git clean` / `git checkout`
 - `scripts/pre-pr-create.sh`：PreToolUse on `gh pr create*`
-- `scripts/lib/push-parse.sh` / `destructive.sh` / `decision.sh` / `decision-cursor.sh` / `guard.sh` / `tokenize.sh` / `metrics.sh`：共有ロジック
+- `scripts/lib/push-parse.sh` / `destructive.sh` / `pr-create.sh` / `decision.sh` / `decision-cursor.sh` / `guard.sh` / `tokenize.sh` / `metrics.sh`：共有ロジック
 - `templates/CLAUDE.md`：追加される本文
 - `teishutsu` skill：hook と二重構造の通常フロー側

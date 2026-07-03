@@ -36,12 +36,12 @@ If pivot: 「Cursor には floors を置けない、guided で守る」→「CC 
 
 | 成果物 | 内容 |
 | --- | --- |
-| `cursor/scripts/before-shell.sh` | `beforeShellExecution` adapter。破壊的操作 → ask、保護 branch への force push → deny |
+| `cursor/scripts/before-shell.sh` | `beforeShellExecution` adapter。破壊的操作 → ask、保護 branch への force push → deny、非 draft PR (reviewer 無し) → deny |
 | `hooks/scripts/lib/decision-cursor.sh` | Cursor permission JSON emitter (CC の `decision.sh` の Cursor 版、pure logic は共通) |
 | `cursor/hooks.json` | adapter を登録する hooks.json テンプレ |
 | `hooks/tests/test-cursor-floors.sh` | Cursor 形式 input → permission output の glue テスト |
 
-pure logic (`push-parse.sh` / `destructive.sh`) は CC hooks と**同一ファイルを再利用**しており、二重実装ではない。
+pure logic (`push-parse.sh` / `destructive.sh` / `pr-create.sh`) は CC hooks と**同一ファイルを再利用**しており、二重実装ではない。Cursor adapter は force push deny / 破壊的操作 ask / 非 draft PR deny の 3 floor を持つ。
 
 ## install (Cursor)
 
@@ -65,7 +65,7 @@ pure logic (`push-parse.sh` / `destructive.sh`) は CC hooks と**同一ファ�
 ## 現状の限界 / 未検証
 
 - **実 Cursor 環境では未検証**。glue は本 repo の test runner で検査済みだが、実際の Cursor が想定通り stdin JSON を渡し permission を解釈するかはライブ確認が必要。relying する前に Cursor 上で 1 度 deny / ask を目視すること。
-- non-fast-forward 検査は移植していない (CC の pre-push のみ)。Cursor adapter は不可逆性の高い force / destructive に絞った。
+- non-fast-forward 検査は移植していない (CC の pre-push のみ)。Cursor adapter は force push deny / 破壊的操作 ask / 非 draft PR deny の 3 floor を持つ (pre-pr-create も移植済み)。
 - compound command (`cd x && rm -rf y`) と exotic な git 呼び出しの限界は CC hooks と同じ (`hooks/conditions.md`「既知の限界」参照)。
 - Cursor 配布で floors を自動配置する仕組みは無い (手動 hooks.json)。skill pack と floors を 1 コマンドで入れる導線は今後の課題。
 

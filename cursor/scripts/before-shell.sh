@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 # Cursor `beforeShellExecution` hook — the floors port for harnesses that have
 # no Claude Code hooks. Reuses the SAME unit-tested pure logic as the CC hooks
-# (push-parse.sh, destructive.sh): destructive ops -> ask, force push to a
-# protected branch -> deny.
+# (push-parse.sh, destructive.sh, pr-create.sh): destructive ops -> ask, force
+# push to a protected branch -> deny, non-draft PR without reviewer -> deny.
 #
 # Cursor input is top-level {command, cwd, conversation_id, ...}; output is the
 # Cursor permission JSON via lib/decision-cursor.sh. Absence of output = allow.
@@ -16,6 +16,8 @@ LIB="$(cd "$(dirname "$0")/../../hooks/scripts/lib" && pwd)"
 source "$LIB/push-parse.sh"
 # shellcheck source=../../hooks/scripts/lib/destructive.sh
 source "$LIB/destructive.sh"
+# shellcheck source=../../hooks/scripts/lib/pr-create.sh
+source "$LIB/pr-create.sh"
 # shellcheck source=../../hooks/scripts/lib/decision-cursor.sh
 source "$LIB/decision-cursor.sh"
 # shellcheck source=../../hooks/scripts/lib/guard.sh
@@ -50,6 +52,15 @@ if [ "$(hz_git_subcommand "$CMD")" = "push" ] && hikizan_push_is_forceful "$CMD"
 protected: main / master / develop. confirm explicitly before re-running."
     exit 0
   fi
+fi
+
+# 3. non-draft PR without reviewer -> deny (workflow floor, CC の pre-pr-create と同条件)
+if hz_is_pr_create "$CMD" && hz_prcreate_needs_review "$CMD"; then
+  hz_cursor_decision deny "gh pr create called without --draft and without a reviewer.
+
+policy: a non-draft PR should name at least one reviewer.
+options: add --draft, or --reviewer @user, or confirm intentional and re-run."
+  exit 0
 fi
 
 exit 0
