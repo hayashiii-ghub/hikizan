@@ -13,33 +13,17 @@ source "$HERE/lib/decision.sh"
 source "$HERE/lib/guard.sh"
 # shellcheck source=lib/tokenize.sh
 source "$HERE/lib/tokenize.sh"
+# shellcheck source=lib/pr-create.sh
+source "$HERE/lib/pr-create.sh"
 
 hz_require_jq
 JSON=$(cat)
 COMMAND=$(printf '%s' "$JSON" | jq -r '.tool_input.command // ""')
 SESSION_ID=$(printf '%s' "$JSON" | jq -r '.session_id // ""')
 
-# Anchored on tokens so quoted strings (--title "mention --draft") never count.
-HAS_DRAFT=0
-HAS_REVIEWER=0
-IS_PR_CREATE=0
-PREV="" PREV2=""
-while IFS= read -r tok; do
-  if [ "$IS_PR_CREATE" = 0 ]; then
-    [ "$PREV2" = "gh" ] && [ "$PREV" = "pr" ] && [ "$tok" = "create" ] && IS_PR_CREATE=1
-    PREV2="$PREV"; PREV="$tok"
-    continue
-  fi
-  case "$tok" in
-    --draft|-d)                  HAS_DRAFT=1 ;;
-    --reviewer|--reviewer=*|-r)  HAS_REVIEWER=1 ;;
-  esac
-done <<EOF
-$(hz_tokenize "$COMMAND")
-EOF
-[ "$IS_PR_CREATE" = 1 ] || exit 0
+hz_is_pr_create "$COMMAND" || exit 0
 
-if [ "$HAS_DRAFT" -eq 0 ] && [ "$HAS_REVIEWER" -eq 0 ]; then
+if hz_prcreate_needs_review "$COMMAND"; then
   hikizan_metrics_log hook_fired pre-pr-create no_draft_no_reviewer block "$SESSION_ID"
   hz_decision deny "gh pr create called without --draft and without a reviewer.
 

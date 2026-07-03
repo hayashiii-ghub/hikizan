@@ -59,5 +59,18 @@ assert_eq "commit msg mentioning reset --hard -> allow" "allow" "$(perm_of "$HZ_
 run_cursor "git stash push -m wip" "$REPO_MAIN"
 assert_eq "git stash push -> allow" "allow" "$(perm_of "$HZ_OUT")"
 
+# 3. non-draft PR without reviewer -> deny (parity with CC pre-pr-create)
+run_cursor 'gh pr create --title x' "/tmp"
+assert_eq "gh pr create bare -> deny" "deny" "$(perm_of "$HZ_OUT")"
+
+run_cursor 'gh pr create --draft --title x' "/tmp"
+assert_eq "gh pr create --draft -> allow" "allow" "$(perm_of "$HZ_OUT")"
+
+run_cursor 'gh pr create --reviewer bob --title x' "/tmp"
+assert_eq "gh pr create --reviewer bob -> allow" "allow" "$(perm_of "$HZ_OUT")"
+
+run_cursor 'gh pr create --title "add --draft"' "/tmp"
+assert_eq "gh pr create quoted --draft in title -> deny" "deny" "$(perm_of "$HZ_OUT")"
+
 rm -rf "$REPO_MAIN" "$REPO_FEAT"
 hz_test_summary
