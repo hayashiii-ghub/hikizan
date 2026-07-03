@@ -1,0 +1,9 @@
+{
+  "name": "hikizan",
+  "plugins": [
+    {
+      "name": "hikizan",
+      "source": "./"
+    }
+  ]
+}
