@@ -65,6 +65,8 @@ npx skills add github:hayashiii-ghub/hikizan -g -a codex    # Codex
 
 Cursor には `beforeShellExecution` hook で CC と同じ floors (force push / 破壊的操作の停止) を移植できる。手順は `docs/cursor-floors.md`。floors を入れた環境は `HIKIZAN_TIER=standard` を宣言してよい。
 
+Codex CLI (2026 の hooks) には `codex/` の `hooks.json` で CC と同じ floors (force push deny / 破壊的操作 ask / 非 draft PR deny) を移植できる。手順は `codex/README.md`。前文も SessionStart hook で配布され、`HIKIZAN_TIER=standard` を宣言できる。
+
 ## tier
 
 tier は「環境構築時にどこまで仕組みを用意したか」を表す。skill 本文は両 tier 共通 (弱いモデル基準のレール) で、違いは opt-out 前文の有無だけ。
