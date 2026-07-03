@@ -10,7 +10,7 @@ skill / hook / docs が従う原則。各 skill 本文から参照するとき�
 6. **inline 既定、subagent は明示 gate**：subagent は (a) 重い情報取得 / (b) specialist review / (c) 機械的な fan-out の 3 つに限る。
 7. **起動と文脈の明示**：announce-at-start / worktree 検出を全 skill で行う。
 8. **評価は「環境変化」で見る**：報告のうち機械的に検証できる項目は command 出力をそのまま引用し、自己申告は不可。これはどの tier でも省略しない。
-9. **文章の可読性**：結論を先に出す / 1 段落 1 主張 / 読み手の語彙 / 儀礼的表現を削る。詳細は `skills/kaku/references/writing-style.md`。
+9. **文章の可読性**：結論を先に出す / 1 段落 1 主張 / 読み手の語彙 / 儀礼的表現を削る。詳細は `skills/shippitsu/references/writing-style.md`。
 10. **認知負荷の削減**：選択肢 + 推奨度 N/10 + 1 行根拠 / 構造変更は図・線形手順は箇条書き / 3 案以上出さない。
 11. **Vertical TDD**：`jikkou` が次に閉じる 1 つの observable behavior を slice として切り、TDD 実装モードでその output が壊れた時に落ちる test だけを残す。
 12. **工数は token 規模で考える**：重さは人間の作業時間でなく token 消費 / context 占有 / API コスト。行数・ファイル数はその proxy。実行者は AI agent である前提。

@@ -15,7 +15,7 @@ README は人間の貢献者向け、AGENTS.md は agent 向け。
 - README の節構成は各 project の裁量。見せ方は author が決める。守るのは役割分離と、AGENTS.md への導線 1 行だけ。
 - AGENTS.md の見出し (H2) は英語で固定する (`## Setup` `## Test` `## Conventions`)。横断したとき揃う。
 - 本文の言語は読み手に合わせる。公開 CLI / OSS は英語、個人 / 客先は日本語でよい。
-- commit / branch / PR の規約は `skills/teishutsu/references/naming.md` と同じ精神 (機能名 / kebab / 独自連番なし)。散文は `skills/kaku/references/writing-style.md`。
+- commit / branch / PR の規約は `skills/teishutsu/references/naming.md` と同じ精神 (機能名 / kebab / 独自連番なし)。散文は `skills/shippitsu/references/writing-style.md`。
 - 各 repo の AGENTS.md は自己完結させる。hikizan の docs を参照させない (写し先に無いため)。
 
 ## AGENTS.md の節

@@ -1,6 +1,6 @@
 ---
 name: sadoku
-description: "Use this skill when the user wants code reviewed or findings simplified — including the phrasings レビューして, コードレビュー, コード整理して, simplify. Activate after implementation, when reviewing a git diff before opening a PR, when reviewing an existing module or whole codebase (no diff needed), or when restructuring messy review findings — even when the user doesn't say 'review' explicitly. レビュー系の語 (レビューして / コードレビュー) は通常レビュー、整理系の語 (コード整理して / simplify) のみ simplify findings を起動する。対象はコード (diff / 指定範囲) とレビュー findings に限る。用語の整理は tansaku、文章の整理・推敲は kaku に渡す。"
+description: "Use this skill when the user wants code reviewed or findings simplified — including the phrasings レビューして, コードレビュー, コード整理して, simplify. Activate after implementation, when reviewing a git diff before opening a PR, when reviewing an existing module or whole codebase (no diff needed), or when restructuring messy review findings — even when the user doesn't say 'review' explicitly. レビュー系の語 (レビューして / コードレビュー) は通常レビュー、整理系の語 (コード整理して / simplify) のみ simplify findings を起動する。対象はコード (diff / 指定範囲) とレビュー findings に限る。用語の整理は tansaku、文章の整理・推敲は shippitsu に渡す。"
 license: MIT
 when_to_use: "PR確認, レビュー, code review, プロジェクトレビュー, コード整理, simplify"
 ---
@@ -23,7 +23,7 @@ core skill (init を除く全 skill) 共通。`scripts/check-consistency.sh` が
 - 秘密情報 (token / email / チーム外の実名) を PR 本文・commit message に書かない。出す前に grep で確認する
 - PR / branch / step は機能名か issue 名で呼ぶ。PR-1 のような独自の連番を作らない (詳細は skills/teishutsu/references/naming.md)
 - 別の skill に渡すときは 1 行で書く: `handoff: [skill] / brief: [1 文] / evidence: [file:line かコマンド出力]`
-- 日本語の文章は skills/kaku/references/writing-style.md の規範に従う
+- 日本語の文章は skills/shippitsu/references/writing-style.md の規範に従う
 <!-- hikizan:contract:end -->
 
 ## 2 つのモード

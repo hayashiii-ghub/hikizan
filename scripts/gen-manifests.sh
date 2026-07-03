@@ -29,7 +29,7 @@ gen_codex() {
   jq -n --arg v "$ver" --argjson a "$author" '{
     name: "hikizan",
     version: $v,
-    description: "hikizan for Codex: bundles the verb skills (tansaku / sadoku / sekkei / jikkou / teishutsu / kaku), the PreToolUse floors (force-push deny, destructive-op ask, non-draft PR deny) reusing the Claude Code hook scripts verbatim, and the routing conventions + standard-tier opt-out preamble via the SessionStart hook.",
+    description: "hikizan for Codex: bundles the verb skills (tansaku / sadoku / sekkei / jikkou / teishutsu / shippitsu), the PreToolUse floors (force-push deny, destructive-op ask, non-draft PR deny) reusing the Claude Code hook scripts verbatim, and the routing conventions + standard-tier opt-out preamble via the SessionStart hook.",
     author: $a,
     keywords: ["skills", "floors", "hooks", "code-review", "workflow", "japanese"],
     skills: "./skills/",
