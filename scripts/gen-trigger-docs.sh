@@ -14,7 +14,7 @@
 
 set -uo pipefail
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
-ORDER="tansaku sadoku sekkei jikkou shiken teishutsu kaku"
+ORDER="tansaku sadoku sekkei jikkou teishutsu kaku"
 START='<!-- hikizan:triggers:start -->'
 END='<!-- hikizan:triggers:end -->'
 

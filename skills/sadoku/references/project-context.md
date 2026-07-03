@@ -25,7 +25,7 @@ grep -rn "import.*$SYMBOL\|from.*$SYMBOL" --include='*.ts' --include='*.tsx' .
 対象に対応する `*.test.{ts,tsx}` の有無と命名規則。
 
 - ある → 同じ命名・配置・書き方で追加されているか
-- ない → そもそも test を書く層か (`shiken` の層分け表で判定)
+- ない → そもそも test を書く層か (`skills/jikkou/references/tdd.md` の層分け表で判定)
 
 ### 3. 命名規則の踏襲
 

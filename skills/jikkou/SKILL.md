@@ -11,12 +11,12 @@ when_to_use: "計画実行, 実装, エラー診断, root cause, バグ修正"
 🌲 Using /jikkou for [purpose taken from trigger context].
 ```
 
-承認済みの計画を実行し、原因不明の不具合を診断する skill。設計・計画・評価は `sekkei`、テスト先行の実装は `shiken`、レビューは `sadoku`、提出は `teishutsu`、調べ直しは `tansaku` に渡す。方針の再決定が要るときは `sekkei` に差し戻す。
+承認済みの計画を実行し、原因不明の不具合を診断する skill。設計・計画・評価は `sekkei`、レビューは `sadoku`、提出は `teishutsu`、調べ直しは `tansaku` に渡す。方針の再決定が要るときは `sekkei` に差し戻す。
 
 <!-- hikizan:contract:start -->
 ## 共通ルール
 
-core 7 skill (init を除く全 skill) 共通。`scripts/check-consistency.sh` が 7 skill で同一であることを検査する。
+core skill (init を除く全 skill) 共通。`scripts/check-consistency.sh` が全 core skill で同一であることを検査する。
 
 - 元に戻せない操作 (削除 / force push / reset --hard / git clean) は、実行する前にユーザに確認する
 - 「pass した」「確認した」と書くときは、コマンド出力の最終行をそのまま貼る。出力なしで完了と書かない
@@ -32,6 +32,7 @@ core 7 skill (init を除く全 skill) 共通。`scripts/check-consistency.sh` �
 | --- | --- | --- |
 | 計画実行 | 「進めて」「計画実行」「着手」(計画の承認後) | 動くコード + 検証ログ |
 | 診断 | 「エラー」「動かない」/ 原因の分からない不具合・test failure | root cause 1 文 + fix |
+| TDD 実装 | 純ロジック / ビジネスルール / API / バグ修正で回帰が高くつく箇所 (「TDD」「テスト先行」「テストから書く」) | RED→GREEN→PRUNE ログ + 実装 |
 
 計画がまだ承認されていない、または方針を決め直す必要があるときは `sekkei` に渡す (自分で設計判断をしない)。
 
@@ -39,7 +40,7 @@ core 7 skill (init を除く全 skill) 共通。`scripts/check-consistency.sh` �
 
 1. 承認済みの計画を再読する。不明点があれば実装前に聞く。計画が無い / 未承認なら `sekkei` に戻す
 2. step を 1 つずつ自分で実装する (subagent に投げない)
-3. 純ロジック / ビジネスルール / API / バグ修正の step は、自分で書かず `shiken` に 1 slice ずつ渡す (slice の形式は `references/plan-execution.md`)
+3. 純ロジック / ビジネスルール / API / バグ修正の step は TDD 実装モードで書く: 1 slice ずつ RED→GREEN→PRUNE (下記「手順 (TDD 実装)」)
 4. 各 step の後に検証コマンドを実行し、出力の最終行を控える。失敗したら次の step に進まず診断に入る
 5. UI / レイアウト / 視覚に触れる step は、検証コマンドに加えて視覚検証も通す (web project かつ `sitesnap` があるとき。shot で撮って --json の file を Read で読み戻して目視し、check --json の合否を step 通過判定にする)。撮れない環境では「視覚未確認」と報告に明記してスキップする
 6. 計画に無いファイルに 5 つ以上触れそうになったら、または方針の再決定が要ると分かったら、止めて `sekkei` に差し戻す
@@ -56,7 +57,21 @@ core 7 skill (init を除く全 skill) 共通。`scripts/check-consistency.sh` �
 4. `references/diagnosis-techniques.md` から確認手段を 1 つ選んで仮説を検証する
 5. 当たっていたら直す。外れていたら 3 に戻る
 6. 3 回外れたら、試した仮説 / 現状の見立て / 残る不明点を書いてユーザに判断を求める。方針ごと考え直す重い分岐なら `sekkei` に戻す
-7. 直した後、同じ入力での before / after の出力をそのまま貼る。regression guard が要るなら `shiken` に渡す
+7. 直した後、同じ入力での before / after の出力をそのまま貼る。regression guard が要るなら TDD 実装モードで書く
+
+## 手順 (TDD 実装)
+
+純ロジック / ビジネスルール / API / バグ修正で回帰が高くつく箇所は、テスト先行で 1 振る舞いずつ閉じる。テストが先。fail を見るまで実装を書かない。
+
+1. slice を 1 文で書く: 「[入力 / 操作] のとき [観測できる出力] になる」。1 文にできなければ実装に入らない
+2. **RED**: その slice が失敗するテストを 1 つ書き、test runner を実行して fail の最終行を控える
+3. **GREEN**: pass させる最小の実装を書き、pass の最終行を控える
+4. **REFACTOR**: 重複除去と命名改善。テストは green のまま保つ
+5. **PRUNE**: slice の振る舞い基準で残すテストを選び、不要を消す (判定は `references/testing-anti-patterns.md`)。原則 1 slice = 残すテスト 1 つ
+6. **PRUNE 検証**: 残した各テストで observable output を一時的に壊す → fail を見る → 戻す → pass と `git status` clean を確認
+7. 2 つ目の slice を勝手に始めない。gap は報告に書いて呼び出し元 (計画実行) に返す
+
+必須 / skip してよい層と anti-pattern の詳細は `references/tdd.md`。
 
 ## やってはいけないこと
 
@@ -64,6 +79,8 @@ core 7 skill (init を除く全 skill) 共通。`scripts/check-consistency.sh` �
 - 原因不明のまま当てずっぽうの修正を重ねる
 - scope 外の発見をついでに実装する
 - 検証コマンドが失敗したまま次の step に進む
+- fail を見る前に実装コードを書く (TDD 実装)
+- RED / GREEN の実行を subagent に投げる (自分の目で出力を見る)
 
 ## 報告 (穴埋め)
 
@@ -71,13 +88,14 @@ core 7 skill (init を除く全 skill) 共通。`scripts/check-consistency.sh` �
 
 [1 文: どこまで進めた / 原因は何か]
 
-- mode: [計画実行 / 診断]
+- mode: [計画実行 / 診断 / TDD 実装]
 - done: [N / M step] (計画実行のみ)
 - verification: [コマンド] → [出力の最終行をそのまま]
 - visual: [shot のパス / 視覚未確認 (理由) / 該当なし] (UI step のみ)
 - root cause: [1 文 + before/after] (診断のみ)
 - scope: [計画どおり / 外れたもの → sekkei へ差し戻し or 別 issue へ]
-- next: [shiken / sadoku / teishutsu / sekkei / なし]
+- RED/GREEN/PRUNE: [TDD 実装のみ] RED 最終行 / GREEN 最終行 / N 残し M 削除 + witness
+- next: [sadoku / teishutsu / sekkei / なし]
 
 worktree 内 (`git rev-parse --git-dir` と `--git-common-dir` の正規化結果が異なる) なら `worktree: [branch]` を 1 行足す。
 
@@ -85,3 +103,5 @@ worktree 内 (`git rev-parse --git-dir` と `--git-common-dir` の正規化結�
 
 - `plan-execution.md`：計画実行の詳細 (TDD 分岐 / slice の渡し方 / 診断の入り方)
 - `diagnosis-techniques.md`：診断の確認手段
+- `tdd.md`：テスト先行が必須の層 / skip 可の層、PRUNE の詳細と anti-pattern の入口
+- `testing-anti-patterns.md`：PRUNE の判定 5 問と anti-pattern 集

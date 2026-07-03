@@ -10,7 +10,7 @@ PRUNE フェーズで検出すべきパターン。いずれかに該当する t
 4. 探索中に書いた scaffold か、spec を表現する test か? → **scaffold なら削除**
 5. private helper 形状 / 内部分岐 / mock call count を壊した時だけ落ちていないか? → **Yes なら observable output へ書き直し or 削除**
 
-PRUNE 後の test 数 = 残った仕様の数。検証手順 (break → fail → restore → pass → `git status` clean) は `shiken/SKILL.md` のサイクル節を参照。
+PRUNE 後の test 数 = 残った仕様の数。検証手順 (break → fail → restore → pass → `git status` clean) は `jikkou/references/tdd.md` のサイクル節を参照。
 
 ---
 

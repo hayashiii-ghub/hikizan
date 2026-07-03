@@ -11,7 +11,6 @@ Claude Code plugin の hooks で監視する条件 / 挙動 / 決定の一覧。
 | PreToolUse | `Bash(git push*)` | force 相当 (`--force` / `--force-with-lease` / `-f` / `-fv` に加え `+refspec` / `:branch` (削除) / `--delete`・`-d` / `--mirror` / `--prune`) が main / master / develop を対象にする | `permissionDecision: "deny"` + 確認要求 | JSON reason |
 | PreToolUse | `Bash(rm -*)` / `Bash(git reset*)` / `Bash(git clean*)` / `Bash(git checkout*)` | 不可逆操作 (`rm -rf` / `git reset --hard` / `git clean -f` / `git checkout` discard) | `permissionDecision: "ask"` (block でなく確認) | JSON reason |
 | PreToolUse | `Bash(gh pr create*)` | `--draft` / `-d` も `--reviewer` / `-r` も無い (flag 判定は quote-aware tokenizer によるトークン一致。引用文字列内の `-d` 等では発火・解除しない) | `permissionDecision: "deny"` + 選択肢 | JSON reason |
-| PostToolUse | `Bash(git commit*)` | submodule pointer 変更ありで submodule 側が未 push | warning を出力 (block しない) | stderr (warn) |
 
 ## 決定の出し方
 
@@ -21,7 +20,7 @@ Claude Code plugin の hooks で監視する条件 / 挙動 / 決定の一覧。
   - `deny`: 操作を止め、reason を Claude に返す (non-ff / 保護 branch への force)。
   - `ask`: ユーザに確認ダイアログを出す (不可逆操作)。N 択の文言は reason に書く。
   - jq 不在は各 hook の entry で `scripts/lib/guard.sh` の `hz_require_jq` が stderr + exit 2 の fail-closed にする (PreToolUse 3 hook + Cursor adapter)。`hz_decision` / `hz_cursor_decision` 内の degrade は defense-in-depth として残るが、entry で先に止まるため通常到達しない。
-- **block 対象は PreToolUse のみ**。PostToolUse は副作用が完了済みのため warning に留める。
+- **hook は PreToolUse の deny/ask のみ**。
 - **判定は local 情報優先**。`git fetch --quiet` は実行するが、失敗時はローカル状態で判定を継続する。
 - **保護 branch は main / master / develop で固定**。プロジェクト拡張は将来 `.claude-plugin/config.json` 等で外部設定化できるが現時点では未対応。
 
@@ -70,9 +69,9 @@ force push の対象 branch は `scripts/lib/push-parse.sh` の `hikizan_push_ta
 |---|---|
 | `ts` | RFC3339 UTC タイムスタンプ |
 | `event` | `hook_fired` |
-| `hook` | `pre-push` / `pre-pr-create` / `pre-destructive` / `post-commit` / `session-context` |
-| `condition` | `nff` / `force_protected` / `no_draft_no_reviewer` / `destructive` / `submodule_unpushed` / `inject` / `noop` / `none` |
-| `decision` | `allow` / `block` (= deny) / `ask` / `warn` |
+| `hook` | `pre-push` / `pre-pr-create` / `pre-destructive` / `session-context` |
+| `condition` | `nff` / `force_protected` / `no_draft_no_reviewer` / `destructive` / `inject` / `noop` / `none` |
+| `decision` | `allow` / `block` (= deny) / `ask` |
 | `session_id` | CC session id (stdin JSON より取得)、無ければ空文字 |
 
 ### 集計例
@@ -120,7 +119,6 @@ bash hooks/tests/run.sh push-parse # 特定テストのみ
 - `scripts/pre-push.sh`：PreToolUse on `git push*`
 - `scripts/pre-destructive.sh`：PreToolUse on `rm` / `git reset` / `git clean` / `git checkout`
 - `scripts/pre-pr-create.sh`：PreToolUse on `gh pr create*`
-- `scripts/post-commit.sh`：PostToolUse on `git commit*`
 - `scripts/lib/push-parse.sh` / `destructive.sh` / `decision.sh` / `decision-cursor.sh` / `guard.sh` / `tokenize.sh` / `metrics.sh`：共有ロジック
 - `templates/CLAUDE.md`：追加される本文
 - `teishutsu` skill：hook と二重構造の通常フロー側

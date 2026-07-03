@@ -1,13 +1,13 @@
 ---
 title: Skill ワークフロー例
-description: tansaku / sadoku / sekkei / jikkou / shiken / teishutsu の境界、典型フロー、hook 検査
+description: tansaku / sadoku / sekkei / jikkou / teishutsu の境界、典型フロー、hook 検査
 ---
 
 # Skill ワークフロー例
 
 > **目的:** 入力例に対する skill の起動条件と遷移を確認できるようにする。
 >
-> **対象範囲:** 本書は実装パイプラインの 6 skill (`tansaku` / `sekkei` / `jikkou` / `shiken` / `sadoku` / `teishutsu`) の境界・遷移・handoff を扱う。文章作成の `kaku` はこの pipeline から独立して動くため、以降のフロー図・mode 遷移・handoff 表・検証ログの対象外 (起動語は下の生成トリガー表に含む、詳細は `../skills/kaku/SKILL.md`)。
+> **対象範囲:** 本書は実装パイプラインの 5 skill (`tansaku` / `sekkei` / `jikkou` / `sadoku` / `teishutsu`) の境界・遷移・handoff を扱う。文章作成の `kaku` はこの pipeline から独立して動くため、以降のフロー図・mode 遷移・handoff 表・検証ログの対象外 (起動語は下の生成トリガー表に含む、詳細は `../skills/kaku/SKILL.md`)。
 
 ---
 
@@ -29,7 +29,7 @@ description: tansaku / sadoku / sekkei / jikkou / shiken / teishutsu の境界�
 
 ## 1. 役割境界
 
-動詞単位で責務を分割する。`tansaku` は情報取得 / 構造把握 / 用語整理を扱う。`sekkei` は controller として設計 / 計画 / 評価を決める (コードは触らない)。承認後の `jikkou` が計画実行 / 原因診断を扱い、TDD / レビュー / 提出は各専門 skill に渡す。TDD 必要層では `jikkou` が vertical behavior slice を切り、`shiken` は 1 slice ごとに RED → GREEN → PRUNE を実行する。
+動詞単位で責務を分割する。`tansaku` は情報取得 / 構造把握 / 用語整理を扱う。`sekkei` は controller として設計 / 計画 / 評価を決める (コードは触らない)。承認後の `jikkou` が計画実行 / 原因診断 / TDD 実装を扱い、レビュー / 提出は各専門 skill に渡す。TDD 実装層では `jikkou` が vertical behavior slice を切り、TDD 実装モードで 1 slice ごとに RED → GREEN → PRUNE を回す。
 
 ```mermaid
 flowchart TB
@@ -40,11 +40,8 @@ flowchart TB
     K["考える・決める<br/>設計 / 評価 / 計画 (コード触らない)"]
   end
   subgraph EXEC["jikkou（実行）"]
-    J["作る<br/>計画実行"]
+    J["作る<br/>計画実行 / TDD 実装 (RED → GREEN → REFACTOR → PRUNE)"]
     JD["診る<br/>診断 / root cause"]
-  end
-  subgraph TEST["shiken（試験）"]
-    S["試す<br/>RED → GREEN → REFACTOR → PRUNE"]
   end
   subgraph REVIEW["sadoku（査読）"]
     R["見る<br/>code review / simplify"]
@@ -59,8 +56,6 @@ flowchart TB
   JD -->|"root cause 確定"| J
   J -.->|"scope 逸脱 / 方針の再決定"| K
   JD -.->|"方針ごと再検討"| K
-  J -->|"TDD 必要層"| TEST
-  TEST -->|"検証ログ付き return"| J
   J -->|"実装完了"| REVIEW
   REVIEW -.->|"simplify finding<br/>(high severity)"| J
   REVIEW -->|"レビュー済 diff"| SUBMIT
@@ -77,12 +72,10 @@ flowchart TB
   A["issue + DoD"] -->|"未知領域 / 用語ズレ"| A1["tansaku 探索<br/>Map・Terminology・Unknowns"]
   A1 -->|"brief"| B["sekkei 通常検討<br/>問題定義・案・前提崩し・前提リスク検証・Plan"]
   A -->|"文脈が十分"| B
-  B -->|"Plan 承認 / 進めて"| C["jikkou 計画実行<br/>owner skill 付き Plan steps"]
+  B -->|"Plan 承認 / 進めて"| C["jikkou 計画実行<br/>owner skill 付き Plan steps<br/>(TDD 実装層: RED → GREEN → REFACTOR → PRUNE)"]
   C -->|"原因未確定"| I["jikkou 診断<br/>root cause 1文 + evidence"]
   I -->|"root cause 確定"| C
   C -->|"scope 逸脱 / 方針の再決定"| B
-  C -->|"TDD 必要層<br/>1 vertical slice"| D["shiken<br/>RED → GREEN → REFACTOR → PRUNE"]
-  D -->|"検証ログ付き return"| C
   C -->|"handoff"| E["sadoku 通常レビュー<br/>深さ・停止条件・報告"]
   E -->|"Standard 以上"| F["専門家レビュー<br/>security / arch は subagent (並列最大3)<br/>adversarial は inline"]
   F -->|"裏取り済み反映"| G["teishutsu PR 本文<br/>pr-template 6 セクション"]
@@ -95,7 +88,7 @@ flowchart TB
 > - 未知領域や用語ズレがある場合は、設計前に **tansaku** で Map / Terminology / Unknowns を作る。
 > - **sekkei** はコードを触らず、Plan 承認を境に **jikkou** に handoff する。scope 逸脱や方針の再決定が要るときは jikkou から sekkei に差し戻す。
 > - 原因未確定の調査は **jikkou 診断** として inline で実行する。
-> - **jikkou → shiken → jikkou** の往復は handoff (+ vertical slice 指定) で実行する。1 往復は原則 1 vertical behavior slice。
+> - **jikkou の TDD 実装モード**は 1 vertical behavior slice ごとに RED → GREEN → PRUNE を回す (往復ではなく mode 内で完結)。
 > - **sadoku** は実装完了後に初めて起動（「見る」専門）。
 > - **専門家レビュー**は Standard 以上のみ。Quick は停止条件 + 最小 skeptical lens 中心。
 
@@ -108,7 +101,7 @@ flowchart TB
 ```mermaid
 flowchart TB
   B0["バグ報告 / error / 動かない"] --> B1["jikkou 診断<br/>症状列挙・hypothesis 1文・instrument 1つ・confirm/fix"]
-  B1 -->|"root cause 確定<br/>fix 前"| B2["shiken regression guard<br/>RED: 実装前は fail<br/>GREEN: fix 後 pass<br/>PRUNE: observable output break で fail 目視"]
+  B1 -->|"root cause 確定<br/>fix 前"| B2["jikkou TDD 実装 (regression guard)<br/>RED: 実装前は fail<br/>GREEN: fix 後 pass<br/>PRUNE: observable output break で fail 目視"]
   B2 --> B3["sadoku 通常レビュー"]
   B3 --> B4["teishutsu PR 本文 + 提出"]
   B4 --> B5["PR open"]
@@ -117,7 +110,7 @@ flowchart TB
 > **補足**
 >
 > - **jikkou 診断**: hypothesis を 1 文にできるまでコードに触らない discipline。方針ごと考え直す重い分岐なら sekkei に戻す。
-> - **bugfix** は shiken の**必須**層。再現テストを先行。
+> - **bugfix** は jikkou の TDD 実装モードの**必須**層。再現テストを先行。
 > - 「直りました」だけでは完了扱いにしない。**fix 前後の挙動差分をそのまま引用**。
 
 ---
@@ -145,7 +138,7 @@ flowchart TB
 ```mermaid
 flowchart TB
   D0["どうやって直す / やり方どっち"] --> D1["sekkei 軽量検討<br/>推奨案・brute 案・risk"]
-  D1 -->|"案選択 / 進めて"| D2["jikkou 計画実行<br/>（TDD 必要なら shiken）"]
+  D1 -->|"案選択 / 進めて"| D2["jikkou 計画実行<br/>（TDD 必要なら TDD 実装モード）"]
   D2 --> D3["sadoku 通常レビュー Quick<br/>停止条件 + 最小 skeptical lens<br/>〜50行想定"]
   D3 --> D4["teishutsu PR 本文 + 提出"]
   D4 --> D5["PR open"]
@@ -166,14 +159,13 @@ flowchart TB
 | `sadoku` | PR確認, レビュー, code review, プロジェクトレビュー, コード整理, simplify |
 | `sekkei` | 設計判断, 方針決め, design decision, kill or keep, 計画立案 |
 | `jikkou` | 計画実行, 実装, エラー診断, root cause, バグ修正 |
-| `shiken` | TDD, テスト先行, テストから書く |
 | `teishutsu` | PR提出, PR出す, PR ready, PR文書いて, PR description, submission, PR open |
 | `kaku` | 執筆, 推敲, リライト, 文章を書く |
 
 各 skill の mode 別トリガーと遷移は `docs/workflow.md`、発動条件の正本は各 SKILL.md frontmatter `description`。
 <!-- hikizan:triggers:end -->
 
-mode 別の起動トリガーと手順は各 `SKILL.md` の「モード表」が正本 (上の生成表は skill 単位の起動語、mode 詳細は各 SKILL.md)。ここで二重管理しない。`shiken` の必須 / skip レイヤー判定も `../skills/shiken/SKILL.md` を参照。
+mode 別の起動トリガーと手順は各 `SKILL.md` の「モード表」が正本 (上の生成表は skill 単位の起動語、mode 詳細は各 SKILL.md)。ここで二重管理しない。TDD 実装の必須 / skip レイヤー判定は `../skills/jikkou/references/tdd.md` を参照。
 
 > **状態トリガー** (git diff 検出・計画実行の完了報告直後など) の詳細は各 `SKILL.md` を参照。reviewer コメント対応は skill mode 化しない (通常会話で「返信書いて」)。
 
@@ -184,7 +176,7 @@ trigger 表は「どう呼ばれうるか」の定義。実際の起動経路は
 | 経路 | 主な skill | 意味 |
 |---|---|---|
 | 会話内の自動ルーティング | `sekkei` / `jikkou` / `sadoku` / `teishutsu` | ユーザの発話・セッション状態から発火する主動線 |
-| エージェント実行 (goal コマンド / VM など) | `shiken` | 自律実行の中で TDD 層として使われる。ローカルの metrics には残らない |
+| エージェント実行 (goal コマンド / VM など) | `jikkou` (TDD 実装モード) | 自律実行の中で TDD 実装層として使われる。ローカルの metrics には残らない |
 | ユーザの明示起動 + `sekkei` からの handoff | `tansaku` | 実装前にユーザが全体像を掴みたいとき、または sekkei が判断前の情報不足で差し戻すとき (§7)。会話の自動ルーティングでの発火が少ないのは正常 |
 
 `~/.hikizan/metrics.jsonl` が観測できるのはこのマシンの会話セッションだけ。起動回数の多寡だけで skill の要否を判断しない。
@@ -210,9 +202,6 @@ trigger 表は「どう呼ばれうるか」の定義。実際の起動経路は
 | jikkou 計画実行      | sekkei 通常検討        | scope 逸脱 / 方針の再決定   | 逸脱点 + 再検討したい判断 |
 | jikkou 計画実行      | jikkou 診断       | 原因未確定 / test failure   | 症状 + evidence |
 | jikkou 診断     | jikkou 計画実行        | root cause 確定             | root cause 1 文 + fix 候補 |
-| jikkou 計画実行      | shiken                 | TDD 必要層に触れた          | vertical slice + spec / edge case / non-goals |
-| jikkou 診断     | shiken                 | bugfix 確定                 | root cause + vertical slice + failing behavior + test target |
-| shiken               | jikkou 計画実行        | サイクル完了                | RED/GREEN/PRUNE log + test level + coverage gap + files changed |
 | jikkou 計画実行      | sadoku 通常レビュー    | 実装完了                    | handoff + 報告 + 完成 diff |
 | (user)               | sadoku 通常レビュー    | 「レビューして」            | diff                  |
 | sadoku 通常レビュー  | subagent (reviewer-*)  | Standard 以上 + 専門観点該当 | diff + 範囲           |
@@ -229,8 +218,6 @@ handoff の共通形 (1 行):
 handoff: [skill] / brief: [1 文] / evidence: [file:line かコマンド出力]
 ```
 
-`jikkou` → `shiken` だけは vertical slice の指定を加える (形式は `skills/jikkou/references/plan-execution.md`)。
-
 ---
 
 ## 8. Goal loop で使う場合
@@ -239,8 +226,8 @@ Claude Code / Codex などの runtime が `/goal` 相当の継続実行機能を
 
 - 未知領域や用語ズレがあれば `tansaku` で Map / Terminology / Unknowns を作る
 - 設計・計画は `sekkei`、承認後の実行は `jikkou` を controller にする
-- TDD 必要層は `shiken` に 1 vertical behavior slice だけ渡す
-- `shiken` は coverage gap / failure / PRUNE witness を return し、次 slice を自分で増やさない
+- TDD 実装層は `jikkou` の TDD 実装モードで 1 vertical behavior slice だけ閉じる
+- TDD 実装モードは coverage gap / failure / PRUNE witness を報告に残し、次 slice を勝手に増やさない
 - 実装完了後は `sadoku` に渡す
 - 提出時は `teishutsu` に渡す
 - 失敗時は `jikkou 診断` に戻り、root cause を 1 文で固定してから進む
@@ -248,7 +235,7 @@ Claude Code / Codex などの runtime が `/goal` 相当の継続実行機能を
 Example goal:
 
 ```text
-この issue を完了まで進める。未知領域や用語ズレがあれば `tansaku`、設計・計画は `sekkei`、承認後の実行 controller は `jikkou`、TDD 必要層は `shiken`、実装後レビューは `sadoku`、提出は `teishutsu` に渡す。各 step で検証ログを残し、失敗時は `jikkou 診断` に戻る。
+この issue を完了まで進める。未知領域や用語ズレがあれば `tansaku`、設計・計画は `sekkei`、承認後の実行 controller は `jikkou`、TDD 実装は `jikkou` の TDD 実装モード、実装後レビューは `sadoku`、提出は `teishutsu` に渡す。各 step で検証ログを残し、失敗時は `jikkou 診断` に戻る。
 ```
 
 ---
@@ -257,7 +244,7 @@ Example goal:
 
 検証の単一入口は `bash scripts/check-all.sh` (hook tests + consistency lint + trigger 表鮮度)。
 
-skill 本文は通常フローの手順を示し、hook は skill を経由しない操作に対する補完的な検査を行う。実体は `hooks/hooks.json` と `hooks/scripts/`。5 つの hook (SessionStart で routing / safety / tier を context 注入、`git push` の non-ff / 保護 branch force を deny、`rm` / `git reset` / `clean` / `checkout` の不可逆操作を ask、`gh pr create` の draft / reviewer 未指定を deny、`git commit` 後の submodule warning)。決定は公式 JSON `permissionDecision`。**発火条件マトリクスと既知の限界は `hooks/conditions.md` を参照** (SoT)。決定論ロジックは `hooks/tests/` で回帰検査。発火イベントは `~/.hikizan/metrics.jsonl` に記録される (`HIKIZAN_METRICS_DIR` で書き込み先変更可)。
+skill 本文は通常フローの手順を示し、hook は skill を経由しない操作に対する補完的な検査を行う。実体は `hooks/hooks.json` と `hooks/scripts/`。4 つの hook (SessionStart で routing / safety / tier を context 注入、`git push` の non-ff / 保護 branch force を deny、`rm` / `git reset` / `clean` / `checkout` の不可逆操作を ask、`gh pr create` の draft / reviewer 未指定を deny)。決定は公式 JSON `permissionDecision`。**発火条件マトリクスと既知の限界は `hooks/conditions.md` を参照** (SoT)。決定論ロジックは `hooks/tests/` で回帰検査。発火イベントは `~/.hikizan/metrics.jsonl` に記録される (`HIKIZAN_METRICS_DIR` で書き込み先変更可)。
 
 ```mermaid
 flowchart LR
@@ -286,7 +273,6 @@ flowchart LR
 | sadoku                       | `../skills/sadoku/SKILL.md`                                                       |
 | sekkei                       | `../skills/sekkei/SKILL.md`                                                       |
 | jikkou                       | `../skills/jikkou/SKILL.md`                                                       |
-| shiken                       | `../skills/shiken/SKILL.md`                                                       |
 | teishutsu                    | `../skills/teishutsu/SKILL.md`                                                    |
 | hook 設定 / 停止条件マトリクス | `../hooks/conditions.md`, `../hooks/hooks.json`     |
 | CLAUDE.md テンプレ           | `../templates/CLAUDE.md`                                                          |

@@ -1,5 +1,5 @@
 {
-  "description": "hikizan: condition-driven stops for git push, gh pr create, destructive Bash ops, submodule pointer integrity, and routing/tier context injected at session start.",
+  "description": "hikizan: condition-driven stops for git push, gh pr create, destructive Bash ops, and routing/tier context injected at session start.",
   "hooks": {
     "SessionStart": [
       {
@@ -65,20 +65,6 @@
             "if": "Bash(git checkout*)",
             "timeout": 10,
             "statusMessage": "checking destructive op..."
-          }
-        ]
-      }
-    ],
-    "PostToolUse": [
-      {
-        "matcher": "Bash",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "bash",
-            "args": ["${CLAUDE_PLUGIN_ROOT}/hooks/scripts/post-commit.sh"],
-            "if": "Bash(git commit*)",
-            "timeout": 15
           }
         ]
       }
