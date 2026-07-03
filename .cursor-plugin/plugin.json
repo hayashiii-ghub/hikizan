@@ -1,6 +1,6 @@
 {
   "name": "hikizan",
-  "version": "0.7.2",
+  "version": "0.7.3",
   "description": "hikizan floors + routing/opt-out for Cursor: beforeShellExecution blocks force-push to protected branches, destructive ops, and non-draft PRs; an always-apply rule injects the routing conventions and the standard-tier opt-out preamble.",
   "author": {
     "name": "hayashiii-ghub"
