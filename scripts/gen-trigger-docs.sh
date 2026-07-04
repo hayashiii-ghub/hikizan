@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 # Generate the trigger 早見表 from each skill's frontmatter (the SoT) and inject
-# it into the marker regions of README.md and docs/workflow.md. This replaces
+# it into the marker region of README.md — the single generated copy;
+# docs/workflow.md links to it instead of carrying a second one. This replaces
 # the hand-maintained tables that drifted (H2): the frontmatter `when_to_use`
 # is now the single source.
 # The skill set and display order come from scripts/skills.json (shared with
@@ -72,20 +73,22 @@ for s in $ORDER; do
 done
 
 rc=0
-for rel in README.md docs/workflow.md; do
-  file="$ROOT/$rel"
-  [ -f "$file" ] || { echo "✘ missing $rel" >&2; rc=1; continue; }
-  new="$(inject "$file")" || { rc=1; continue; }
-  if [ "$CHECK" -eq 1 ]; then
-    if ! diff -q "$file" <(printf '%s\n' "$new") >/dev/null; then
-      echo "✘ $rel trigger table is stale — run: bash scripts/gen-trigger-docs.sh" >&2
-      rc=1
-    else
-      echo "✔ $rel trigger table up to date"
-    fi
+rel="README.md"
+file="$ROOT/$rel"
+if [ ! -f "$file" ]; then
+  echo "✘ missing $rel" >&2
+  rc=1
+elif ! new="$(inject "$file")"; then
+  rc=1
+elif [ "$CHECK" -eq 1 ]; then
+  if ! diff -q "$file" <(printf '%s\n' "$new") >/dev/null; then
+    echo "✘ $rel trigger table is stale — run: bash scripts/gen-trigger-docs.sh" >&2
+    rc=1
   else
-    printf '%s\n' "$new" > "$file"
-    echo "✔ wrote $rel"
+    echo "✔ $rel trigger table up to date"
   fi
-done
+else
+  printf '%s\n' "$new" > "$file"
+  echo "✔ wrote $rel"
+fi
 exit "$rc"
