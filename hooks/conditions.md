@@ -11,6 +11,7 @@ Claude Code plugin の hooks で監視する条件 / 挙動 / 決定の一覧。
 | PreToolUse | `Bash(git push*)` | force 相当 (`--force` / `--force-with-lease` / `-f` / `-fv` に加え `+refspec` / `:branch` (削除) / `--delete`・`-d` / `--mirror` / `--prune`) が main / master / develop を対象にする | `permissionDecision: "deny"` + 確認要求 | JSON reason |
 | PreToolUse | `Bash(rm -*)` / `Bash(git reset*)` / `Bash(git clean*)` / `Bash(git checkout*)` | 不可逆操作 (`rm -rf` / `git reset --hard` / `git clean -f` / `git checkout` discard) | `permissionDecision: "ask"` (block でなく確認) | JSON reason |
 | PreToolUse | `Bash(gh pr create*)` | `--draft` / `-d` も `--reviewer` / `-r` も無い (flag 判定は quote-aware tokenizer によるトークン一致。引用文字列内の `-d` 等では発火・解除しない) | `permissionDecision: "deny"` + 選択肢 | JSON reason |
+| PostToolUse (Bash) | `Bash(git push*)` / `Bash(gh pr create*)` / `Bash(rm -*)` / `Bash(git reset*)` / `Bash(git clean*)` / `Bash(git checkout*)` | floor 対象クラスの実行を記録、介入なし・決定なし | なし (metrics のみ) | metrics.jsonl |
 
 ## 決定の出し方
 
@@ -68,11 +69,13 @@ force push の対象 branch は `scripts/lib/push-parse.sh` の `hikizan_push_ta
 | field | 値 |
 |---|---|
 | `ts` | RFC3339 UTC タイムスタンプ |
-| `event` | `hook_fired` |
-| `hook` | `pre-push` / `pre-pr-create` / `pre-destructive` / `session-context` |
+| `event` | `hook_fired` / `command_executed` |
+| `hook` | `pre-push` / `pre-pr-create` / `pre-destructive` / `post-command` / `session-context` |
 | `condition` | `nff` / `force_protected` / `no_draft_no_reviewer` / `destructive` / `inject` / `noop` / `none` |
 | `decision` | `allow` / `block` (= deny) / `ask` |
 | `session_id` | CC session id (stdin JSON より取得)、無ければ空文字 |
+
+`event: "command_executed"` は `post-command` (PostToolUse) が floor 対象クラスの実行そのものを記録したもの。`decision` はそのコマンドに対して floor が下したであろう判定 (実際の決定ではない。PostToolUse は tool 実行後に発火するため介入できない)。`decision: "block"` の `command_executed` は floor がすり抜けられた bypass の証拠であり、見つけたら原因を切り分けたうえで回帰テストを足す。
 
 ### 集計例
 
@@ -82,9 +85,15 @@ jq -r 'select(.decision == "block" or .decision == "ask") | .hook' ~/.hikizan/me
 
 # 不可逆操作の確認要求 (ask) 回数
 jq -r 'select(.condition == "destructive")' ~/.hikizan/metrics.jsonl | wc -l
+
+# ask の承認率の近似 (destructive: 発火した ask に対し実行まで至った数)
+jq -r 'select(.condition=="destructive") | .event' ~/.hikizan/metrics.jsonl | sort | uniq -c
+
+# bypass 疑い (floor が deny するはずのクラスが実行されている)
+jq -c 'select(.event=="command_executed" and .decision=="block")' ~/.hikizan/metrics.jsonl
 ```
 
-ローテーション / 自動 dashboard は未実装 (利用実績が貯まってから別 issue)。
+ローテーションは size ベース (既定 1MB、`HIKIZAN_METRICS_MAX_BYTES`、1 世代保持)。自動 dashboard は未実装 (利用実績が貯まってから別 issue)。
 
 ## SessionStart の補足
 
@@ -111,7 +120,9 @@ bash hooks/tests/run.sh push-parse # 特定テストのみ
 | `test-pre-pr-create.sh` | pre-pr-create 統合 (-d / -r / deny) |
 | `test-cursor-floors.sh` | cursor floors 統合 (force push deny / 破壊的操作 ask / 非 draft PR deny を Cursor I/O 経由で検査) |
 | `test-tokenize.sh` | quote-aware tokenizer (`hz_tokenize`) の単体 |
-| `test-jq-absent.sh` | jq 不在時の fail-closed (PreToolUse 3 hook + Cursor adapter は exit 2、session-context は noop) |
+| `test-jq-absent.sh` | jq 不在時の fail-closed (PreToolUse 3 hook + Cursor adapter は exit 2、session-context は noop) / post-command.sh は noop |
+| `test-post-command.sh` | post-command 統合 (floor 対象クラスの実行だけ記録、それ以外は 0 行) |
+| `test-metrics.sh` | `lib/metrics.sh` の size rotation (閾値超で `.1` へ退避、閾値未満では無変更) |
 
 ## 関連
 
@@ -120,6 +131,7 @@ bash hooks/tests/run.sh push-parse # 特定テストのみ
 - `scripts/pre-push.sh`：PreToolUse on `git push*`
 - `scripts/pre-destructive.sh`：PreToolUse on `rm` / `git reset` / `git clean` / `git checkout`
 - `scripts/pre-pr-create.sh`：PreToolUse on `gh pr create*`
+- `scripts/post-command.sh`：PostToolUse on 同 6 if prefix (floor 対象クラスの実行を記録、決定なし)
 - `scripts/lib/push-parse.sh` / `destructive.sh` / `pr-create.sh` / `decision.sh` / `decision-cursor.sh` / `guard.sh` / `tokenize.sh` / `metrics.sh`：共有ロジック
 - `context/routing.md`：追加される本文
 - `teishutsu` skill：hook と二重構造の通常フロー側
