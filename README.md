@@ -33,12 +33,14 @@ hikizan は Claude Code plugin / Agent Skills 対応の skill pack。動詞単�
 
 対応ハーネスは Claude Code / Codex / Cursor の 3 つ。**1 つのハーネスには 1 つのチャネルだけ**で入れる。skill を 2 経路で入れると二重定義になり、古い側に誤 route する (実際に過去発生した障害)。
 
-| ハーネス | 入るもの | 方法 |
-| --- | --- | --- |
-| Claude Code | skills + floors + 前文 | `/plugin` 2 コマンド (下記) |
-| Codex | skills + floors + 前文 | `codex plugin` 2 コマンド (下記) |
-| Cursor | skills + subagents + floors + 前文 rule | Plugins 画面で GitHub repo を追加 (下記) |
-| その他の harness | skills のみ (tier は `guided` 既定) | `npx skills add` (下記) |
+| ハーネス | 入るもの | 方法 | 検証状態 |
+| --- | --- | --- | --- |
+| Claude Code | skills + floors + 前文 | `/plugin` 2 コマンド (下記) | 検証済み (開発時に常用) |
+| Codex | skills + floors + 前文 | `codex plugin` 2 コマンド (下記) | 実験的 (plugin ロード未 live 検証) |
+| Cursor | skills + subagents + floors + 前文 rule | Plugins 画面で GitHub repo を追加 (下記) | 検証済み (実機確認 2026-07-03) |
+| その他の harness | skills のみ (tier は `guided` 既定) | `npx skills add` (下記) | best-effort (harness 依存) |
+
+検証状態の 3 分類: **検証済み** = 実環境で plugin load と floors の発火を確認済み。**実験的** = 決定論ロジックの回帰テストは通るが、実環境での plugin load が未確認。**best-effort** = skills の配置のみで floors が無い (対象 harness の挙動に依存する)。
 
 ### Claude Code
 
@@ -57,11 +59,11 @@ codex plugin marketplace add hayashiii-ghub/hikizan
 codex plugin install hikizan
 ```
 
-skills + floors (force push deny / 破壊的操作 ask / 非 draft PR deny) + SessionStart 経由の前文がまとめて入り、`HIKIZAN_TIER=standard` を宣言できる。特定 version への固定は `--ref v0.7.1`。詳細と fallback (手動 hooks.json) は `codex/README.md`。`npx skills add -a codex` は併用しない。
+skills + floors (force push deny / 破壊的操作 ask / 非 draft PR deny) + SessionStart 経由の前文がまとめて入り、`HIKIZAN_TIER=standard` を宣言できる。特定 version への固定は `--ref v0.8.0`。実 Codex 環境での plugin ロードは未 live 検証 (floors のロジック自体は CC と同一ファイルで、合成入力の回帰テストは通る)。詳細と fallback (手動 hooks.json) は `codex/README.md`。`npx skills add -a codex` は併用しない。
 
 ### Cursor
 
-Cursor の Plugins 画面で GitHub repo `hayashiii-ghub/hikizan` を plugin として追加する。manifest の floors (`beforeShellExecution` hook) + 前文 rule (`cursor/rules/hikizan.mdc`) に加えて `skills/` と `agents/` も auto-discover されるため、skills + subagents までまとめて入り、`HIKIZAN_TIER=standard` を宣言できる (実 Cursor で load と floors の発火を確認済み)。
+Cursor の Plugins 画面で GitHub repo `hayashiii-ghub/hikizan` を plugin として追加する。manifest の floors (`beforeShellExecution` hook) + 前文 rule (`cursor/rules/hikizan.mdc`) に加えて `skills/` と `agents/` も auto-discover されるため、skills + subagents までまとめて入る (実 Cursor で load と floors の発火を確認済み)。standard tier の前文は rule として届くので、guided で使いたい場合は rule を project の rules から外す (`HIKIZAN_TIER` 環境変数は Cursor では効かない)。
 
 追加時の commit に固定されるので、更新は Plugins 画面から行う。古い版が残ると旧 skill が routing を奪うため、更新後は重複 install が無いか確認する。詳細は `cursor/README.md`。`npx skills add -a cursor` は併用しない。
 
@@ -84,7 +86,8 @@ npx skills add github:hayashiii-ghub/hikizan -g   # universal (配置先 ~/.agen
 tier は「環境構築時にどこまで仕組みを用意したか」を表す。skill 本文は両 tier 共通 (弱いモデル基準のレール) で、違いは opt-out 前文の有無だけ。
 
 - **standard** (hooks=floors のある環境)：SessionStart hook (`session-context.sh`) が routing / ルールに加えて **opt-out 前文** (`context/standard-preamble.md`：手順は自由、出口は固定) を注入する。Claude Code の `/plugin` は既定でこれ。host repo の CLAUDE.md は書き換えない。
-- **guided** (floors 未導入の環境・タスクの回し方が強くないモデル)：skill の番号付き手順を上から実行する。`HIKIZAN_TIER` 環境変数で tier を上書きできる。
+- **guided** (floors 未導入の環境・タスクの回し方が強くないモデル)：skill の番号付き手順を上から実行する。
+- **切替手段はハーネスで異なる**: Claude Code / Codex は `HIKIZAN_TIER` 環境変数で上書きする。Cursor は前文 rule (`cursor/rules/hikizan.mdc`) を project の rules に置くか外すかで切り替える (環境変数は効かない。詳細は `cursor/README.md`)。
 - ファイルとして規約を残したい場合のみ `/hikizan:init` で project の CLAUDE.md に追記する。
 
 ## hooks (Claude Code の floors)
