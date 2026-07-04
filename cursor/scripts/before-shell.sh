@@ -27,7 +27,7 @@ hz_require_jq
 JSON=$(cat)
 CMD=$(printf '%s' "$JSON" | jq -r '.command // ""')
 CWD=$(printf '%s' "$JSON" | jq -r '.cwd // ""')
-[ -n "$CWD" ] && cd "$CWD" 2>/dev/null
+[ -n "$CWD" ] && cd "$CWD" 2>/dev/null || true
 
 # 1. irreversible op -> ask for confirmation
 LABEL=$(hz_destructive_label "$CMD")

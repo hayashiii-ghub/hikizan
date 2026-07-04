@@ -67,6 +67,8 @@ core skill (init を除く全 skill) 共通。`scripts/check-consistency.sh` が
 - cwd at gh: [pwd の実出力]
 - PR: [URL] / [draft か reviewer]
 
+worktree 内 (`git rev-parse --git-dir` と `--git-common-dir` の正規化結果が異なる) なら `worktree: [branch]` を 1 行足す。
+
 ## references/
 
 - `pr-template.md`：PR 本文の形式 (6 セクション template / 文章チェック / PII scan / 粒度ルール)

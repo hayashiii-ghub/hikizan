@@ -6,11 +6,11 @@
 
 ## Setup
 
-依存は `bash` / `jq` / `git` / `gh` / `awk` のみ (Cursor Cloud 等の VM base image に既にある。update script でインストールするものは無い)。開発中の plugin は `claude --plugin-dir <repo root>` で Claude Code に直接読み込める。
+依存は `bash` / `jq` / `git` / `gh` / `awk` のみ (Cursor Cloud 等の VM base image に既にある。update script でインストールするものは無い)。静的解析は `shellcheck` (任意依存。無ければ `check-all.sh` が該当 suite を skip し、CI では必ず走る)。開発中の plugin は `claude --plugin-dir <repo root>` で Claude Code に直接読み込める。
 
 ## Test
 
-検証の単一入口は `bash scripts/check-all.sh` (hook tests + consistency lint + trigger 表鮮度)。提出前に回す。CI (`.github/workflows/ci.yml`) も同じ 1 コマンドを回す。
+検証の単一入口は `bash scripts/check-all.sh` (hook tests + consistency lint + 生成物の鮮度 + shellcheck)。提出前に回す。CI (`.github/workflows/ci.yml`) も同じ 1 コマンドを回す。
 
 hook を単体で動かすときの gotcha:
 
@@ -29,7 +29,7 @@ hook を単体で動かすときの gotcha:
 - `AGENTS.md` / `context/routing.md` に skill の手順、出力形式、hook 条件を再掲しない。
 - 設計原則を skill 本文から参照するときは番号でなく名前で書く。
 - 識別子は `skills/teishutsu/references/naming.md`、日本語散文は `skills/shippitsu/references/writing-style.md` に従う。
-- **skill を足す / 減らすときは連動編集を全部通す**: (1) `skills/<name>/SKILL.md` (2) 共通ルール block を既存 skill から byte 単位でコピー (3) `scripts/check-consistency.sh` の `CORE` (4) `scripts/gen-trigger-docs.sh` の `ORDER` (5) `README.md` の skill 表 (6) `.claude-plugin/plugin.json` と `marketplace.json` の description (7) `docs/workflow.md` の役割境界・handoff (8) `bash scripts/gen-trigger-docs.sh` 再生成 → `bash scripts/check-all.sh` が緑になるまで直す (lint がこの一覧を強制する)。
+- **skill を足す / 減らすときは連動編集を全部通す**: (1) `skills/<name>/SKILL.md` (2) 共通ルール block を既存 skill から byte 単位でコピー (3) `scripts/check-consistency.sh` の `CORE` (4) `scripts/gen-trigger-docs.sh` の `ORDER` (5) `README.md` の skill 表 (6) `.claude-plugin/plugin.json` と `marketplace.json` の description (7) `docs/workflow.md` の役割境界・handoff (8) `bash scripts/gen-trigger-docs.sh` 再生成 → `bash scripts/check-all.sh` が緑になるまで直す (lint が検査するのは契約 block の一致・skill 集合・名前の転記・生成物の鮮度まで。(7) の役割境界と handoff の内容は機械検査されないため目視で確認する)。
 - **version bump**は `.claude-plugin/plugin.json` だけ編集し、`bash scripts/gen-manifests.sh` で他 2 manifest を再生成する。`.cursor-plugin/plugin.json` / `.codex-plugin/plugin.json` は生成物なので手で編集しない。
 
 ## Safety
