@@ -24,7 +24,7 @@ COMMAND=$(printf '%s' "$JSON" | jq -r '.tool_input.command // ""')
 CWD=$(printf '%s' "$JSON" | jq -r '.cwd // ""')
 SESSION_ID=$(printf '%s' "$JSON" | jq -r '.session_id // ""')
 
-[ -n "$CWD" ] && cd "$CWD" 2>/dev/null
+[ -n "$CWD" ] && cd "$CWD" 2>/dev/null || true
 
 # Defensive: only a real `git push` (head=git, subcommand=push). Anchoring on
 # the subcommand keeps `git -C <dir> push` / `command git push` in scope while

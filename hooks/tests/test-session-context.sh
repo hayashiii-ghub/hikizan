@@ -9,7 +9,8 @@ SCRIPT="$DIR/../scripts/session-context.sh"
 ROOT="$DIR/../.."
 
 # keep test runs off the real metrics file
-export HIKIZAN_METRICS_DIR="$(mktemp -d)"
+HIKIZAN_METRICS_DIR="$(mktemp -d)"
+export HIKIZAN_METRICS_DIR
 
 PREAMBLE_LINE1="$(head -1 "$ROOT/context/standard-preamble.md")"
 

@@ -10,5 +10,10 @@ bash "$ROOT/scripts/check-consistency.sh" || rc=1
 bash "$ROOT/scripts/gen-trigger-docs.sh" --check || rc=1
 bash "$ROOT/scripts/gen-cursor-rule.sh" --check || rc=1
 bash "$ROOT/scripts/gen-manifests.sh" --check || rc=1
+if command -v shellcheck >/dev/null 2>&1; then
+  (cd "$ROOT" && git ls-files '*.sh' | xargs shellcheck -x -S warning) || rc=1
+else
+  echo "skip: shellcheck not found (CI では実行される)"
+fi
 if [ "$rc" -eq 0 ]; then echo "✔ check-all: all suites passed"; else echo "✘ check-all: failures above"; fi
 exit "$rc"
