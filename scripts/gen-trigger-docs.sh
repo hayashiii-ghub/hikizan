@@ -3,6 +3,8 @@
 # it into the marker regions of README.md and docs/workflow.md. This replaces
 # the hand-maintained tables that drifted (H2): the frontmatter `when_to_use`
 # is now the single source.
+# The skill set and display order come from scripts/skills.json (shared with
+# scripts/check-consistency.sh).
 #
 #   bash scripts/gen-trigger-docs.sh           # write the tables
 #   bash scripts/gen-trigger-docs.sh --check    # fail if regen would change them
@@ -14,7 +16,8 @@
 
 set -uo pipefail
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
-ORDER="tansaku sadoku sekkei jikkou teishutsu shippitsu"
+ORDER="$(jq -r '.core | join(" ")' "$ROOT/scripts/skills.json")"
+[ -n "$ORDER" ] || { echo "✘ failed to read core skills from scripts/skills.json" >&2; exit 1; }
 START='<!-- hikizan:triggers:start -->'
 END='<!-- hikizan:triggers:end -->'
 
