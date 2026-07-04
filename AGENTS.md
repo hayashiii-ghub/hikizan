@@ -52,7 +52,7 @@ hook を単体で動かすときの gotcha:
 | 計画実行 / 原因診断を変える | `skills/jikkou/SKILL.md` |
 | 引き算原則を変える | `skills/sekkei/references/minimal-approach.md` |
 | review / 整理観点を変える | `skills/sadoku/SKILL.md` |
-| 専門家レビュー subagent を変える | `agents/reviewer-*.md` (正)、`skills/sadoku/references/agents/*` (fallback、同一内容) |
+| 専門家レビュー subagent を変える | `skills/sadoku/references/agents/*.md` (正本。`scripts/gen-agents.sh` が `agents/` に生成する) |
 | PR 本文ドラフト / PR 提出フローを変える | `skills/teishutsu/SKILL.md` |
 | hook の block / warning 条件を変える | `hooks/conditions.md` と `hooks/hooks.json` (ロジックは `hooks/scripts/lib/`、検査は `hooks/tests/`) |
 | 利用先 project に注入する routing / ルール文を変える | `context/routing.md` (注入 `session-context.sh` と `/hikizan:init` の単一ソース) |
