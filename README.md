@@ -145,7 +145,7 @@ hikizan は orchestration / LSP 本体を抱え込まない。必要なら公式
 hikizan/
 ├── README.md / AGENTS.md / LICENSE / .gitignore / plugin.src.json (version 等の正本)
 ├── .claude-plugin/        ← plugin.json (生成物) / marketplace.json
-├── agents/                ← first-class subagent 定義 (reviewer-security / -architecture)
+├── agents/                ← first-class subagent 定義 (生成物、正本は skills/sadoku/references/agents/)
 ├── cursor/                ← Cursor 用 floors adapter (before-shell.sh / hooks.json テンプレ)
 ├── hooks/
 │   ├── hooks.json / conditions.md

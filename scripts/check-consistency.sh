@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
 # Consistency lint for hikizan skills.
 #
-# Covers the invariants that generation cannot: agents/ fallback sync, the
-# skills/ directory set, skill-name transcription, manifest versions, hook
-# wiring parity, and the shared report footer (worktree line). The 共通ルール
+# Covers the invariants that generation cannot: the skills/ directory set,
+# skill-name transcription, manifest versions, hook wiring parity, and the
+# shared report footer (worktree line). The 共通ルール
 # block itself is stamped by scripts/gen-contract.sh, whose --check (wired
 # into check-all.sh) keeps the committed copies fresh.
 #
@@ -21,22 +21,6 @@ UTILITY="$(jq -r '.utility | join(" ")' "$ROOT/scripts/skills.json")"
 
 fail=0
 
-# 3. plugin agents/ (first-class subagents) must match the per-skill fallback
-#    copies under skills/sadoku/references/agents/ byte-for-byte.
-for a in "$ROOT"/agents/*.md; do
-  [ -e "$a" ] || continue
-  base="$(basename "$a")"
-  fb="$ROOT/skills/sadoku/references/agents/$base"
-  if [ ! -f "$fb" ]; then
-    echo "✘ agents/$base has no fallback at skills/sadoku/references/agents/$base"
-    fail=1
-  elif ! diff -q "$a" "$fb" >/dev/null; then
-    echo "✘ agents/$base differs from its fallback copy"
-    fail=1
-  fi
-done
-[ "$fail" -eq 0 ] && echo "✔ agents/ match references/agents/ fallback copies"
-
 # 4. skills/ directory set must be exactly CORE ∪ {UTILITY}, both ways: a new
 #    skill added without a CORE entry, or a renamed/removed skill whose old
 #    name lingers in CORE, must fail loudly instead of silently passing.
@@ -50,21 +34,6 @@ for d in "$ROOT"/skills/*/; do
 done
 fail=$((fail || dirs_missing))
 [ "$dirs_missing" -eq 0 ] && echo "✔ skills/ directory set matches CORE ∪ {$UTILITY}"
-
-# 6. agents/ の逆方向: every fallback copy under skills/sadoku/references/agents/
-#    must have a first-class counterpart under agents/ (pairs with check 3
-#    above, which only checked agents/ -> fallback).
-reverse_mismatch=0
-for fb in "$ROOT"/skills/sadoku/references/agents/*.md; do
-  [ -e "$fb" ] || continue
-  base="$(basename "$fb")"
-  if [ ! -f "$ROOT/agents/$base" ]; then
-    echo "✘ skills/sadoku/references/agents/$base has no agents/$base"
-    reverse_mismatch=1
-  fi
-done
-fail=$((fail || reverse_mismatch))
-[ "$reverse_mismatch" -eq 0 ] && echo "✔ references/agents/ fallback copies all have an agents/ counterpart"
 
 # 7. skill name transcription: every CORE + UTILITY skill name must still be
 #    mentioned in README.md, and every CORE name must appear in
