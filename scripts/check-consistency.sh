@@ -1,20 +1,16 @@
 #!/usr/bin/env bash
 # Consistency lint for hikizan skills.
 #
-#   1. The 共通ルール block (between the contract markers) must be byte-identical
-#      across every skills/*/SKILL.md. It is inlined per skill (not a shared
-#      file) so `npx skills add` per-skill copies keep it; this lint is what
-#      keeps the copies from drifting.
-#   2. Each SKILL.md must carry exactly one contract block.
+# Covers the invariants that generation cannot: agents/ fallback sync, the
+# skills/ directory set, skill-name transcription, manifest versions, hook
+# wiring parity, and the shared report footer (worktree line). The 共通ルール
+# block itself is stamped by scripts/gen-contract.sh, whose --check (wired
+# into check-all.sh) keeps the committed copies fresh.
 #
 # Exit 0 iff everything is consistent. Run: bash scripts/check-consistency.sh
 
 set -uo pipefail
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
-START='<!-- hikizan:contract:start -->'
-END='<!-- hikizan:contract:end -->'
-
-extract() { awk -v s="$START" -v e="$END" '$0==s{f=1;next} $0==e{f=0} f' "$1"; }
 
 # Core workflow skills carry the shared contract. Utility skills (e.g. init)
 # are exempt — they have no contract block. The skill set and display order
@@ -24,44 +20,6 @@ UTILITY="$(jq -r '.utility | join(" ")' "$ROOT/scripts/skills.json")"
 [ -n "$CORE" ] || { echo "✘ failed to read core skills from scripts/skills.json"; exit 1; }
 
 fail=0
-ref=""
-ref_set=0
-ref_file=""
-count=0
-
-for f in "$ROOT"/skills/*/SKILL.md; do
-  [ -e "$f" ] || continue
-  name="$(basename "$(dirname "$f")")"
-  case " $CORE " in *" $name "*) ;; *) continue ;; esac
-  count=$((count + 1))
-
-  # exactly one contract block
-  starts=$(grep -cF "$START" "$f")
-  ends=$(grep -cF "$END" "$f")
-  if [ "$starts" != "1" ] || [ "$ends" != "1" ]; then
-    echo "✘ $name: expected exactly one contract block (start=$starts end=$ends)"
-    fail=1
-    continue
-  fi
-
-  blk="$(extract "$f")"
-  if [ "$ref_set" -eq 0 ]; then
-    ref="$blk"; ref_file="$name"; ref_set=1
-  elif [ "$blk" != "$ref" ]; then
-    echo "✘ $name: 共通ルール block differs from $ref_file"
-    diff <(printf '%s\n' "$ref") <(printf '%s\n' "$blk") | sed 's/^/    /' | head -20
-    fail=1
-  fi
-done
-
-if [ "$count" -eq 0 ]; then
-  echo "✘ no skills found under $ROOT/skills"
-  exit 1
-fi
-
-if [ "$fail" -eq 0 ]; then
-  echo "✔ 共通ルール block identical across $count skills (ref: $ref_file)"
-fi
 
 # 3. plugin agents/ (first-class subagents) must match the per-skill fallback
 #    copies under skills/sadoku/references/agents/ byte-for-byte.
@@ -158,5 +116,16 @@ grep -q 'codex/scripts/session-context\.sh' "$ROOT/codex/hooks.json" || { echo "
 grep -q 'before-shell\.sh' "$ROOT/cursor/hooks.json" || { echo "✘ cursor/hooks.json does not wire before-shell.sh"; wiring=1; }
 fail=$((fail || wiring))
 [ "$wiring" -eq 0 ] && echo "✔ hook wiring parity (CC/Codex floor set, per-harness entry points)"
+
+# 10. Every core SKILL.md must keep the shared worktree detection line at the
+#     end of its report template (hand-kept footer, presence only — teishutsu
+#     was once missing it and the contract lint could not see that).
+WT_LINE='worktree 内 (`git rev-parse --git-dir` と `--git-common-dir` の正規化結果が異なる) なら `worktree: [branch]` を 1 行足す。'
+wt_missing=0
+for name in $CORE; do
+  grep -qF "$WT_LINE" "$ROOT/skills/$name/SKILL.md" || { echo "✘ skills/$name/SKILL.md is missing the worktree line in its report template"; wt_missing=1; }
+done
+fail=$((fail || wt_missing))
+[ "$wt_missing" -eq 0 ] && echo "✔ report templates carry the worktree line"
 
 exit "$fail"
