@@ -1,17 +1,20 @@
 #!/usr/bin/env bash
-# Generate the Cursor and Codex plugin manifests from the Claude Code manifest
-# (.claude-plugin/plugin.json = single source for version/author). The
-# harness-specific fields (description / keywords / component pointers) live
-# here. Do not edit .cursor-plugin/plugin.json or .codex-plugin/plugin.json by
-# hand — rerun this script instead.
-#   bash scripts/gen-manifests.sh           # write both manifests
+# Generate all three plugin manifests from plugin.src.json (the single
+# hand-edited source for version / author / description). The harness-specific
+# fields for Cursor and Codex (description / keywords / component pointers)
+# live here. Do not edit .claude-plugin/plugin.json, .cursor-plugin/plugin.json
+# or .codex-plugin/plugin.json by hand — edit plugin.src.json and rerun.
+#   bash scripts/gen-manifests.sh           # write the manifests
 #   bash scripts/gen-manifests.sh --check   # fail if regen would change them
 set -uo pipefail
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 command -v jq >/dev/null 2>&1 || { echo "✘ gen-manifests.sh requires jq" >&2; exit 1; }
-SRC="$ROOT/.claude-plugin/plugin.json"
+SRC="$ROOT/plugin.src.json"
+[ -f "$SRC" ] || { echo "✘ missing plugin.src.json" >&2; exit 1; }
 ver="$(jq -r .version "$SRC")"
 author="$(jq -c .author "$SRC")"
+
+gen_claude() { cat "$SRC"; }
 
 gen_cursor() {
   jq -n --arg v "$ver" --argjson a "$author" '{
@@ -49,12 +52,14 @@ check_one() {
 
 if [ "${1:-}" = "--check" ]; then
   rc=0
+  check_one "$ROOT/.claude-plugin/plugin.json" gen_claude || rc=1
   check_one "$ROOT/.cursor-plugin/plugin.json" gen_cursor || rc=1
   check_one "$ROOT/.codex-plugin/plugin.json" gen_codex || rc=1
   exit "$rc"
 else
-  mkdir -p "$ROOT/.cursor-plugin" "$ROOT/.codex-plugin"
+  mkdir -p "$ROOT/.claude-plugin" "$ROOT/.cursor-plugin" "$ROOT/.codex-plugin"
+  gen_claude > "$ROOT/.claude-plugin/plugin.json"
   gen_cursor > "$ROOT/.cursor-plugin/plugin.json"
   gen_codex > "$ROOT/.codex-plugin/plugin.json"
-  echo "✔ wrote .cursor-plugin/plugin.json and .codex-plugin/plugin.json"
+  echo "✔ wrote .claude-plugin/plugin.json, .cursor-plugin/plugin.json and .codex-plugin/plugin.json"
 fi

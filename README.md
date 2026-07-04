@@ -143,8 +143,8 @@ hikizan は orchestration / LSP 本体を抱え込まない。必要なら公式
 
 ```
 hikizan/
-├── README.md / AGENTS.md / LICENSE / .gitignore
-├── .claude-plugin/        ← plugin.json / marketplace.json
+├── README.md / AGENTS.md / LICENSE / .gitignore / plugin.src.json (version 等の正本)
+├── .claude-plugin/        ← plugin.json (生成物) / marketplace.json
 ├── agents/                ← first-class subagent 定義 (reviewer-security / -architecture)
 ├── cursor/                ← Cursor 用 floors adapter (before-shell.sh / hooks.json テンプレ)
 ├── hooks/
@@ -162,7 +162,7 @@ hikizan/
 
 ## version
 
-`.claude-plugin/plugin.json` に semver を明示する。公開時は変更内容に合わせて更新する。bump commit を main に merge したら、その commit に tag `v<version>` を打つ (CI の tag-version が plugin.json との一致を検査する)。
+version の正本は repo 直下の `plugin.src.json` (3 つの plugin manifest は `scripts/gen-manifests.sh` の生成物)。公開時は変更内容に合わせて更新する。bump commit を main に merge したら、その commit に tag `v<version>` を打つ (CI の tag-version が plugin.json との一致を検査する)。
 
 ## ライセンス / acknowledgements
 
