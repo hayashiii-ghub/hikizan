@@ -29,6 +29,10 @@ bash hooks/tests/e2e/bench.sh         # フル実測 (課金あり)
 
 standard と guided の overhead 差を見て、Claude Code の **既定 tier** を確定する。
 
-**決定 (2026-06-10)**: CC 既定 = `standard`。根拠は「CC には hooks の floors があり、出口契約 + floors が二重に効くため手順を自由化しても worst-case を防げる」。実装は `session-context.sh` の `HIKIZAN_TIER` 既定値 (= `standard`) と `context/standard-preamble.md` (opt-out 前文) に固定済み。E2E ベンチの定量確認 (overhead < +15%) は未実測のため、回したら本節に数値を追記する。`guided` にしたい環境は `HIKIZAN_TIER=guided` で opt-in。
+**決定 (2026-06-10)**: CC 既定 = `standard`。根拠は「CC には hooks の floors があり、出口契約 + floors が二重に効くため手順を自由化しても worst-case を防げる」。実装は `session-context.sh` の `HIKIZAN_TIER` 既定値 (= `standard`) と `context/standard-preamble.md` (opt-out 前文) に固定済み。`guided` にしたい環境は `HIKIZAN_TIER=guided` で opt-in。
+
+**実測 (2026-07-05、plugin = v0.9.0 HEAD、CLI 既定モデル、各シナリオ 1 run)**: small-fix の output token overhead は **+8.1%** (baseline 296 → standard 320) で受け入れ基準 (< +15%) を満たした。guided は 269 (baseline 比 -9.1%) だが run 間ばらつきの範囲で、tier 間の優劣までは読めない。hook 発火は plugin-on の 3 run で `session-context` が 3 回と一貫し、pre-* floors は 0 回 (read-mostly prompt のため期待どおり)。n=1 のため数値は目安。
+
+実測時の注意: install 済みの hikizan plugin がある環境では、回す前に `claude plugin disable hikizan@hikizan` で外す (baseline に載って比較が汚染されるのと、`--plugin-dir` との二重ロードを防ぐため)。終わったら enable に戻す。
 
 > 注: 本ベンチは prompt を read-mostly に保ち (「実装しない」「push しない」)、bare run でも安全かつ安価にしている。実装まで走らせる重い計測をしたい場合は prompt を編集する。
