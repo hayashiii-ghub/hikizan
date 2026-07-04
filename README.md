@@ -100,6 +100,7 @@ tier は「環境構築時にどこまで仕組みを用意したか」を表す
 | `pre-push` | PreToolUse `git push` | non-fast-forward / 保護 branch への force を `deny` |
 | `pre-destructive` | PreToolUse `rm` / `git reset` / `clean` / `checkout` | 不可逆操作を `ask` (確認要求) |
 | `pre-pr-create` | PreToolUse `gh pr create` | draft / reviewer 未指定を `deny` |
+| `post-command` | PostToolUse `git push` / `gh pr create` ほか `rm` | floor 対象クラスのコマンド実行を記録 (介入なし。ask 承認率と bypass 検出の材料) |
 
 決定は公式の JSON `permissionDecision` 形式 (`deny` / `ask`)。発火条件マトリクスと既知の限界は `hooks/conditions.md` (SoT)。決定論ロジックは `hooks/tests/` で回帰検査する (`bash hooks/tests/run.sh`)。発火イベントは `~/.hikizan/metrics.jsonl` に記録 (`HIKIZAN_METRICS_DIR` で変更可)。
 

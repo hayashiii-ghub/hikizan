@@ -41,5 +41,8 @@ assert_contains "before-shell.sh stderr mentions jq" "jq" "$HZ_ERR"
 run_nojq "$DIR/../scripts/session-context.sh"
 assert_eq "session-context.sh is not guarded (exit 0)" "0" "$HZ_CODE"
 
+run_nojq "$DIR/../scripts/post-command.sh"
+assert_eq "post-command.sh is not guarded (exit 0, no-op)" "0" "$HZ_CODE"
+
 rm -rf "$SHIM"
 hz_test_summary
