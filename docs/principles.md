@@ -15,4 +15,4 @@ skill / hook / docs が従う原則。各 skill 本文から参照するとき�
 11. **Vertical TDD**：`jikkou` が次に閉じる 1 つの observable behavior を slice として切り、TDD 実装モードでその output が壊れた時に落ちる test だけを残す。
 12. **工数は token 規模で考える**：重さは人間の作業時間でなく token 消費 / context 占有 / API コスト。行数・ファイル数はその proxy。実行者は AI agent である前提。
 13. **ファクトチェック**：知識カットオフより後の事実や不確実な情報は、検索・fetch・一次ソースで裏取りしてから断定する。
-14. **単一ソース**：trigger / 規約 / 共通ルール block は 1 箇所を正本にし、転記は生成 (`scripts/gen-trigger-docs.sh`) と lint (`scripts/check-consistency.sh`) で同期を保証する。手動転記しない。
+14. **単一ソース**：trigger / 規約 / 共通ルール block は 1 箇所を正本にし、転記は生成 (`scripts/gen-*.sh`) と lint (`scripts/check-consistency.sh`) で同期を保証する。手動転記しない。

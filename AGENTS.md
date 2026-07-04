@@ -29,7 +29,7 @@ hook を単体で動かすときの gotcha:
 - `AGENTS.md` / `context/routing.md` に skill の手順、出力形式、hook 条件を再掲しない。
 - 設計原則を skill 本文から参照するときは番号でなく名前で書く。
 - 識別子は `skills/teishutsu/references/naming.md`、日本語散文は `skills/shippitsu/references/writing-style.md` に従う。
-- **skill を足す / 減らすときは連動編集を全部通す**: (1) `skills/<name>/SKILL.md` (2) 共通ルール block を既存 skill から byte 単位でコピー (3) `scripts/skills.json` (core skill の集合と表示順の正本) (4) `README.md` の skill 表 (5) `.claude-plugin/plugin.json` と `marketplace.json` の description (6) `docs/workflow.md` の役割境界・handoff (7) `bash scripts/gen-trigger-docs.sh` 再生成 → `bash scripts/check-all.sh` が緑になるまで直す (lint が検査するのは契約 block の一致・skill 集合・名前の転記・生成物の鮮度まで。(6) の役割境界と handoff の内容は機械検査されないため目視で確認する)。
+- **skill を足す / 減らすときは連動編集を全部通す**: (1) `skills/<name>/SKILL.md` (2) SKILL.md に contract マーカーを置き `bash scripts/gen-contract.sh` で共通ルール block を stamp (正本は `scripts/contract.md`、手でコピーしない) (3) `scripts/skills.json` (core skill の集合と表示順の正本) (4) `README.md` の skill 表 (5) `.claude-plugin/plugin.json` と `marketplace.json` の description (6) `docs/workflow.md` の役割境界・handoff (7) `bash scripts/gen-trigger-docs.sh` 再生成 → `bash scripts/check-all.sh` が緑になるまで直す (lint が検査するのは契約 block の一致・skill 集合・名前の転記・生成物の鮮度まで。(6) の役割境界と handoff の内容は機械検査されないため目視で確認する)。
 - **version bump**は `.claude-plugin/plugin.json` だけ編集し、`bash scripts/gen-manifests.sh` で他 2 manifest を再生成する。`.cursor-plugin/plugin.json` / `.codex-plugin/plugin.json` は生成物なので手で編集しない。
 
 ## Safety
@@ -43,7 +43,7 @@ hook を単体で動かすときの gotcha:
 | --- | --- |
 | skill の trigger / mode / 出力形式 / 停止条件を変える | `skills/<name>/SKILL.md` |
 | skill discovery の条件を変える | 各 `skills/<name>/SKILL.md` の frontmatter `description` |
-| core skill 共通のルール (不可逆操作の確認 / 検証ログ引用 / 秘密情報 / 命名 / handoff 形式) を変える | 各 SKILL.md の `共通ルール` block (全 core skill で同一、`scripts/check-consistency.sh` が検査) |
+| core skill 共通のルール (不可逆操作の確認 / 検証ログ引用 / 秘密情報 / 命名 / handoff 形式) を変える | `scripts/contract.md` (正本。`scripts/gen-contract.sh` が各 SKILL.md の contract 区間に stamp する) |
 | core skill の集合・表示順を変える | `scripts/skills.json` (`check-consistency.sh` と `gen-trigger-docs.sh` の単一ソース) |
 | 探索 / 用語整理 / 影響範囲把握を変える | `skills/tansaku/SKILL.md` |
 | ドメイン文脈 (用語 / 不変条件 / 制約 / 受容済みリスク) の正本 CONTEXT.md の契約を変える | `skills/tansaku/references/context-doc.md` |
