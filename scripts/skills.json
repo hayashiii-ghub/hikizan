@@ -1,0 +1,4 @@
+{
+  "core": ["tansaku", "sadoku", "sekkei", "jikkou", "teishutsu", "shippitsu"],
+  "utility": ["init"]
+}

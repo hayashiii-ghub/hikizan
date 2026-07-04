@@ -152,7 +152,7 @@ hikizan/
 │   ├── scripts/           ← session-context / pre-push / pre-destructive / pre-pr-create
 │   │   └── lib/           ← push-parse / destructive / decision / decision-cursor / metrics
 │   └── tests/             ← 自己完結 test runner (run.sh + test-*.sh)
-├── scripts/               ← gen-trigger-docs.sh / check-consistency.sh
+├── scripts/               ← gen-*.sh / check-*.sh / skills.json (core skill 集合の正本)
 ├── context/               ← 常駐 context の正本 (routing.md + standard-preamble.md、注入 & rule 生成 & /hikizan:init が共用)
 ├── skills/                ← SKILL.md (SoT) + references/
 │   ├── tansaku / sadoku / sekkei / jikkou / teishutsu / shippitsu / init

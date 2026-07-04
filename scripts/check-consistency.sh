@@ -17,9 +17,11 @@ END='<!-- hikizan:contract:end -->'
 extract() { awk -v s="$START" -v e="$END" '$0==s{f=1;next} $0==e{f=0} f' "$1"; }
 
 # Core workflow skills carry the shared contract. Utility skills (e.g. init)
-# are exempt — they have no contract block.
-CORE="sekkei jikkou tansaku sadoku teishutsu shippitsu"
-UTILITY="init"
+# are exempt — they have no contract block. The skill set and display order
+# live in scripts/skills.json (single source, shared with gen-trigger-docs.sh).
+CORE="$(jq -r '.core | join(" ")' "$ROOT/scripts/skills.json")"
+UTILITY="$(jq -r '.utility | join(" ")' "$ROOT/scripts/skills.json")"
+[ -n "$CORE" ] || { echo "✘ failed to read core skills from scripts/skills.json"; exit 1; }
 
 fail=0
 ref=""
@@ -90,21 +92,6 @@ for d in "$ROOT"/skills/*/; do
 done
 fail=$((fail || dirs_missing))
 [ "$dirs_missing" -eq 0 ] && echo "✔ skills/ directory set matches CORE ∪ {$UTILITY}"
-
-# 5. CORE (here) and ORDER (scripts/gen-trigger-docs.sh) must carry the same
-#    skill set, as a set (order doesn't matter — that's ORDER's job).
-gen_script="$ROOT/scripts/gen-trigger-docs.sh"
-order_line="$(grep '^ORDER=' "$gen_script")"
-order="$(eval "$order_line"; echo "$ORDER")"
-order_mismatch=0
-for name in $CORE; do
-  case " $order " in *" $name "*) ;; *) echo "✘ CORE has $name but ORDER (gen-trigger-docs.sh) does not"; order_mismatch=1 ;; esac
-done
-for name in $order; do
-  case " $CORE " in *" $name "*) ;; *) echo "✘ ORDER (gen-trigger-docs.sh) has $name but CORE does not"; order_mismatch=1 ;; esac
-done
-fail=$((fail || order_mismatch))
-[ "$order_mismatch" -eq 0 ] && echo "✔ CORE matches ORDER (gen-trigger-docs.sh)"
 
 # 6. agents/ の逆方向: every fallback copy under skills/sadoku/references/agents/
 #    must have a first-class counterpart under agents/ (pairs with check 3
