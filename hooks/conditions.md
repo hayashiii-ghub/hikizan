@@ -80,6 +80,9 @@ force push の対象 branch は `scripts/lib/push-parse.sh` の `hikizan_push_ta
 ### 集計例
 
 ```bash
+# 実 session に絞る (手動テストの合成 id を除外する前置きフィルタ。以下の各例にも同様に足せる)
+jq -r 'select(.session_id | test("^[0-9a-f]{8}-"))' ~/.hikizan/metrics.jsonl | head
+
 # 過去の block / ask 件数を hook 別に
 jq -r 'select(.decision == "block" or .decision == "ask") | .hook' ~/.hikizan/metrics.jsonl | sort | uniq -c
 
