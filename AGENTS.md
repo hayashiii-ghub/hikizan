@@ -16,7 +16,7 @@ hook を単体で動かすときの gotcha:
 
 - PreToolUse hook は JSON payload を stdin に流す (例 `printf '{"tool_input":{"command":"git push --force origin main"},"cwd":"/workspace"}' | bash hooks/scripts/pre-push.sh`)。発火条件の正本は `hooks/conditions.md`。
 - `session-context.sh` は `CLAUDE_PLUGIN_ROOT` が未設定だと template を読めず no-op になる。単体実行時は `CLAUDE_PLUGIN_ROOT=<repo root>` を渡す。
-- hook は発火を `~/.hikizan/metrics.jsonl` に追記する。単体で試すときは `HIKIZAN_METRICS_DIR` を temp dir に向けて実データを汚さない。
+- hook は発火を `~/.hikizan/metrics.jsonl` に追記する。手動で試すときは必ず `HIKIZAN_METRICS_DIR` を temp dir に向ける (守らないと合成 session_id が実データの集計を汚染する。2026-07-05 の棚卸しで 18 件検出)。また floor 対象文字列を含む素の payload テストは、その session の実 hook に deny されうるため、単発の手動実行より `hooks/tests/run.sh` 経由を優先する。
 - `hooks/tests/e2e/bench.sh` は `claude` CLI 必須の user-run ベンチで `run.sh` / CI には含まれない。
 - 決定論ロジック (hook scripts) を変えたら `hooks/tests/` を RED → GREEN で更新する。
 
