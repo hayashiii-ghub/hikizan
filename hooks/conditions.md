@@ -49,7 +49,7 @@ force push の対象 branch は `scripts/lib/push-parse.sh` の `hikizan_push_ta
 
 決定論層の floor であり、prose の停止条件 (各 SKILL.md) と二重化する前提。以下は hook 単独ではカバーしない:
 
-- **compound command**: `cd x && rm -rf y` のように先頭が対象コマンドでない複合コマンドは `if` matcher (prefix) に一致せず発火しない (anchored 判定も head ≠ 対象で skip する)。skill 本文の停止条件で補完する。pre-pr-create はトークン列上で `gh pr create` を探すため `cd x && gh pr create` も script 段では拾えるが、そもそも CC の `if` matcher (prefix) を通らなければ script に届かないため、この既知の限界自体は変わらない。
+- **compound command**: `cd x && rm -rf y` のように先頭が対象コマンドでない複合コマンドは `if` matcher (prefix) に一致せず発火しない (anchored 判定も head ≠ 対象で skip する)。skill 本文の停止条件で補完する。pre-pr-create はトークン列上で `gh pr create` を探すため `cd x && gh pr create` も script 段では拾えるが、そもそも CC の `if` matcher (prefix) を通らなければ script に届かないため、この既知の限界自体は変わらない。flag の分類も最初のセグメントだけを見る (`git checkout -b x && git checkout -- .` の後続セグメントは分類されない。cd 経由の素通りと同じクラス)。
 - **`if` prefix に外れる rm**: `sudo rm -rf` / `/bin/rm -rf` / GNU 形の trailing flag (`rm dir -rf`) は CC の `if: "Bash(rm -*)"` に一致せず、CC では script に届かない。Cursor adapter (if なし) では `sudo rm -rf` は head 判定で拾うが、`/bin/rm` は拾わない。
 - **exotic な git 呼び出し**: 絶対パス `/usr/bin/git push` や alias 経由など、matcher の prefix に外れる形は素通りしうる (script 内は `hz_git_subcommand` による anchored 判定だが、`if` 段で発火しなければ script に届かない)。
 - **non-fast-forward 検査の範囲**: 比較対象は「解決した remote の current branch」(`<remote>/<branch>`)。URL 直指定の push (`git push https://... main`) は remote-tracking ref が無いため検査対象外。refspec で current branch 以外に push する形 (`HEAD:other`) の non-ff は見ない (force 相当の検査は別途効く)。

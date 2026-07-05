@@ -62,4 +62,21 @@ assert_eq "quoted git checkout --force" "yes" "$(hit 'git checkout "--force"')"
 assert_eq "quoted head token (git)"   "yes" "$(hit '"git" reset --hard')"
 assert_eq "quoted subcommand (reset)" "yes" "$(hit 'git "reset" --hard')"
 
+# ── compound commands: flag scans must not cross into later segments ─────
+# Real false-asks (2026-07-05): a benign `git checkout -b` followed by an
+# unrelated grep/mv segment must not be classified as a discard checkout.
+assert_eq "checkout -b then grep -rn . (compound)" "no" \
+  "$(hit 'git checkout -q -b feat && grep -rn "x" . | wc -l')"
+assert_eq "checkout -b then mv then grep . (compound)" "no" \
+  "$(hit 'git checkout -q -b feat && git mv a b && grep x .')"
+assert_eq "reset --soft then echo --hard (compound)" "no" \
+  "$(hit 'git reset --soft HEAD~1 && echo --hard')"
+assert_eq "rm -r then tar -cf (compound, no rm -rf)" "no" \
+  "$(hit 'rm -r x && tar -cf y.tar z')"
+# Known limitation (same class as conditions.md's cd-passthrough note): a
+# later segment's own discard checkout is not classified — only the first
+# segment is scanned, matching the head-anchor policy used everywhere else.
+assert_eq "checkout -b then checkout -- . (compound, known limit)" "no" \
+  "$(hit 'git checkout -q -b x && git checkout -- .')"
+
 hz_test_summary
