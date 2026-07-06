@@ -58,7 +58,7 @@ force push の対象 branch は `scripts/lib/push-parse.sh` の `hikizan_push_ta
 ## メトリクス記録
 
 書き込み先: `~/.hikizan/metrics.jsonl` (環境変数 `HIKIZAN_METRICS_DIR` で上書き可、append only)。
-実装: `scripts/lib/metrics.sh` の `hikizan_metrics_log` 関数を各 hook が source して呼ぶ。silent on failure (jq 不在 / dir 書き込み不可 等で hook 本体は壊さない)。
+実装: `scripts/lib/metrics.sh` の `hikizan_metrics_log` 関数を各 hook が source して呼ぶ。silent on failure (jq 不在 / dir 書き込み不可 等で hook 本体は壊さない)。session_id が非空かつ CC の UUID 形 (`^[0-9a-f]{8}-`) でないもの (手動テストの合成 id) は書き込み時に skip する。よって集計側で合成 id を除外する前置きフィルタは不要 (write 時に同一 regex で強制)。
 
 ### スキーマ (1 行 1 JSON event)
 
@@ -80,9 +80,6 @@ force push の対象 branch は `scripts/lib/push-parse.sh` の `hikizan_push_ta
 ### 集計例
 
 ```bash
-# 実 session に絞る (手動テストの合成 id を除外する前置きフィルタ。以下の各例にも同様に足せる)
-jq -r 'select(.session_id | test("^[0-9a-f]{8}-"))' ~/.hikizan/metrics.jsonl | head
-
 # 過去の block / ask 件数を hook 別に
 jq -r 'select(.decision == "block" or .decision == "ask") | .hook' ~/.hikizan/metrics.jsonl | sort | uniq -c
 

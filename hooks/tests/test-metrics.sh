@@ -28,7 +28,9 @@ printf '{"dummy":"line3","padding":"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 DUMMY_SIZE=$(wc -c < "$FILE" | tr -d ' ')
 [ "$DUMMY_SIZE" -gt 200 ] || printf '  WARN: fixture is only %s bytes, expected >200\n' "$DUMMY_SIZE"
 
-hikizan_metrics_log hook_fired pre-push none allow "test"
+# UUID-shaped session_id so the synthetic-id guard in lib/metrics.sh admits the
+# write (a short id like "test" is dropped by design; see test-metrics-guard.sh).
+hikizan_metrics_log hook_fired pre-push none allow "deadbeef-0000-0000-0000-000000000000"
 
 assert_eq "over-threshold: metrics.jsonl.1 exists after rotation" "0" "$([ -f "$ROTATED" ] && echo 0 || echo 1)"
 assert_eq "over-threshold: metrics.jsonl has exactly 1 line" "1" "$(wc -l < "$FILE" | tr -d ' ')"
@@ -44,7 +46,7 @@ printf '{"seed":"generation"}\n' > "$ROTATED"
 BEFORE_ROTATED_CONTENT="$(cat "$ROTATED")"
 printf '{"small":"line"}\n' > "$FILE"
 
-hikizan_metrics_log hook_fired pre-push none allow "test"
+hikizan_metrics_log hook_fired pre-push none allow "deadbeef-0000-0000-0000-000000000000"
 
 assert_eq "under-threshold: metrics.jsonl.1 unchanged" "$BEFORE_ROTATED_CONTENT" "$(cat "$ROTATED")"
 assert_eq "under-threshold: metrics.jsonl has exactly 2 lines (no rotation, plain append)" "2" "$(wc -l < "$FILE" | tr -d ' ')"
