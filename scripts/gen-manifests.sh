@@ -29,10 +29,15 @@ gen_cursor() {
 }
 
 gen_codex() {
-  jq -n --arg v "$ver" --argjson a "$author" '{
+  # The skill list is derived from scripts/skills.json (the single source for
+  # the core set) so a skill rename/addition can never leave a stale name here
+  # while gen --check stays green.
+  local skill_list
+  skill_list="$(jq -r '.core | join(" / ")' "$ROOT/scripts/skills.json")"
+  jq -n --arg v "$ver" --argjson a "$author" --arg s "$skill_list" '{
     name: "hikizan",
     version: $v,
-    description: "hikizan for Codex: bundles the verb skills (tansaku / sadoku / sekkei / jikkou / teishutsu / shippitsu), the PreToolUse floors (force-push deny, destructive-op ask, non-draft PR deny) reusing the Claude Code hook scripts verbatim, and the routing conventions + standard-tier opt-out preamble via the SessionStart hook.",
+    description: ("hikizan for Codex: bundles the verb skills (" + $s + "), the PreToolUse floors (force-push deny, destructive-op ask, non-draft PR deny) reusing the Claude Code hook scripts verbatim, and the routing conventions + standard-tier opt-out preamble via the SessionStart hook."),
     author: $a,
     keywords: ["skills", "floors", "hooks", "code-review", "workflow", "japanese"],
     skills: "./skills/",

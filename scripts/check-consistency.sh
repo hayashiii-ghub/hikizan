@@ -2,8 +2,9 @@
 # Consistency lint for hikizan skills.
 #
 # Covers the invariants that generation cannot: the skills/ directory set,
-# skill-name transcription, manifest versions, hook wiring parity, and the
-# shared report footer (worktree line). The 共通ルール
+# skill-name transcription, manifest versions, hook wiring parity, the
+# hooks/conditions.md matrix, and the shared report footer (worktree line).
+# The 共通ルール
 # block itself is stamped by scripts/gen-contract.sh, whose --check (wired
 # into check-all.sh) keeps the committed copies fresh.
 #
@@ -86,7 +87,20 @@ grep -q 'before-shell\.sh' "$ROOT/cursor/hooks.json" || { echo "✘ cursor/hooks
 fail=$((fail || wiring))
 [ "$wiring" -eq 0 ] && echo "✔ hook wiring parity (CC/Codex floor set, per-harness entry points)"
 
-# 10. Every core SKILL.md must keep the shared worktree detection line at the
+# 10. hooks/conditions.md is the prose matrix AGENTS.md declares as SoT
+#     alongside hooks/hooks.json. Presence only: every distinct `if` condition
+#     wired in hooks/hooks.json must appear verbatim in conditions.md, so
+#     rewiring hooks without updating the matrix fails loudly instead of
+#     drifting silently. (test-hooks-json.sh guards the hooks.json side.)
+cond="$ROOT/hooks/conditions.md"
+cond_missing=0
+while IFS= read -r prefix; do
+  grep -qF "$prefix" "$cond" || { echo "✘ hooks/conditions.md does not mention wired condition $prefix"; cond_missing=1; }
+done < <(grep -o '"if": *"[^"]*"' "$ROOT/hooks/hooks.json" | sed 's/^"if": *"//; s/"$//' | sort -u)
+fail=$((fail || cond_missing))
+[ "$cond_missing" -eq 0 ] && echo "✔ hooks/conditions.md mentions every wired if condition"
+
+# 11. Every core SKILL.md must keep the shared worktree detection line at the
 #     end of its report template (hand-kept footer, presence only — teishutsu
 #     was once missing it and the contract lint could not see that).
 WT_LINE='worktree 内 (`git rev-parse --git-dir` と `--git-common-dir` の正規化結果が異なる) なら `worktree: [branch]` を 1 行足す。'
