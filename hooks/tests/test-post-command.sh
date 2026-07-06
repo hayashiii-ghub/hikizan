@@ -15,8 +15,10 @@ run_post() {
   export HIKIZAN_METRICS_DIR
   METRICS_FILE="$HIKIZAN_METRICS_DIR/metrics.jsonl"
   local payload
+  # UUID-shaped session_id so lib/metrics.sh's synthetic-id guard admits the
+  # write (a short id like "test" is dropped by design; see test-metrics-guard.sh).
   payload=$(jq -nc --arg c "$cmd" --arg w "$cwd" \
-    '{tool_input:{command:$c}, cwd:$w, session_id:"test"}')
+    '{tool_input:{command:$c}, cwd:$w, session_id:"deadbeef-0000-0000-0000-000000000000"}')
   printf '%s' "$payload" | bash "$HOOK" >/dev/null 2>/dev/null
   HZ_CODE=$?
 }

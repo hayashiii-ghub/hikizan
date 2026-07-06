@@ -19,6 +19,11 @@
 #   decision:   "allow" | "block" | "ask" | "warn"
 #   session_id: CC session id (from hook stdin JSON), or "" when unavailable
 #
+# Synthetic-id guard: a non-empty session_id that is not CC's UUID form
+# (^[0-9a-f]{8}-) is a hand-crafted manual-test value and is dropped (not
+# written), so ad-hoc hook testing without HIKIZAN_METRICS_DIR cannot pollute
+# real aggregation. Empty session_id (unavailable) is still recorded.
+#
 # Rotation: size-based, keyed off HIKIZAN_METRICS_MAX_BYTES (default 1MB).
 # When metrics.jsonl exceeds the threshold it is moved to metrics.jsonl.1
 # (one previous generation kept, then overwritten) before the new line is
@@ -30,6 +35,15 @@ hikizan_metrics_log() {
   local condition="${3:-none}"
   local decision="${4:-allow}"
   local session_id="${5:-}"
+
+  # Drop synthetic session ids. A non-empty session_id that is not CC's UUID
+  # form (^[0-9a-f]{8}-) is a hand-crafted manual-test payload; skip the write
+  # so ad-hoc hook testing without HIKIZAN_METRICS_DIR cannot pollute the real
+  # metrics file. Empty session_id (genuinely unavailable) is still recorded.
+  # Same regex the aggregation examples used to filter on at read time.
+  if [ -n "$session_id" ] && [[ ! "$session_id" =~ ^[0-9a-f]{8}- ]]; then
+    return 0
+  fi
 
   local dir="${HIKIZAN_METRICS_DIR:-$HOME/.hikizan}"
   local file="$dir/metrics.jsonl"
