@@ -5,10 +5,11 @@
 ## 手順
 
 1. 計画を再読し、不明点があれば確認を投げる
-2. step ごとに inline で実装 (subagent には委譲しない)
-3. 各 step 完了後に検証 (test / lint / type-check / 手動確認)
-4. scope 外の発見は実装せず「実装中に分かったこと」に記録 (後で `teishutsu` の PR 本文で参照)
-5. 報告を出力 → `sadoku` に handoff (報告と diff を添える)
+2. 着手時に限り、対象 repo 外にいて `wt` があるときだけ `cd "$(wt up <path> --path-only)"` してから進める。無い / 既に対象 repo にいるときは cwd のまま。作業単位が終わったら `wt down` (拒否されたら commit/push してから)。診断モードでは使わない (今の tree の証拠を動かさない)
+3. step ごとに inline で実装 (subagent には委譲しない)
+4. 各 step 完了後に検証 (test / lint / type-check / 手動確認)
+5. scope 外の発見は実装せず「実装中に分かったこと」に記録 (後で `teishutsu` の PR 本文で参照)
+6. 報告を出力 → `sadoku` に handoff (報告と diff を添える)
 
 ## TDD 実装層を踏むときの分岐
 
