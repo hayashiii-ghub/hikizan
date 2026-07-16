@@ -15,11 +15,11 @@
 #   event:      "hook_fired" | "command_executed"
 #   hook:       "pre-push" | "pre-pr-create" | "pre-destructive" | "post-command" | "session-context"
 #   condition:  "nff" | "force_protected" | "no_draft_no_reviewer" | "destructive" |
-#               "submodule_unpushed" | "inject" | "noop" | "none"
-#   decision:   "allow" | "block" | "ask" | "warn"
-#   session_id: CC session id (from hook stdin JSON), or "" when unavailable
+#               "inject" | "noop" | "none"
+#   decision:   "allow" | "block" | "ask"
+#   session_id: harness session id (from hook stdin JSON), or "" when unavailable
 #
-# Synthetic-id guard: a non-empty session_id that is not CC's UUID form
+# Synthetic-id guard: a non-empty session_id that is not the accepted UUID form
 # (^[0-9a-f]{8}-) is a hand-crafted manual-test value and is dropped (not
 # written), so ad-hoc hook testing without HIKIZAN_METRICS_DIR cannot pollute
 # real aggregation. Empty session_id (unavailable) is still recorded.
@@ -36,7 +36,7 @@ hikizan_metrics_log() {
   local decision="${4:-allow}"
   local session_id="${5:-}"
 
-  # Drop synthetic session ids. A non-empty session_id that is not CC's UUID
+  # Drop synthetic session ids. A non-empty session_id that is not the accepted UUID
   # form (^[0-9a-f]{8}-) is a hand-crafted manual-test payload; skip the write
   # so ad-hoc hook testing without HIKIZAN_METRICS_DIR cannot pollute the real
   # metrics file. Empty session_id (genuinely unavailable) is still recorded.
