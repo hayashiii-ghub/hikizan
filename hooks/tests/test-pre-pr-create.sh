@@ -28,6 +28,8 @@ assert_eq "non-pr command -> allow" "allow" "$(hz_decision_of "$HZ_OUT")"
 hz_run_hook "$HOOK" "gh pr create" "/tmp"
 assert_contains "deny reason mentions reviewer" "reviewer" \
   "$(printf '%s' "$HZ_OUT" | jq -r '.hookSpecificOutput.permissionDecisionReason // ""')"
+assert_contains "deny reason gives reachable manual recovery" "manually outside" \
+  "$(printf '%s' "$HZ_OUT" | jq -r '.hookSpecificOutput.permissionDecisionReason // ""')"
 
 # quote-aware tokenizer: flag-like substrings inside quoted title/body text
 # must not count as a real --draft / --reviewer flag.

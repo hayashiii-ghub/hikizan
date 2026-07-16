@@ -54,6 +54,8 @@ assert_eq "plain push main -> allow" "allow" "$(hz_decision_of "$HZ_OUT")"
 hz_run_hook "$HOOK" "git push --force origin main" "$REPO_MAIN"
 assert_contains "deny reason names protected branch" "protected" \
   "$(printf '%s' "$HZ_OUT" | jq -r '.hookSpecificOutput.permissionDecisionReason // ""')"
+assert_contains "force deny gives reachable manual recovery" "manually outside" \
+  "$(printf '%s' "$HZ_OUT" | jq -r '.hookSpecificOutput.permissionDecisionReason // ""')"
 
 # force-equivalent pushes (no --force flag) targeting a protected branch -> deny
 hz_run_hook "$HOOK" "git push origin +HEAD:main" "$REPO_FEAT"
