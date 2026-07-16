@@ -7,8 +7,9 @@
 1. 計画を再読し、不明点があれば確認を投げる
 2. step ごとに inline で実装 (subagent には委譲しない)
 3. 各 step 完了後に検証 (test / lint / type-check / 手動確認)
-4. scope 外の発見は実装せず「実装中に分かったこと」に記録 (後で `teishutsu` の PR 本文で参照)
-5. 報告を出力 → `sadoku` に handoff (報告と diff を添える)
+4. 意味的 checkpoint を保存する場合は `commit.md` に従い、現在の repo / branch / 承認済み scope と staged diff を確認して commit する。plan step / TDD slice ごとの機械的な commit は作らない
+5. scope 外の発見は実装せず「実装中に分かったこと」に記録 (後で `teishutsu` の PR 本文で参照)
+6. 報告を出力 → `sadoku` に handoff。`brief` には実装した observable behavior と、この実装に固有の判断 / 受容リスク (あれば) だけを書く。`evidence` は完成 diff と検証を特定できる file:line / command に絞る。報告・diff・検証ログ本体は handoff 行の外に添え、`sadoku` の共通観点は再掲しない
 
 ## TDD 実装層を踏むときの分岐
 
