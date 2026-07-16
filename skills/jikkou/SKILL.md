@@ -21,7 +21,7 @@ core skill (init を除く全 skill) 共通。正本は `scripts/contract.md` �
 - 元に戻せない操作 (削除 / force push / reset --hard / git clean) は、実行する前にユーザに確認する
 - 「pass した」「確認した」と書くときは、コマンド出力の最終行をそのまま貼る。出力なしで完了と書かない
 - 秘密情報 (token / email / チーム外の実名) を PR 本文・commit message に書かない。出す前に grep で確認する
-- commit する場合は `skills/teishutsu/references/commit.md` の粒度契約に従う。独立して説明・検証・revert できる 1 つの変更を、関連検証が通った状態で保存する
+- commit する場合は `skills/jikkou/references/commit.md` の粒度契約に従う。独立して説明・検証・revert できる 1 つの変更を、関連検証が通った状態で保存する
 - PR / branch / step は機能名か issue 名で呼ぶ。PR-1 のような独自の連番を作らない (詳細は skills/teishutsu/references/naming.md)
 - 別の skill に渡すときは 1 行で書く: `handoff: [skill] / brief: [1 文] / evidence: [file:line かコマンド出力]`
 - 日本語の文章は skills/shippitsu/references/writing-style.md の規範に従う
@@ -42,7 +42,7 @@ core skill (init を除く全 skill) 共通。正本は `scripts/contract.md` �
 1. 承認済みの計画を再読する。不明点があれば実装前に聞く。計画が無い / 未承認なら `sekkei` に戻す
 2. step を 1 つずつ自分で実装する (subagent に投げない)
 3. 純ロジック / ビジネスルール / API / バグ修正の step は TDD 実装モードで書く: 1 slice ずつ RED→GREEN→PRUNE (下記「手順 (TDD 実装)」)
-4. 各 step の後に検証コマンドを実行し、出力の最終行を控える。失敗したら次の step に進まず診断に入る
+4. 各 step の後に検証コマンドを実行し、出力の最終行を控える。失敗したら次の step に進まず診断に入る。意味的 checkpoint を保存する場合は `references/commit.md` に従い、現在の repo / branch / 承認済み scope を確認してから commit する
 5. UI / レイアウト / 視覚に触れる step は、検証コマンドに加えて視覚検証も通す (web project かつ `sitesnap` があるとき。shot で撮って --json の file を Read で読み戻して目視し、check --json の合否を step 通過判定にする)。撮れない環境では「視覚未確認」と報告に明記してスキップする
 6. 計画に無いファイルに 5 つ以上触れそうになったら、または方針の再決定が要ると分かったら、止めて `sekkei` に差し戻す
 7. scope 外の発見は実装せず「実装中に分かったこと」にメモする
@@ -102,6 +102,7 @@ worktree 内 (`git rev-parse --git-dir` と `--git-common-dir` の正規化結�
 
 ## references/
 
+- `commit.md`：commit の意味 / 粒度 / commit 前の点検
 - `plan-execution.md`：計画実行の詳細 (TDD 分岐 / slice の渡し方 / 診断の入り方)
 - `diagnosis-techniques.md`：診断の確認手段
 - `tdd.md`：テスト先行が必須の層 / skip 可の層、PRUNE の詳細と anti-pattern の入口

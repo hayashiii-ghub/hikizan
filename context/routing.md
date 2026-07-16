@@ -16,7 +16,7 @@ hikizan plugin の使い方。手順の詳細は各 skill に書いてある。�
 
 - 元に戻せない操作 (削除 / force push / reset --hard / git clean) は、実行する前にユーザに確認する
 - 「pass した」「確認した」と書くときは、コマンド出力の最終行をそのまま貼る。出力なしで完了と書かない
-- commit する場合は `teishutsu` の commit 契約に従う
+- commit する場合は `jikkou` の commit 契約に従う
 - PR は `teishutsu` の形式で出す (Workflow 節と検証ログを含む)
 - submodule のある repo では、commit / push / PR の前に `pwd` と対象 repo を確認する
 <!-- hikizan:conventions:end -->

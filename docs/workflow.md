@@ -24,14 +24,14 @@ flowchart TB
     K["考える・決める<br/>設計 / 評価 / 計画 (コード触らない)"]
   end
   subgraph EXEC["jikkou（実行）"]
-    J["作る<br/>計画実行 / TDD 実装 (RED → GREEN → REFACTOR → PRUNE)"]
+    J["作る<br/>計画実行 / commit checkpoint / TDD 実装 (RED → GREEN → REFACTOR → PRUNE)"]
     JD["診る<br/>診断 / root cause"]
   end
   subgraph REVIEW["sadoku（査読）"]
     R["見る<br/>code review / simplify"]
   end
   subgraph SUBMIT["teishutsu（提出）"]
-    M["出す<br/>PR 本文 / remote / submodule / parent / cwd-aware gh"]
+    M["出す<br/>PR 本文 / committed scope / normal push / cwd-aware gh"]
   end
 
   T -->|"brief"| K
@@ -94,11 +94,11 @@ trigger 表は「どう呼ばれうるか」の定義。実際の起動経路は
 | subagent             | sadoku                 | 評価完了                    | findings（要裏取り）  |
 | (user)               | sadoku simplify findings | 「整理して」「simplify」(明示) | diff (範囲)        |
 | sadoku simplify findings | jikkou 計画実行    | simplify finding (high)     | 対象 finding + file:line |
-| (user)               | teishutsu              | 「PR出す」「PR提出」        | 実装完了 + diff       |
-| jikkou 計画実行      | teishutsu              | 完了報告 + 本文準備済       | files changed + body  |
+| (user)               | teishutsu              | 「PR出す」「PR提出」        | 実装完了 + commit 済み diff       |
+| jikkou 計画実行      | teishutsu              | 完了報告 + 本文準備済       | commit 済み diff + files changed + body  |
 | (user)               | teishutsu              | 「PR文書いて」              | change intent + files + verification |
 
-`teishutsu` 提出モードは範囲を限定した一括承認とし、承認範囲と停止条件の正本は `skills/teishutsu/SKILL.md` に置く。本文ドラフトモードは書き込みを行わない。
+`jikkou` は必要な意味的 checkpoint を commit として保存する。`teishutsu` は commit を作らず、commit 済み scope の通常 push と PR 作成だけを行う。提出モードの承認範囲と停止条件の正本は `skills/teishutsu/SKILL.md` に置く。本文ドラフトモードは書き込みを行わない。
 
 handoff の共通形 (1 行):
 
