@@ -2,6 +2,12 @@
 
 `sadoku` の通常レビューモードで使う 4 persona。**全対象に起動するのではなく、起動条件にヒットした persona のみ**。対象は diff でも指定範囲のコードでもよい。
 
+## 目次
+
+- [起動の流れ](#起動の流れ)
+- [persona 一覧](#persona-一覧)
+- [起動判定で迷ったとき](#起動判定で迷ったとき)
+
 ## 起動の流れ
 
 1. controller (sadoku 本体) が対象 (diff / 範囲) を読む。あわせて近隣の類似実装を軸 3、関連する repo convention を軸 4、脅威モデル / 設計意図を軸 6 で抽出する (出どころ優先 ①CONTEXT.md ②PR / issue intent ③user に 1 行)
