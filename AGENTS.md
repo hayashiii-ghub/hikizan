@@ -56,7 +56,7 @@ hook を単体で動かすときの gotcha:
 | PR 本文ドラフト / PR 提出フローを変える | `skills/teishutsu/SKILL.md` |
 | commit の意味 / 粒度 / commit 前点検を変える | `skills/jikkou/references/commit.md` |
 | hook の block / warning 条件を変える | `hooks/conditions.md` と `hooks/hooks.json` (ロジックは `hooks/scripts/lib/`、検査は `hooks/tests/`) |
-| 利用先 project に注入する routing / ルール文を変える | `context/routing.md` (注入 `session-context.sh` と `/hikizan:init` の単一ソース) |
+| 利用先 project に注入する routing / ルール文を変える | `context/routing.md` (注入 `session-context.sh` と `/hikizan:init` 用生成 reference の単一ソース) |
 | standard tier への opt-out 前文 (手順自由・出口固定) を変える | `context/standard-preamble.md` (`session-context.sh` が tier=standard のときだけ注入) |
 | 識別子 (branch / commit / PR / issue) の命名規範を変える | `skills/teishutsu/references/naming.md` |
 | 日本語文章規範を変える | `skills/shippitsu/references/writing-style.md` |

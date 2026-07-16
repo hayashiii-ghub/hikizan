@@ -27,7 +27,7 @@ hikizan は Claude Code plugin / Agent Skills 対応の skill pack。動詞単�
 
 各 SKILL.md は「共通ルール block + モード表 (複数モードの skill のみ) + 番号付き手順 + やってはいけないこと + 穴埋め報告」に絞り、手順詳細は `references/` に置く。`sekkei` が設計・計画を controller として保持し、承認後の実行と原因診断は `jikkou`、TDD は `jikkou` の TDD 実装モード、レビューは `sadoku`、提出は `teishutsu`、探索は `tansaku`、文章は `shippitsu` に渡す。
 
-ユーティリティ skill `init` (`/hikizan:init`) は規約を project の CLAUDE.md に手動で書き込みたい時だけ使う (model 自動起動は無効)。
+ユーティリティ skill `init` (`/hikizan:init`) は、ユーザが指定した project instruction Markdown (`CLAUDE.md` / `AGENTS.md` など) に規約を書き込みたい時だけ使う (model 自動起動は無効)。利用先 repo と書き込み先を推測せず、明示確認してから変更する。
 
 ## install
 
@@ -88,7 +88,7 @@ tier は「環境構築時にどこまで仕組みを用意したか」を表す
 - **standard** (hooks=floors のある環境)：SessionStart hook (`session-context.sh`) が routing / ルールに加えて **opt-out 前文** (`context/standard-preamble.md`：手順は自由、出口は固定) を注入する。Claude Code の `/plugin` は既定でこれ。host repo の CLAUDE.md は書き換えない。
 - **guided** (floors 未導入の環境・タスクの回し方が強くないモデル)：skill の番号付き手順を上から実行する。
 - **切替手段はハーネスで異なる**: Claude Code / Codex は `HIKIZAN_TIER` 環境変数で上書きする。Cursor は前文 rule (`cursor/rules/hikizan.mdc`) を project の rules に置くか外すかで切り替える (環境変数は効かない。詳細は `cursor/README.md`)。
-- ファイルとして規約を残したい場合のみ `/hikizan:init` で project の CLAUDE.md に追記する。
+- ファイルとして規約を残したい場合のみ `/hikizan:init` で、ユーザ指定の project instruction Markdown に追記する。
 
 ## hooks (Claude Code の floors)
 
@@ -154,7 +154,7 @@ hikizan/
 │   │   └── lib/           ← push-parse / destructive / decision / decision-cursor / metrics
 │   └── tests/             ← 自己完結 test runner (run.sh + test-*.sh)
 ├── scripts/               ← gen-*.sh / check-*.sh / skills.json (core skill 集合の正本)
-├── context/               ← 常駐 context の正本 (routing.md + standard-preamble.md、注入 & rule 生成 & /hikizan:init が共用)
+├── context/               ← 常駐 context の正本 (routing.md + standard-preamble.md、注入 & rule & init reference の生成元)
 ├── skills/                ← SKILL.md (SoT) + references/
 │   ├── tansaku / sadoku / sekkei / jikkou / teishutsu / shippitsu / init
 │   │                        (命名規範は teishutsu/references/naming.md、文章規範は shippitsu/references/writing-style.md)
