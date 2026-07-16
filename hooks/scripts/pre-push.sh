@@ -43,7 +43,7 @@ if hikizan_push_is_forceful "$COMMAND"; then
   HIT=$(hikizan_push_protected_hit "$COMMAND" "$BRANCH") || HIT=""
   if [ -n "$HIT" ]; then
     hikizan_metrics_log hook_fired pre-push force_protected block "$SESSION_ID"
-    hz_decision deny "force-equivalent push (force / +refspec / delete / mirror) targeting protected branch '$HIT'.
+    hz_decision deny "force-equivalent push (force / +refspec / delete / mirror / all) targeting protected branch '$HIT'.
 
 protected branches: main / master / develop. policy: require explicit user
 confirmation. abort and ask the user before re-running."

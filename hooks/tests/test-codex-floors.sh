@@ -38,6 +38,8 @@ decision_of() {
 
 # --- pre-push.sh ---
 REPO_MAIN="$(hz_mkrepo main)"
+REPO_FEAT="$(hz_mkrepo feature)"
+git -C "$REPO_FEAT" branch main
 
 run_codex_pretooluse "$PRE_PUSH" "git push --force origin main" "$REPO_MAIN"
 assert_eq "pre-push: force origin main -> deny" "deny" "$(decision_of "$HZ_OUT")"
@@ -48,7 +50,13 @@ assert_eq "pre-push: force origin quoted \"main\" -> deny (quote evasion closed)
 run_codex_pretooluse "$PRE_PUSH" "git push origin main" "$REPO_MAIN"
 assert_eq "pre-push: plain push origin main -> allow" "allow" "$(decision_of "$HZ_OUT")"
 
-rm -rf "$REPO_MAIN"
+run_codex_pretooluse "$PRE_PUSH" "git push --force --all origin" "$REPO_FEAT"
+assert_eq "pre-push: --force --all from feature -> deny" "deny" "$(decision_of "$HZ_OUT")"
+
+run_codex_pretooluse "$PRE_PUSH" "git push --all origin" "$REPO_FEAT"
+assert_eq "pre-push: plain --all from feature -> allow" "allow" "$(decision_of "$HZ_OUT")"
+
+rm -rf "$REPO_MAIN" "$REPO_FEAT"
 
 # --- pre-destructive.sh ---
 run_codex_pretooluse "$PRE_DESTRUCTIVE" "rm -rf /tmp/x" "/tmp" deny

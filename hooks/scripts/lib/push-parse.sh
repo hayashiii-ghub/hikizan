@@ -179,13 +179,16 @@ hikizan_push_protected_hit() {
   local cmd="$1" cur="$2"
   local PROTECTED='^(main|master|develop)$'
 
-  local seen_push=0 tok has_mirror=0 has_prune=0
+  local seen_push=0 skip_next=0 tok has_all=0 has_mirror=0 has_prune=0
   while IFS= read -r tok; do
+    if [ "$skip_next" = "1" ]; then skip_next=0; continue; fi
     if [ "$seen_push" = "0" ]; then
       [ "$tok" = "push" ] && seen_push=1
       continue
     fi
     case "$tok" in
+      -o|--push-option|--receive-pack|--exec|--repo) skip_next=1 ;;
+      --all)    has_all=1 ;;
       --mirror) has_mirror=1 ;;
       --prune)  has_prune=1 ;;
     esac
@@ -198,6 +201,9 @@ EOF
   fi
   if [ "$has_prune" = "1" ]; then
     printf '%s' "--prune (can delete protected branches absent locally)"; return 0
+  fi
+  if [ "$has_all" = "1" ]; then
+    printf '%s' "--all (updates every local branch, including protected branches)"; return 0
   fi
 
   local t

@@ -38,6 +38,7 @@ force push の対象 branch は `scripts/lib/push-parse.sh` の `hikizan_push_ta
 - `git push --delete origin main` / `git push -d origin main` も同様に force 相当として扱う
 - **glob を含む refspec** (例 `git push --force origin refs/heads/*:refs/heads/*`) は解決先が `*` 等のメタ文字を含むため、保護 branch にマッチしうると見なして保守的に **deny** する
 - **`--mirror` / `--prune`** は push 対象の branch を個別に列挙できない (全 ref を force 更新・削除しうる) ため、対象を特定せず保守的に **deny** する
+- forceful push の **`--all`** は全 local branch を更新し、current branch が feature でも main / master / develop を含みうるため、対象を特定せず保守的に **deny** する
 - ターゲット解決とコマンドのトークン化は `set -f` (noglob) 下で行い、cwd のファイル名に依存しない (決定論)
 
 破壊的コマンドの分類規約:

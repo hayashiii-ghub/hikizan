@@ -19,6 +19,7 @@ perm_of() { if [ -z "$1" ]; then echo allow; return; fi
 
 REPO_MAIN="$(hz_mkrepo main)"
 REPO_FEAT="$(hz_mkrepo feature)"
+git -C "$REPO_FEAT" branch main
 
 run_cursor "rm -rf build" "/tmp"
 assert_eq "rm -rf -> ask" "ask" "$(perm_of "$HZ_OUT")"
@@ -40,6 +41,12 @@ assert_eq "+refspec to main -> deny" "deny" "$(perm_of "$HZ_OUT")"
 
 run_cursor "git push --delete origin main" "$REPO_MAIN"
 assert_eq "--delete origin main -> deny" "deny" "$(perm_of "$HZ_OUT")"
+
+run_cursor "git push --force --all origin" "$REPO_FEAT"
+assert_eq "--force --all from feature -> deny" "deny" "$(perm_of "$HZ_OUT")"
+
+run_cursor "git push --all origin" "$REPO_FEAT"
+assert_eq "plain --all from feature -> allow" "allow" "$(perm_of "$HZ_OUT")"
 
 run_cursor "git push origin :feature" "$REPO_FEAT"
 assert_eq "delete refspec :feature -> allow" "allow" "$(perm_of "$HZ_OUT")"
