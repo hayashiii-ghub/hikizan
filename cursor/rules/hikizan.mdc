@@ -7,7 +7,7 @@ alwaysApply: true
 <!-- hikizan:conventions:start -->
 ## hikizan Conventions
 
-hikizan plugin の使い方。手順の詳細は各 skill に書いてある。止めるべき操作は hook が止める。
+hikizan plugin の使い方。手順の詳細は各 skill に書いてある。対応する hook がある環境では、止めるべき操作を hook が補助的に止める。
 
 ### どの skill を使うか
 

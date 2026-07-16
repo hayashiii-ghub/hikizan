@@ -101,7 +101,7 @@ jq -c 'select(.event=="command_executed" and .decision=="block")' ~/.hikizan/met
 
 ## SessionStart の補足
 
-- SessionStart(startup) hook の **stdout を CC が context 注入**する仕組みを使う。host repo の `CLAUDE.md` は書き換えない (常に installed version と同期、汚染なし)。ファイルとして残したいユーザは `/hikizan:init`。
+- SessionStart(startup) hook の **stdout を CC が context 注入**する仕組みを使う。host repo の instruction file は書き換えない (常に installed version と同期、汚染なし)。ファイルとして残したいユーザは `/hikizan:init` で対象 repo と path を明示する。
 - 注入内容の単一ソースは `context/routing.md` + active tier (`HIKIZAN_TIER`、既定 `standard`)。tier=standard のときだけ `context/standard-preamble.md` (opt-out 前文: 手順は自由、出口と floors は固定) を続けて注入する。guided はレール (skill の番号付き手順) をそのまま使うため前文なし。
 - `resume` / `clear` / `compact` では実行しない (matcher が `startup` のみ)。
 
