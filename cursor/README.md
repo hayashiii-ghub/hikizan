@@ -17,7 +17,7 @@ pure logic (`push-parse.sh` / `destructive.sh` / `pr-create.sh`) は CC hooks �
 
 ## install (GitHub から plugin 追加、推奨)
 
-Cursor の Plugins 画面で GitHub repo `hayashiii-ghub/hikizan` を plugin として追加する。`.cursor-plugin/plugin.json` が宣言する floors hooks (`cursor/hooks.json` 経由の `before-shell.sh`) と前文 rule (`cursor/rules/hikizan.mdc`) に加えて、`skills/` と `agents/` が auto-discover されるため、skills 7 個 + subagent 2 個 (reviewer-architecture / reviewer-security) もまとめて入る。`npx skills add -a cursor` は併用しない (skill が二重定義される)。
+Cursor の Plugins 画面で GitHub repo `hayashiii-ghub/hikizan` を plugin として追加する。`.cursor-plugin/plugin.json` が宣言する floors hooks (`cursor/hooks.json` 経由の `before-shell.sh`) と前文 rule (`cursor/rules/hikizan.mdc`) に加えて、`skills/` と `agents/` も auto-discover される。`npx skills add -a cursor` は併用しない (skill が二重定義される)。
 
 - **実機確認済み (2026-07-03)**: GitHub 追加での load (Skills / Subagents / Rules の認識) と floors の発火 (deny / ask) を実 Cursor で確認した
 - 追加時の commit SHA に固定される (`~/.cursor/plugins/marketplaces/github.com/<owner>/<repo>/<sha>/` に clone される)。更新は Plugins 画面から行い、**古い版が残っていたら Uninstall する** (削除済みの旧 skill が routing を奪うため)
@@ -48,9 +48,9 @@ plugin 追加が使えない環境向けの手動配線。この場合、前文 
 
 ## tier への含意
 
-floors が Cursor にも置けるため、tier は「floors の有無」ではなく「skill の手順をレールとして使うか、opt-out (手順自由・出口固定) で使うか」を表す軸として一貫する。floors を入れ、かつタスクの回し方が強いモデルを使う Cursor 環境は `HIKIZAN_TIER=standard` を宣言してよい (CC と同じ理屈)。floors 未導入、またはタスクの回し方が強くないモデルは `guided` 既定のまま。skill の番号付き手順がレールとして機能する。
+floors が Cursor にも置けるため、tier は「floors の有無」ではなく「skill の手順をレールとして使うか、opt-out (手順自由・出口固定) で使うか」を表す軸として一貫する。
 
-standard の opt-out 前文は、Cursor では always-apply rule (`cursor/rules/hikizan.mdc`) で届く。前文は CLAUDE.md / AGENTS.md 相当の常駐コンテンツで、rules はその Cursor 版なので、これが正規の配り方になる。むしろ CC / Codex の方が「plugin が常駐 context を静的に差し込む口が無い」ため SessionStart hook の実行時注入で代用している側 (Cursor にも `sessionStart` hook の `additional_context` はあるが、rule の方が Plugins 画面から見える・外せるので採用しない)。guided のまま使いたい場合は、この rule を project の rules から外せば opt-out 無しで運用できる。tier の切替が CC / Codex は `HIKIZAN_TIER` 環境変数、Cursor は rule の有無、と手段が違う点に注意。
+standard の opt-out 前文は、Cursor では always-apply rule (`cursor/rules/hikizan.mdc`) で届く。前文は CLAUDE.md / AGENTS.md 相当の常駐コンテンツで、rules はその Cursor 版なので、これが正規の配り方になる。むしろ CC / Codex の方が「plugin が常駐 context を静的に差し込む口が無い」ため SessionStart hook の実行時注入で代用している側 (Cursor にも `sessionStart` hook の `additional_context` はあるが、rule の方が Plugins 画面から見える・外せるので採用しない)。guided のまま使いたい場合は、この rule を project の rules から外せば opt-out 無しで運用できる。`HIKIZAN_TIER` 環境変数は Cursor では効かない。切替は CC / Codex が `HIKIZAN_TIER`、Cursor が rule の有無、と手段が違う。
 
 ## 注意 / 既知の限界
 

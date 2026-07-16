@@ -59,6 +59,8 @@ fail=$((fail || transcription_missing))
 [ "$transcription_missing" -eq 0 ] && echo "✔ skill names transcribed in README.md / context/routing.md / plugin.json description"
 
 # 8. Cursor and Codex plugin manifest versions must track the CC plugin version.
+#    Cursor also needs homepage / repository / license (same publish metadata as
+#    Codex; gen-manifests.sh stamps them from plugin.src.json).
 cc_ver="$(awk -F'"' '/"version":/{print $4; exit}' "$ROOT/.claude-plugin/plugin.json")"
 cur_ver="$(awk -F'"' '/"version":/{print $4; exit}' "$ROOT/.cursor-plugin/plugin.json")"
 cx_ver="$(awk -F'"' '/"version":/{print $4; exit}' "$ROOT/.codex-plugin/plugin.json")"
@@ -67,6 +69,15 @@ if [ "$cc_ver" != "$cur_ver" ] || [ "$cc_ver" != "$cx_ver" ]; then
 else
   echo "✔ cursor/codex/claude plugin manifest versions match ($cc_ver)"
 fi
+cursor_meta=0
+jq -e '
+  (.homepage | type == "string" and length > 0) and
+  (.repository | type == "string" and length > 0) and
+  (.license | type == "string" and length > 0) and
+  (.description | type == "string" and contains("skills"))
+' "$ROOT/.cursor-plugin/plugin.json" >/dev/null 2>&1 || { echo "✘ Cursor plugin manifest publish metadata is incomplete"; cursor_meta=1; }
+fail=$((fail || cursor_meta))
+[ "$cursor_meta" -eq 0 ] && echo "✔ Cursor plugin manifest publish metadata is present"
 
 # 9. Hook wiring parity: the CC and Codex hook configs must wire the same set
 #    of pre-* floor scripts, and each harness config must wire its own session

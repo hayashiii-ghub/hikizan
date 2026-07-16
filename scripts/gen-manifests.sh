@@ -20,12 +20,18 @@ license="$(jq -r .license "$SRC")"
 gen_claude() { cat "$SRC"; }
 
 gen_cursor() {
-  jq -n --arg v "$ver" --argjson a "$author" '{
+  local skill_list
+  skill_list="$(jq -r '.core | join(" / ")' "$ROOT/scripts/skills.json")"
+  jq -n --arg v "$ver" --argjson a "$author" --arg s "$skill_list" \
+    --arg homepage "$homepage" --arg repository "$repository" --arg license "$license" '{
     name: "hikizan",
     version: $v,
-    description: "hikizan floors + routing/opt-out for Cursor: beforeShellExecution blocks force-push to protected branches, destructive ops, and non-draft PRs; an always-apply rule injects the routing conventions and the standard-tier opt-out preamble.",
+    description: ("hikizan for Cursor: bundles the verb skills (" + $s + "), agents, beforeShellExecution floors (force-push deny, destructive-op ask, non-draft PR deny), and an always-apply rule for routing conventions + standard-tier opt-out preamble."),
     author: $a,
-    keywords: ["floors", "hooks", "code-review", "workflow", "japanese"],
+    homepage: $homepage,
+    repository: $repository,
+    license: $license,
+    keywords: ["skills", "floors", "hooks", "code-review", "workflow", "japanese"],
     rules: "cursor/rules/",
     hooks: "cursor/hooks.json"
   }'
