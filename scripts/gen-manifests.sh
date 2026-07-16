@@ -1,32 +1,89 @@
 #!/usr/bin/env bash
 # Generate all three plugin manifests from plugin.src.json (the single
-# hand-edited source for version / author / description). The harness-specific
-# fields for Cursor and Codex (description / keywords / component pointers)
-# live here. Do not edit .claude-plugin/plugin.json, .cursor-plugin/plugin.json
-# or .codex-plugin/plugin.json by hand — edit plugin.src.json and rerun.
+# hand-edited source for version / author / harness descriptions and Codex
+# interface metadata). Description templates use {{core_skills}}, expanded from
+# scripts/skills.json. Public schemas and harness-specific keywords / component
+# pointers live here. Do not edit generated manifests by hand — edit
+# plugin.src.json and rerun.
 #   bash scripts/gen-manifests.sh           # write the manifests
 #   bash scripts/gen-manifests.sh --check   # fail if regen would change them
-set -uo pipefail
+set -euo pipefail
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 command -v jq >/dev/null 2>&1 || { echo "✘ gen-manifests.sh requires jq" >&2; exit 1; }
 SRC="$ROOT/plugin.src.json"
 [ -f "$SRC" ] || { echo "✘ missing plugin.src.json" >&2; exit 1; }
+jq -e '
+  (.name | type == "string" and length > 0) and
+  (.version | type == "string" and length > 0) and
+  (.author | type == "object") and
+  (.author.name | type == "string" and length > 0) and
+  (.homepage | type == "string" and length > 0) and
+  (.repository | type == "string" and length > 0) and
+  (.license | type == "string" and length > 0) and
+  (.keywords | type == "array" and length > 0) and
+  all(.keywords[]; type == "string" and length > 0) and
+  (has("$schema") | not) and
+  (has("description") | not) and
+  (.descriptions | type == "object") and
+  all(.descriptions.claude, .descriptions.cursor, .descriptions.codex;
+    type == "string" and length > 0 and contains("{{core_skills}}")) and
+  (.codexInterface.shortDescription | type == "string" and length > 0) and
+  (.codexInterface.longDescription | type == "string" and length > 0) and
+  (.codexInterface.category | type == "string" and length > 0) and
+  (.codexInterface.capabilities | type == "array" and length > 0) and
+  all(.codexInterface.capabilities[]; type == "string" and length > 0)
+' "$SRC" >/dev/null || { echo "✘ plugin.src.json metadata is incomplete" >&2; exit 1; }
+name="$(jq -r .name "$SRC")"
 ver="$(jq -r .version "$SRC")"
 author="$(jq -c .author "$SRC")"
 homepage="$(jq -r .homepage "$SRC")"
 repository="$(jq -r .repository "$SRC")"
 license="$(jq -r .license "$SRC")"
+keywords="$(jq -c .keywords "$SRC")"
+codex_interface="$(jq -c .codexInterface "$SRC")"
+skill_list="$(jq -r '.core | join(" / ")' "$ROOT/scripts/skills.json")"
+[ -n "$skill_list" ] || { echo "✘ failed to read core skills from scripts/skills.json" >&2; exit 1; }
 
-gen_claude() { cat "$SRC"; }
+render_description() {
+  local harness="$1"
+  jq -er --arg harness "$harness" --arg skills "$skill_list" '
+    .descriptions[$harness]
+    | gsub("\\{\\{core_skills\\}\\}"; $skills)
+    | if (contains("{{") or contains("}}"))
+      then error("unresolved description placeholder for " + $harness)
+      else .
+      end
+  ' "$SRC"
+}
+
+claude_description="$(render_description claude)"
+cursor_description="$(render_description cursor)"
+codex_description="$(render_description codex)"
+
+gen_claude() {
+  jq -n --arg name "$name" --arg description "$claude_description" \
+    --arg v "$ver" --argjson a "$author" --arg homepage "$homepage" \
+    --arg repository "$repository" --arg license "$license" \
+    --argjson keywords "$keywords" '{
+    "$schema": "https://json.schemastore.org/claude-code-plugin-manifest.json",
+    name: $name,
+    description: $description,
+    version: $v,
+    author: $a,
+    homepage: $homepage,
+    repository: $repository,
+    license: $license,
+    keywords: $keywords
+  }'
+}
 
 gen_cursor() {
-  local skill_list
-  skill_list="$(jq -r '.core | join(" / ")' "$ROOT/scripts/skills.json")"
-  jq -n --arg v "$ver" --argjson a "$author" --arg s "$skill_list" \
+  jq -n --arg name "$name" --arg v "$ver" --argjson a "$author" \
+    --arg description "$cursor_description" \
     --arg homepage "$homepage" --arg repository "$repository" --arg license "$license" '{
-    name: "hikizan",
+    name: $name,
     version: $v,
-    description: ("hikizan for Cursor: bundles the verb skills (" + $s + "), agents, beforeShellExecution floors (force-push deny, destructive-op ask, non-draft PR deny), and an always-apply rule for routing conventions + standard-tier opt-out preamble."),
+    description: $description,
     author: $a,
     homepage: $homepage,
     repository: $repository,
@@ -38,27 +95,24 @@ gen_cursor() {
 }
 
 gen_codex() {
-  # The skill list is derived from scripts/skills.json (the single source for
-  # the core set) so a skill rename/addition can never leave a stale name here
-  # while gen --check stays green.
-  local skill_list
-  skill_list="$(jq -r '.core | join(" / ")' "$ROOT/scripts/skills.json")"
-  jq -n --arg v "$ver" --argjson a "$author" --arg s "$skill_list" \
+  jq -n --arg name "$name" --arg v "$ver" --argjson a "$author" \
+    --arg description "$codex_description" \
+    --argjson interface "$codex_interface" \
     --arg homepage "$homepage" --arg repository "$repository" --arg license "$license" '{
-    name: "hikizan",
+    name: $name,
     version: $v,
-    description: ("hikizan for Codex: bundles the verb skills (" + $s + "), PreToolUse floors (force-push deny, destructive-op deny, non-draft PR deny), and the routing conventions + standard-tier opt-out preamble via SessionStart."),
+    description: $description,
     author: $a,
     homepage: $homepage,
     repository: $repository,
     license: $license,
     interface: {
-      displayName: "hikizan",
-      shortDescription: "Japanese workflow skills and safety floors for Codex",
-      longDescription: "Verb-oriented Japanese workflow skills, routing conventions, and deterministic Codex hook guardrails for push, pull request, and destructive shell operations.",
+      displayName: $name,
+      shortDescription: $interface.shortDescription,
+      longDescription: $interface.longDescription,
       developerName: $a.name,
-      category: "Productivity",
-      capabilities: ["Read", "Write"]
+      category: $interface.category,
+      capabilities: $interface.capabilities
     },
     keywords: ["skills", "floors", "hooks", "code-review", "workflow", "japanese"],
     skills: "./skills/",
@@ -84,8 +138,26 @@ if [ "${1:-}" = "--check" ]; then
   exit "$rc"
 else
   mkdir -p "$ROOT/.claude-plugin" "$ROOT/.cursor-plugin" "$ROOT/.codex-plugin"
-  gen_claude > "$ROOT/.claude-plugin/plugin.json"
-  gen_cursor > "$ROOT/.cursor-plugin/plugin.json"
-  gen_codex > "$ROOT/.codex-plugin/plugin.json"
+  tmp_claude="$(mktemp "$ROOT/.claude-plugin/plugin.json.tmp.XXXXXX")"
+  tmp_cursor="$(mktemp "$ROOT/.cursor-plugin/plugin.json.tmp.XXXXXX")"
+  tmp_codex="$(mktemp "$ROOT/.codex-plugin/plugin.json.tmp.XXXXXX")"
+  cleanup() {
+    [ -z "${tmp_claude:-}" ] || rm -f -- "$tmp_claude"
+    [ -z "${tmp_cursor:-}" ] || rm -f -- "$tmp_cursor"
+    [ -z "${tmp_codex:-}" ] || rm -f -- "$tmp_codex"
+  }
+  trap cleanup EXIT
+  gen_claude > "$tmp_claude"
+  gen_cursor > "$tmp_cursor"
+  gen_codex > "$tmp_codex"
+  jq -e . "$tmp_claude" "$tmp_cursor" "$tmp_codex" >/dev/null
+  chmod 0644 "$tmp_claude" "$tmp_cursor" "$tmp_codex"
+  mv "$tmp_claude" "$ROOT/.claude-plugin/plugin.json"
+  mv "$tmp_cursor" "$ROOT/.cursor-plugin/plugin.json"
+  mv "$tmp_codex" "$ROOT/.codex-plugin/plugin.json"
+  tmp_claude=""
+  tmp_cursor=""
+  tmp_codex=""
+  trap - EXIT
   echo "✔ wrote .claude-plugin/plugin.json, .cursor-plugin/plugin.json and .codex-plugin/plugin.json"
 fi

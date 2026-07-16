@@ -1,7 +1,16 @@
 {
-  "$schema": "https://json.schemastore.org/claude-code-plugin-manifest.json",
   "name": "hikizan",
-  "description": "動詞単位の skill (tansaku / sadoku / sekkei / jikkou / teishutsu / shippitsu) を「弱いモデル基準のレール + 賢いモデルへの opt-out (手順自由・出口固定) + hooks floors」で構成する Claude Code plugin / Agent Skills skill pack。タスクの回し方が強くないモデルには番号付き手順を、強いモデルには余計な手順を課さず出口の形だけ揃える設計。",
+  "descriptions": {
+    "claude": "動詞単位の skill ({{core_skills}}) を「弱いモデル基準のレール + 賢いモデルへの opt-out (手順自由・出口固定) + hooks floors」で構成する Claude Code plugin / Agent Skills skill pack。タスクの回し方が強くないモデルには番号付き手順を、強いモデルには余計な手順を課さず出口の形だけ揃える設計。",
+    "cursor": "hikizan for Cursor: bundles the verb skills ({{core_skills}}), agents, beforeShellExecution floors (force-push deny, destructive-op ask, non-draft PR deny), and an always-apply rule for routing conventions + standard-tier opt-out preamble.",
+    "codex": "hikizan for Codex: bundles the verb skills ({{core_skills}}), PreToolUse floors (force-push deny, destructive-op deny, non-draft PR deny), and the routing conventions + standard-tier opt-out preamble via SessionStart."
+  },
+  "codexInterface": {
+    "shortDescription": "Japanese workflow skills and safety floors for Codex",
+    "longDescription": "Verb-oriented Japanese workflow skills, routing conventions, and deterministic Codex hook guardrails for push, pull request, and destructive shell operations.",
+    "category": "Productivity",
+    "capabilities": ["Read", "Write"]
+  },
   "version": "0.10.4",
   "author": {
     "name": "hayashiii-ghub"
