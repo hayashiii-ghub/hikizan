@@ -1,6 +1,6 @@
 # commit 契約
 
-実装中に意味的 checkpoint を保存するときに読む契約。commit の粒度はユーザ承認の単位で決めず、作業を意味のある単位で保存する checkpoint として決める。commit の実行権限は、commit を行う skill の契約に従う。subject の形式は `skills/teishutsu/references/naming.md`、長期的に残す実装判断は PR 本文の Workflow 節が正本。
+実装中に意味的 checkpoint を保存するときに読む契約。commit の粒度はユーザ承認の単位で決めず、作業を意味のある単位で保存する checkpoint として決める。commit の実行権限は、commit を行う skill の契約に従う。subject の形式は `teishutsu` の naming reference、長期的に残す実装判断は PR 本文の Workflow 節が正本。
 
 ## 粒度
 
@@ -30,6 +30,6 @@
 2. staged diff を 1 文で説明する
 3. staged file に承認済み scope 外の変更が無いことを確認する
 4. 関連する検証を実行し、green の出力を控える
-5. `skills/teishutsu/references/naming.md` に従って subject を付ける。diff だけでは理由が分からないときだけ body を書く
+5. `teishutsu` の naming reference に従って subject を付ける。diff だけでは理由が分からないときだけ body を書く
 6. 重要な判断と根拠は commit message だけに置かず、PR 本文の Workflow 節にも残す
 7. email を含む attribution trailer は付けず、共同作業の記録は PR / hosting platform に委ねる

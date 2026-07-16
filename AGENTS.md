@@ -23,6 +23,7 @@ hook を単体で動かすときの gotcha:
 ## Conventions
 
 - skill 本体 (`skills/`) はハーネス agnostic に書く。Claude Code / Cursor / Codex 等の固有 API 名は、必要な注釈以外では本文に出さない。
+- 配布単位は hikizan skill pack 全体。skill 本文から別 skill を参照するときは論理名で書き、`skills/<name>/...` や `../../<name>/...` の repo-relative path を使わない。
 - floors は CC / Cursor / Codex の 3 harness で同一の pure-logic lib (`hooks/scripts/lib/`, `hooks/scripts/pre-*.sh`) を共有する。force push と非 draft PR は全 harness で deny。破壊的操作は CC / Cursor では ask、`ask` 非対応の Codex では同じ分類結果を deny にする。harness ごとの差分は adapter / entry-point 引数の I/O・決定 policy に限定する。
 - `when_to_use` は CC 公式 frontmatter フィールド (`description` と合算で文字数上限に載るため短く保つ)。発動条件の正本は `description`。
 - **trigger 早見表は手動転記しない**。`README.md` の `<!-- hikizan:triggers -->` 区間は `scripts/gen-trigger-docs.sh` が frontmatter から生成する (`docs/workflow.md` は README の表を参照する)。`description` / `when_to_use` を変えたら `bash scripts/gen-trigger-docs.sh` を再実行し、`bash scripts/check-all.sh` で検証する。

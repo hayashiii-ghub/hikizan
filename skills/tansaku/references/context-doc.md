@@ -35,4 +35,4 @@ silent mutation はしない。`sadoku` がレビュー前提として読むた�
 ## 読む側
 
 - `sekkei`: 通常検討「この設計が前提とする事実」(Premises) を CONTEXT.md から引く。決定は ADR に置き CONTEXT.md にリンクする
-- `sadoku`: レビュー前に「ドメイン / 設計意図 / 脅威モデル」を CONTEXT.md から抽出し、reviewer subagent の必須 input に渡す (`skills/sadoku/references/project-context.md`)
+- `sadoku`: レビュー前に「ドメイン / 設計意図 / 脅威モデル」を CONTEXT.md から抽出し、reviewer subagent の必須 input に渡す (`sadoku` の project-context reference)
