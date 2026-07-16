@@ -1,9 +1,23 @@
 {
   "name": "hikizan",
   "version": "0.10.3",
-  "description": "hikizan for Codex: bundles the verb skills (tansaku / sadoku / sekkei / jikkou / teishutsu / shippitsu), the PreToolUse floors (force-push deny, destructive-op ask, non-draft PR deny) reusing the Claude Code hook scripts verbatim, and the routing conventions + standard-tier opt-out preamble via the SessionStart hook.",
+  "description": "hikizan for Codex: bundles the verb skills (tansaku / sadoku / sekkei / jikkou / teishutsu / shippitsu), PreToolUse floors (force-push deny, destructive-op deny, non-draft PR deny), and the routing conventions + standard-tier opt-out preamble via SessionStart.",
   "author": {
     "name": "hayashiii-ghub"
+  },
+  "homepage": "https://github.com/hayashiii-ghub/hikizan",
+  "repository": "https://github.com/hayashiii-ghub/hikizan",
+  "license": "MIT",
+  "interface": {
+    "displayName": "hikizan",
+    "shortDescription": "Japanese workflow skills and safety floors for Codex",
+    "longDescription": "Verb-oriented Japanese workflow skills, routing conventions, and deterministic Codex hook guardrails for push, pull request, and destructive shell operations.",
+    "developerName": "hayashiii-ghub",
+    "category": "Productivity",
+    "capabilities": [
+      "Read",
+      "Write"
+    ]
   },
   "keywords": [
     "skills",

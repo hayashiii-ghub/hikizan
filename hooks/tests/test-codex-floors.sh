@@ -1,10 +1,11 @@
 #!/usr/bin/env bash
 # Tests for the Codex floors adapter. Codex's PreToolUse input/output is
-# byte-for-byte compatible with Claude Code's (tool_input.command / cwd /
-# session_id in, hookSpecificOutput.permissionDecision out), so the existing
-# pre-push.sh / pre-destructive.sh / pre-pr-create.sh are reused unmodified —
-# this file only exercises them through a Codex-shaped payload. It also pins
-# codex/scripts/session-context.sh, the SessionStart preamble adapter.
+# mostly compatible with Claude Code's (tool_input.command / cwd / session_id
+# in, hookSpecificOutput.permissionDecision out). Codex does not support the
+# PreToolUse "ask" decision, so the shared destructive classifier is invoked
+# in deny mode while the other floor scripts are reused unchanged. This file
+# exercises them through a Codex-shaped payload and pins the SessionStart
+# preamble adapter.
 
 DIR="$(cd "$(dirname "$0")" && pwd)"
 . "$DIR/lib/harness.sh"
@@ -18,15 +19,16 @@ hz_mkrepo() { local b="$1" d; d="$(mktemp -d)"; git -C "$d" init -q
   git -C "$d" config user.email t@example.com; git -C "$d" config user.name t
   git -C "$d" commit -q --allow-empty -m init; git -C "$d" branch -M "$b"; printf '%s' "$d"; }
 
-# run_codex_pretooluse <hook> <command> <cwd> -> sets HZ_OUT to the hook's
+# run_codex_pretooluse <hook> <command> <cwd> [hook args...] -> sets HZ_OUT to the hook's
 # stdout. Builds the Codex PreToolUse payload shape from the spec.
 run_codex_pretooluse() {
   local hook="$1" cmd="$2" cwd="$3" payload
+  shift 3
   : "${HIKIZAN_METRICS_DIR:=$(mktemp -d 2>/dev/null || echo /tmp/hz-metrics.$$)}"
   export HIKIZAN_METRICS_DIR
   payload=$(jq -nc --arg c "$cmd" --arg w "$cwd" \
     '{session_id:"s", tool_name:"Bash", tool_input:{command:$c}, cwd:$w, hook_event_name:"PreToolUse", permission_mode:"default"}')
-  HZ_OUT=$(printf '%s' "$payload" | bash "$hook" 2>/dev/null)
+  HZ_OUT=$(printf '%s' "$payload" | bash "$hook" "$@" 2>/dev/null)
 }
 
 decision_of() {
@@ -49,8 +51,18 @@ assert_eq "pre-push: plain push origin main -> allow" "allow" "$(decision_of "$H
 rm -rf "$REPO_MAIN"
 
 # --- pre-destructive.sh ---
-run_codex_pretooluse "$PRE_DESTRUCTIVE" "rm -rf /tmp/x" "/tmp"
-assert_eq "pre-destructive: rm -rf -> ask" "ask" "$(decision_of "$HZ_OUT")"
+run_codex_pretooluse "$PRE_DESTRUCTIVE" "rm -rf /tmp/x" "/tmp" deny
+assert_eq "pre-destructive: rm -rf -> deny (Codex has no ask decision)" "deny" "$(decision_of "$HZ_OUT")"
+assert_contains "pre-destructive: deny reason explains the Codex path" "blocked" \
+  "$(printf '%s' "$HZ_OUT" | jq -r '.hookSpecificOutput.permissionDecisionReason // ""')"
+assert_contains "pre-destructive: deny reason forbids agent bypass" "do not retry" \
+  "$(printf '%s' "$HZ_OUT" | jq -r '.hookSpecificOutput.permissionDecisionReason // ""')"
+
+CODEX_METRICS_DIR="$(mktemp -d)"
+printf '%s' "$(jq -nc '{session_id:"deadbeef-0000-0000-0000-000000000000",tool_input:{command:"rm -rf /tmp/x"}}')" | \
+  HIKIZAN_METRICS_DIR="$CODEX_METRICS_DIR" bash "$PRE_DESTRUCTIVE" deny >/dev/null 2>&1
+assert_eq "pre-destructive: Codex deny is recorded as metrics block" "block" \
+  "$(jq -r '.decision' "$CODEX_METRICS_DIR/metrics.jsonl")"
 
 run_codex_pretooluse "$PRE_DESTRUCTIVE" "ls -la" "/tmp"
 assert_eq "pre-destructive: ls -la -> allow" "allow" "$(decision_of "$HZ_OUT")"
