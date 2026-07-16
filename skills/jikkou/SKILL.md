@@ -21,6 +21,7 @@ core skill (init を除く全 skill) 共通。正本は `scripts/contract.md` �
 - 元に戻せない操作 (削除 / force push / reset --hard / git clean) は、実行する前にユーザに確認する
 - 「pass した」「確認した」と書くときは、コマンド出力の最終行をそのまま貼る。出力なしで完了と書かない
 - 秘密情報 (token / email / チーム外の実名) を PR 本文・commit message に書かない。出す前に grep で確認する
+- commit する場合は `skills/teishutsu/references/commit.md` の粒度契約に従う。独立して説明・検証・revert できる 1 つの変更を、関連検証が通った状態で保存する
 - PR / branch / step は機能名か issue 名で呼ぶ。PR-1 のような独自の連番を作らない (詳細は skills/teishutsu/references/naming.md)
 - 別の skill に渡すときは 1 行で書く: `handoff: [skill] / brief: [1 文] / evidence: [file:line かコマンド出力]`
 - 日本語の文章は skills/shippitsu/references/writing-style.md の規範に従う
@@ -45,7 +46,7 @@ core skill (init を除く全 skill) 共通。正本は `scripts/contract.md` �
 5. UI / レイアウト / 視覚に触れる step は、検証コマンドに加えて視覚検証も通す (web project かつ `sitesnap` があるとき。shot で撮って --json の file を Read で読み戻して目視し、check --json の合否を step 通過判定にする)。撮れない環境では「視覚未確認」と報告に明記してスキップする
 6. 計画に無いファイルに 5 つ以上触れそうになったら、または方針の再決定が要ると分かったら、止めて `sekkei` に差し戻す
 7. scope 外の発見は実装せず「実装中に分かったこと」にメモする
-8. 全 step 完了後、下の「報告」を埋めて `sadoku` に渡す
+8. 全 step 完了後、下の「報告」を埋めて `sadoku` に渡す。handoff の `brief` は実装した observable behavior + この実装固有の判断 / 受容リスク (あれば) とし、`evidence` は完成 diff と検証を特定できる file:line / command に絞る。報告・diff・検証ログ本体は handoff 行の外に添え、`sadoku` の共通観点は再掲しない
 
 詳細: `references/plan-execution.md`
 

@@ -53,7 +53,7 @@ skill 単位の起動トリガー早見表は README の [trigger 早見表](../
 
 mode 別の起動トリガーと手順は各 `SKILL.md` の「モード表」が正本 (README の生成表は skill 単位の起動語)。ここで二重管理しない。TDD 実装の必須 / skip レイヤー判定は `../skills/jikkou/references/tdd.md` を参照。
 
-> **状態トリガー** (git diff 検出・計画実行の完了報告直後など) の詳細は各 `SKILL.md` を参照。reviewer コメント対応は skill mode 化しない (通常会話で「返信書いて」)。
+> **状態トリガー** (git diff 検出・計画実行の完了報告直後など) の詳細は各 `SKILL.md` を参照。判断の差し込みは状態変化で行い、固定の会話回数では発火させない。reviewer コメント対応は skill mode 化しない (通常会話で「返信書いて」)。
 
 ### 起動経路は 3 層ある (運用実態)
 
@@ -88,7 +88,7 @@ trigger 表は「どう呼ばれうるか」の定義。実際の起動経路は
 | jikkou 計画実行      | sekkei 通常検討        | scope 逸脱 / 方針の再決定   | 逸脱点 + 再検討したい判断 |
 | jikkou 計画実行      | jikkou 診断       | 原因未確定 / test failure   | 症状 + evidence |
 | jikkou 診断     | jikkou 計画実行        | root cause 確定             | root cause 1 文 + fix 候補 |
-| jikkou 計画実行      | sadoku 通常レビュー    | 実装完了                    | handoff + 報告 + 完成 diff |
+| jikkou 計画実行      | sadoku 通常レビュー    | 実装完了                    | 1 行 handoff (observable behavior + 固有判断 / risk + evidence locator) + 報告 / 完成 diff / 検証出力 |
 | (user)               | sadoku 通常レビュー    | 「レビューして」            | diff                  |
 | sadoku 通常レビュー  | subagent (reviewer-*)  | Standard 以上の production code / 専門観点該当 | 対象 + 近隣の比較対象 + repo convention の出典 + 設計前提 |
 | subagent             | sadoku                 | 評価完了                    | findings（要裏取り）  |
@@ -97,6 +97,8 @@ trigger 表は「どう呼ばれうるか」の定義。実際の起動経路は
 | (user)               | teishutsu              | 「PR出す」「PR提出」        | 実装完了 + diff       |
 | jikkou 計画実行      | teishutsu              | 完了報告 + 本文準備済       | files changed + body  |
 | (user)               | teishutsu              | 「PR文書いて」              | change intent + files + verification |
+
+`teishutsu` 提出モードは範囲を限定した一括承認とし、承認範囲と停止条件の正本は `skills/teishutsu/SKILL.md` に置く。本文ドラフトモードは書き込みを行わない。
 
 handoff の共通形 (1 行):
 
@@ -108,7 +110,7 @@ handoff: [skill] / brief: [1 文] / evidence: [file:line かコマンド出力]
 
 ## 4. Goal loop で使う場合
 
-Claude Code / Codex などの runtime が `/goal` 相当の継続実行機能を持つ場合、hikizan は loop engine ではなく loop 内の判断規約として使う。hikizan の skill / hook は次 turn を自動発火しない。skill 間の受け渡しは §3 の handoff 表のとおり。
+Claude Code / Codex などの runtime が `/goal` 相当の継続実行機能を持つ場合、hikizan は loop engine ではなく loop 内の判断規約として使う。hikizan の skill / hook は次 turn を自動発火せず、会話回数も数えない。skill 間の受け渡しは §3 の handoff 表のとおり。
 
 Example goal:
 

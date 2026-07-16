@@ -54,6 +54,7 @@ hook を単体で動かすときの gotcha:
 | review / 整理観点を変える | `skills/sadoku/SKILL.md` |
 | 専門家レビュー subagent を変える | `skills/sadoku/references/agents/*.md` (正本。`scripts/gen-agents.sh` が `agents/` に生成する) |
 | PR 本文ドラフト / PR 提出フローを変える | `skills/teishutsu/SKILL.md` |
+| commit の意味 / 粒度 / commit 前点検を変える | `skills/teishutsu/references/commit.md` |
 | hook の block / warning 条件を変える | `hooks/conditions.md` と `hooks/hooks.json` (ロジックは `hooks/scripts/lib/`、検査は `hooks/tests/`) |
 | 利用先 project に注入する routing / ルール文を変える | `context/routing.md` (注入 `session-context.sh` と `/hikizan:init` の単一ソース) |
 | standard tier への opt-out 前文 (手順自由・出口固定) を変える | `context/standard-preamble.md` (`session-context.sh` が tier=standard のときだけ注入) |
