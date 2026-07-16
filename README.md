@@ -36,7 +36,7 @@ hikizan は Claude Code plugin / Agent Skills 対応の skill pack。動詞単�
 | ハーネス | 入るもの | 方法 | 検証状態 |
 | --- | --- | --- | --- |
 | Claude Code | skills + floors + 前文 | `/plugin` 2 コマンド (下記) | 検証済み (開発時に常用) |
-| Codex | skills + floors + 前文 | `codex plugin` 2 コマンド (下記) | 実験的 (plugin ロード未 live 検証) |
+| Codex | skills + floors + 前文 | `codex plugin` 2 コマンド (下記) | install 検証済み / hooks 発火は未 live 検証 |
 | Cursor | skills + subagents + floors + 前文 rule | Plugins 画面で GitHub repo を追加 (下記) | 検証済み (実機確認 2026-07-03) |
 | その他の harness | skills のみ (tier は `guided` 既定) | `npx skills add` (下記) | best-effort (harness 依存) |
 
@@ -56,10 +56,10 @@ skills + floors + 前文がまとめて入る。`.git` 付き HTTPS URL を明�
 
 ```bash
 codex plugin marketplace add hayashiii-ghub/hikizan
-codex plugin install hikizan
+codex plugin add hikizan@hikizan
 ```
 
-skills + floors (force push deny / 破壊的操作 ask / 非 draft PR deny) + SessionStart 経由の前文がまとめて入り、`HIKIZAN_TIER=standard` を宣言できる。特定 version への固定は `--ref v0.8.0`。実 Codex 環境での plugin ロードは未 live 検証 (floors のロジック自体は CC と同一ファイルで、合成入力の回帰テストは通る)。詳細と fallback (手動 hooks.json) は `codex/README.md`。`npx skills add -a codex` は併用しない。
+skills + floors (force push deny / 破壊的操作 deny / 非 draft PR deny) + SessionStart 経由の前文がまとめて入り、`HIKIZAN_TIER=standard` を宣言できる。特定 version への固定は marketplace 追加時に `--ref v0.10.3` を付ける。Codex CLI 0.144.2 の隔離した `CODEX_HOME` で marketplace 追加・plugin install・一覧表示までは確認済み。install 後は hooks の内容を確認して信頼し、新しい task を開始する。実 tool call での hooks 発火は未 live 検証なので、floors は完全な security boundary ではなく補助 guardrail として扱う。詳細と fallback (手動 hooks.json) は `codex/README.md`。`npx skills add -a codex` は併用しない。
 
 ### Cursor
 
@@ -102,7 +102,7 @@ tier は「環境構築時にどこまで仕組みを用意したか」を表す
 | `pre-pr-create` | PreToolUse `gh pr create` | draft / reviewer 未指定を `deny` |
 | `post-command` | PostToolUse `git push` / `gh pr create` ほか `rm` | floor 対象クラスのコマンド実行を記録 (介入なし。ask 承認率と bypass 検出の材料) |
 
-決定は公式の JSON `permissionDecision` 形式 (`deny` / `ask`)。発火条件マトリクスと既知の限界は `hooks/conditions.md` (SoT)。決定論ロジックは `hooks/tests/` で回帰検査する (`bash hooks/tests/run.sh`)。発火イベントは `~/.hikizan/metrics.jsonl` に記録 (`HIKIZAN_METRICS_DIR` で変更可)。
+この表は Claude Code 用。Cursor も破壊的操作を `ask` にするが、Codex は PreToolUse の `ask` を扱えないため同じ分類結果を `deny` にする。決定は各 harness の公式形式で返す。発火条件マトリクスと既知の限界は `hooks/conditions.md` (SoT)。決定論ロジックは `hooks/tests/` で回帰検査する (`bash hooks/tests/run.sh`)。発火イベントは `~/.hikizan/metrics.jsonl` に記録 (`HIKIZAN_METRICS_DIR` で変更可)。
 
 ## trigger 早見表
 

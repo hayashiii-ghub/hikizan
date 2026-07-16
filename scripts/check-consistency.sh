@@ -111,4 +111,31 @@ done
 fail=$((fail || wt_missing))
 [ "$wt_missing" -eq 0 ] && echo "✔ report templates carry the worktree line"
 
+# 12. Codex distribution must stay on the current plugin contract. The CLI
+#     command, marketplace metadata, published-manifest metadata, and the
+#     Codex-specific destructive deny mode are one installable surface.
+codex_dist=0
+grep -qF 'codex plugin add hikizan@hikizan' "$ROOT/README.md" || { echo "✘ README.md is missing the current Codex plugin add command"; codex_dist=1; }
+grep -qF 'codex plugin add hikizan@hikizan' "$ROOT/codex/README.md" || { echo "✘ codex/README.md is missing the current Codex plugin add command"; codex_dist=1; }
+if grep -qF 'codex plugin install' "$ROOT/README.md" "$ROOT/codex/README.md"; then
+  echo "✘ obsolete 'codex plugin install' command remains in Codex docs"; codex_dist=1
+fi
+jq -e '
+  (.interface.displayName | type == "string" and length > 0) and
+  (.plugins | length > 0) and
+  all(.plugins[];
+    (.policy.installation | type == "string" and length > 0) and
+    (.policy.authentication | type == "string" and length > 0) and
+    (.category | type == "string" and length > 0))
+' "$ROOT/.agents/plugins/marketplace.json" >/dev/null 2>&1 || { echo "✘ Codex marketplace metadata is incomplete"; codex_dist=1; }
+jq -e '
+  (.homepage | type == "string" and length > 0) and
+  (.repository | type == "string" and length > 0) and
+  (.license | type == "string" and length > 0) and
+  (.interface.displayName | type == "string" and length > 0)
+' "$ROOT/.codex-plugin/plugin.json" >/dev/null 2>&1 || { echo "✘ Codex plugin manifest publish metadata is incomplete"; codex_dist=1; }
+grep -q 'pre-destructive\.sh deny' "$ROOT/codex/hooks.json" || { echo "✘ Codex destructive hook is not wired in deny mode"; codex_dist=1; }
+fail=$((fail || codex_dist))
+[ "$codex_dist" -eq 0 ] && echo "✔ Codex distribution command, metadata, and hook mode are current"
+
 exit "$fail"

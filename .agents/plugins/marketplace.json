@@ -1,9 +1,20 @@
 {
   "name": "hikizan",
+  "interface": {
+    "displayName": "hikizan"
+  },
   "plugins": [
     {
       "name": "hikizan",
-      "source": "./"
+      "source": {
+        "source": "local",
+        "path": "./"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Productivity"
     }
   ]
 }

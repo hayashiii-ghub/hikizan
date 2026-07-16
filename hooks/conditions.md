@@ -9,7 +9,7 @@ Claude Code plugin の hooks で監視する条件 / 挙動 / 決定の一覧。
 | SessionStart | matcher `startup` | セッション開始 (startup) | `context/routing.md` の routing / ルールと active tier を stdout に出力し context 注入。tier=standard なら `context/standard-preamble.md` (opt-out 前文) も注入。host repo は書き換えない | stdout (context) |
 | PreToolUse | `Bash(git push*)` | local が push 先 remote から N コミット遅れている (non-fast-forward)。remote はコマンドの明示 remote → branch.<name>.remote → origin の順に解決 | `permissionDecision: "deny"` + 選択肢 (pull --rebase / 別 branch / abort) | JSON reason |
 | PreToolUse | `Bash(git push*)` | force 相当 (`--force` / `--force-with-lease` / `-f` / `-fv` に加え `+refspec` / `:branch` (削除) / `--delete`・`-d` / `--mirror` / `--prune`) が main / master / develop を対象にする | `permissionDecision: "deny"` + 確認要求 | JSON reason |
-| PreToolUse | `Bash(rm -*)` / `Bash(git reset*)` / `Bash(git clean*)` / `Bash(git checkout*)` | 不可逆操作 (`rm -rf` / `git reset --hard` / `git clean -f` / `git checkout` discard) | `permissionDecision: "ask"` (block でなく確認) | JSON reason |
+| PreToolUse | `Bash(rm -*)` / `Bash(git reset*)` / `Bash(git clean*)` / `Bash(git checkout*)` | 不可逆操作 (`rm -rf` / `git reset --hard` / `git clean -f` / `git checkout` discard) | CC / Cursor: `ask`、Codex: `deny` (`ask` 非対応のため) | JSON reason |
 | PreToolUse | `Bash(gh pr create*)` | `--draft` / `-d` も `--reviewer` / `-r` も無い (flag 判定は quote-aware tokenizer によるトークン一致。引用文字列内の `-d` 等では発火・解除しない) | `permissionDecision: "deny"` + 選択肢 | JSON reason |
 | PostToolUse (Bash) | `Bash(git push*)` / `Bash(gh pr create*)` / `Bash(rm -*)` / `Bash(git reset*)` / `Bash(git clean*)` / `Bash(git checkout*)` | floor 対象クラスの実行を記録、介入なし・決定なし | なし (metrics のみ) | metrics.jsonl |
 
@@ -20,6 +20,7 @@ Claude Code plugin の hooks で監視する条件 / 挙動 / 決定の一覧。
   を出して exit 0 する (公式推奨形、`scripts/lib/decision.sh` の `hz_decision`)。reason は Claude 本体 / ユーザに relay される。
   - `deny`: 操作を止め、reason を Claude に返す (non-ff / 保護 branch への force)。
   - `ask`: ユーザに確認ダイアログを出す (不可逆操作)。N 択の文言は reason に書く。
+  - Codex は PreToolUse の `ask` を扱えないため、`codex/hooks.json` が `pre-destructive.sh deny` として呼び、同じ分類結果を `deny` にする。Claude Code は引数なしで `ask`、Cursor は adapter から `ask` を返す。
   - jq 不在は各 hook の entry で `scripts/lib/guard.sh` の `hz_require_jq` が stderr + exit 2 の fail-closed にする (PreToolUse 3 hook + Cursor adapter)。`hz_decision` / `hz_cursor_decision` 内の degrade は defense-in-depth として残るが、entry で先に止まるため通常到達しない。
 - **hook は PreToolUse の deny/ask のみ**。
 - **判定は local 情報優先**。`git fetch --quiet` は実行するが、失敗時はローカル状態で判定を継続する。
@@ -54,6 +55,7 @@ force push の対象 branch は `scripts/lib/push-parse.sh` の `hikizan_push_ta
 - **exotic な git 呼び出し**: 絶対パス `/usr/bin/git push` や alias 経由など、matcher の prefix に外れる形は素通りしうる (script 内は `hz_git_subcommand` による anchored 判定だが、`if` 段で発火しなければ script に届かない)。
 - **non-fast-forward 検査の範囲**: 比較対象は「解決した remote の current branch」(`<remote>/<branch>`)。URL 直指定の push (`git push https://... main`) は remote-tracking ref が無いため検査対象外。refspec で current branch 以外に push する形 (`HEAD:other`) の non-ff は見ない (force 相当の検査は別途効く)。
 - **destructive 分類**: `rm -rf` / `reset --hard` / `clean -f` / `checkout` discard の 4 系統に限定。`git restore` 等は対象外。
+- **Codex の shell tool coverage**: `codex/hooks.json` は `matcher: "Bash"` に配線する。Codex の shell execution 経路や tool 名が増えた場合に全経路を捕捉できる保証はなく、hook 単独を完全な security boundary として扱わない。
 
 ## メトリクス記録
 
@@ -119,6 +121,7 @@ bash hooks/tests/run.sh push-parse # 特定テストのみ
 | `test-pr-create.sh` | `hz_is_pr_create` / `hz_prcreate_needs_review` の単体 (quote-aware) |
 | `test-pre-pr-create.sh` | pre-pr-create 統合 (-d / -r / deny) |
 | `test-cursor-floors.sh` | cursor floors 統合 (force push deny / 破壊的操作 ask / 非 draft PR deny を Cursor I/O 経由で検査) |
+| `test-codex-floors.sh` | Codex floors 統合 (force push deny / 破壊的操作 deny / 非 draft PR deny と SessionStart を Codex I/O 経由で検査) |
 | `test-tokenize.sh` | quote-aware tokenizer (`hz_tokenize`) の単体 |
 | `test-jq-absent.sh` | jq 不在時の fail-closed (PreToolUse 3 hook + Cursor adapter は exit 2、session-context は noop) / post-command.sh は noop |
 | `test-post-command.sh` | post-command 統合 (floor 対象クラスの実行だけ記録、それ以外は 0 行) |

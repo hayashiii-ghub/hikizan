@@ -1,10 +1,9 @@
-# Codex 向け floors adapter (codex/)
+# Codex 向け plugin adapter (codex/)
 
-Codex CLI は v0.117+ で plugin が first-class、v0.128 で plugin 同梱 hooks が GA。入力
-(`tool_input.command` / `cwd` / `session_id`) と出力 (`hookSpecificOutput.permissionDecision`) が
-Claude Code と完全に同一のため、CC の floor スクリプト (`hooks/scripts/pre-push.sh` /
-`pre-destructive.sh` / `pre-pr-create.sh`) を**そのまま再利用**する。Codex 用に複製した判定ロジックは
-無い。
+Codex plugin として skills、PreToolUse floors、SessionStart 前文をまとめて配る。shell command の分類は
+Claude Code / Cursor と同じ `hooks/scripts/lib/` を使い、Codex 固有部分は manifest、hook 配線、出力
+envelope に限定する。Codex の PreToolUse は `ask` を扱えないため、破壊的操作だけは同じ分類結果を
+`deny` として返す。
 
 ## install (plugin、推奨)
 
@@ -15,17 +14,18 @@ repo に marketplace catalog (`.agents/plugins/marketplace.json`) と plugin man
 
 ```bash
 codex plugin marketplace add hayashiii-ghub/hikizan
-codex plugin install hikizan
+codex plugin add hikizan@hikizan
 ```
 
-- 特定 version に固定するなら `codex plugin marketplace add hayashiii-ghub/hikizan --ref v0.7.1`
+- 特定 version に固定するなら `codex plugin marketplace add hayashiii-ghub/hikizan --ref v0.10.3`
 - TUI 派は 1 行目のあと `/plugins` で marketplace `hikizan` から選んでもよい
 - `jq` が必要 (CC / Cursor と同じ)
+- install 後は表示された hooks の内容を確認して信頼し、新しい task を開始する
 
-**実 Codex 環境での plugin ロードは未 live 検証**。特に、repo 直下の `hooks/hooks.json` (CC 用、
-`${CLAUDE_PLUGIN_ROOT}` と CC 固有の `if` を使う) を Codex の auto-detect が拾わないことは、
-`.codex-plugin/plugin.json` の明示 `hooks` field (`./codex/hooks.json`) が auto-detect を置換する
-前提に依存しており、この置換の挙動は docs に明記が無いため未検証。
+Codex CLI 0.144.2 の隔離した `CODEX_HOME` で marketplace 追加、plugin install、一覧表示までは検証済み。
+実 tool call での hook 発火と trust UI は未 live 検証。`.codex-plugin/plugin.json` の明示 `hooks`
+field (`./codex/hooks.json`) は Codex の既定 hook discovery を置き換えるため、CC 用
+`hooks/hooks.json` は読み込まれない。
 
 ## install (fallback: 手動 `~/.codex/hooks.json`)
 
@@ -45,7 +45,7 @@ plugin が使えない環境向けの fallback。
            "matcher": "Bash",
            "hooks": [
              { "type": "command", "command": "/abs/path/to/hikizan/hooks/scripts/pre-push.sh", "statusMessage": "checking push preconditions..." },
-             { "type": "command", "command": "/abs/path/to/hikizan/hooks/scripts/pre-destructive.sh", "statusMessage": "checking destructive op..." },
+             { "type": "command", "command": "/abs/path/to/hikizan/hooks/scripts/pre-destructive.sh deny", "statusMessage": "checking destructive op..." },
              { "type": "command", "command": "/abs/path/to/hikizan/hooks/scripts/pre-pr-create.sh", "statusMessage": "checking PR create preconditions..." }
            ]
          }
@@ -71,7 +71,7 @@ plugin が使えない環境向けの fallback。
 CC と同一ロジックの 3 つ:
 
 - force push / 保護 branch (main / master / develop) への force-equivalent push → `deny`
-- 破壊的操作 (`rm -rf` / `git reset --hard` / `git clean -f` / `git checkout` の破棄的形) → `ask`
+- 破壊的操作 (`rm -rf` / `git reset --hard` / `git clean -f` / `git checkout` の破棄的形) → `deny`
 - `gh pr create` を `--draft` も `--reviewer` も無しで実行 → `deny`
 
 matcher は tool 名の regex (CC の `if` prefix のような per-hook 条件は無い) なので、3 スクリプトを
@@ -87,4 +87,12 @@ matcher は tool 名の regex (CC の `if` prefix のような per-hook 条件�
 
 ## 既知の限界
 
-CC hooks と同じ (`../hooks/conditions.md` の「既知の限界」を参照)。
+floor は補助 guardrail であり、完全な security boundary ではない。特に Codex 側の Bash tool 呼び出し
+経路が増えた場合、`matcher: "Bash"` で全 shell execution を捕捉できるとは限らない。分類器自体の限界
+(複合 command、対象 command の限定など) と合わせ、`../hooks/conditions.md` の「既知の限界」を参照。
+
+公式仕様:
+
+- [Build plugins](https://developers.openai.com/codex/plugins/build)
+- [Plugins](https://developers.openai.com/codex/plugins)
+- [Hooks](https://learn.chatgpt.com/docs/hooks)

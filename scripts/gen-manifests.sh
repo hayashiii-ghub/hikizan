@@ -13,6 +13,9 @@ SRC="$ROOT/plugin.src.json"
 [ -f "$SRC" ] || { echo "✘ missing plugin.src.json" >&2; exit 1; }
 ver="$(jq -r .version "$SRC")"
 author="$(jq -c .author "$SRC")"
+homepage="$(jq -r .homepage "$SRC")"
+repository="$(jq -r .repository "$SRC")"
+license="$(jq -r .license "$SRC")"
 
 gen_claude() { cat "$SRC"; }
 
@@ -34,11 +37,23 @@ gen_codex() {
   # while gen --check stays green.
   local skill_list
   skill_list="$(jq -r '.core | join(" / ")' "$ROOT/scripts/skills.json")"
-  jq -n --arg v "$ver" --argjson a "$author" --arg s "$skill_list" '{
+  jq -n --arg v "$ver" --argjson a "$author" --arg s "$skill_list" \
+    --arg homepage "$homepage" --arg repository "$repository" --arg license "$license" '{
     name: "hikizan",
     version: $v,
-    description: ("hikizan for Codex: bundles the verb skills (" + $s + "), the PreToolUse floors (force-push deny, destructive-op ask, non-draft PR deny) reusing the Claude Code hook scripts verbatim, and the routing conventions + standard-tier opt-out preamble via the SessionStart hook."),
+    description: ("hikizan for Codex: bundles the verb skills (" + $s + "), PreToolUse floors (force-push deny, destructive-op deny, non-draft PR deny), and the routing conventions + standard-tier opt-out preamble via SessionStart."),
     author: $a,
+    homepage: $homepage,
+    repository: $repository,
+    license: $license,
+    interface: {
+      displayName: "hikizan",
+      shortDescription: "Japanese workflow skills and safety floors for Codex",
+      longDescription: "Verb-oriented Japanese workflow skills, routing conventions, and deterministic Codex hook guardrails for push, pull request, and destructive shell operations.",
+      developerName: $a.name,
+      category: "Productivity",
+      capabilities: ["Read", "Write"]
+    },
     keywords: ["skills", "floors", "hooks", "code-review", "workflow", "japanese"],
     skills: "./skills/",
     hooks: "./codex/hooks.json"
