@@ -1,11 +1,15 @@
 {
   "name": "hikizan",
   "version": "0.10.3",
-  "description": "hikizan floors + routing/opt-out for Cursor: beforeShellExecution blocks force-push to protected branches, destructive ops, and non-draft PRs; an always-apply rule injects the routing conventions and the standard-tier opt-out preamble.",
+  "description": "hikizan for Cursor: bundles the verb skills (tansaku / sadoku / sekkei / jikkou / teishutsu / shippitsu), agents, beforeShellExecution floors (force-push deny, destructive-op ask, non-draft PR deny), and an always-apply rule for routing conventions + standard-tier opt-out preamble.",
   "author": {
     "name": "hayashiii-ghub"
   },
+  "homepage": "https://github.com/hayashiii-ghub/hikizan",
+  "repository": "https://github.com/hayashiii-ghub/hikizan",
+  "license": "MIT",
   "keywords": [
+    "skills",
     "floors",
     "hooks",
     "code-review",
