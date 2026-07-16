@@ -122,7 +122,18 @@ done
 fail=$((fail || wt_missing))
 [ "$wt_missing" -eq 0 ] && echo "✔ report templates carry the worktree line"
 
-# 12. Codex distribution must stay on the current plugin contract. The CLI
+# 12. Commit guidance must not require an email-bearing attribution trailer.
+# The shared contract forbids email in commit messages; contribution history
+# belongs to the PR / hosting platform instead.
+commit_footer=0
+if grep -R -qF 'Co-Authored-By:' \
+  "$ROOT/skills/jikkou/references" "$ROOT/skills/teishutsu/references"; then
+  echo "✘ commit guidance requires a Co-Authored-By email trailer"; commit_footer=1
+fi
+fail=$((fail || commit_footer))
+[ "$commit_footer" -eq 0 ] && echo "✔ commit guidance does not require email attribution trailers"
+
+# 13. Codex distribution must stay on the current plugin contract. The CLI
 #     command, marketplace metadata, published-manifest metadata, and the
 #     Codex-specific destructive deny mode are one installable surface.
 codex_dist=0

@@ -32,3 +32,4 @@
 4. 関連する検証を実行し、green の出力を控える
 5. `skills/teishutsu/references/naming.md` に従って subject を付ける。diff だけでは理由が分からないときだけ body を書く
 6. 重要な判断と根拠は commit message だけに置かず、PR 本文の Workflow 節にも残す
+7. email を含む attribution trailer は付けず、共同作業の記録は PR / hosting platform に委ねる
