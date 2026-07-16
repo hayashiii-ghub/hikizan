@@ -2,7 +2,7 @@
 
 hikizan の skill が作る識別子の正本。`teishutsu` が PR / branch を名付ける前に読む。
 対象は branch 名 / commit subject / PR タイトル / issue タイトル。
-散文の書き方は `../../shippitsu/references/writing-style.md` が定める。
+散文の書き方は `shippitsu` の writing-style reference が定める。
 ここは「名前」だけを定める。
 
 由来は hikizan 自身の運用から抽出したもので、外部出典は無い。

@@ -160,4 +160,26 @@ grep -q 'pre-destructive\.sh deny' "$ROOT/codex/hooks.json" || { echo "✘ Codex
 fail=$((fail || codex_dist))
 [ "$codex_dist" -eq 0 ] && echo "✔ Codex distribution command, metadata, and hook mode are current"
 
+# 14. Skills are distributed as one pack. Runtime skill content must refer to
+#     another skill by its logical name, not by a repository-relative path
+#     that becomes invalid or misleading when an installer relocates the pack.
+pack_boundary=0
+awk '
+  $0 == "<!-- hikizan:pack-only -->" {
+    if ((getline line) > 0 && line ~ /pack 単位/ && line ~ /部分 install/ && line ~ /サポートしない/) found=1
+  }
+  END { exit found ? 0 : 1 }
+' "$ROOT/README.md" || {
+  echo "✘ README.md does not state the pack-only installation boundary"; pack_boundary=1;
+}
+skill_alt="$(jq -r '[.core[], .utility[]] | join("|")' "$ROOT/scripts/skills.json")"
+if grep -R -nE \
+  "skills/($skill_alt)/|(\.\./)+($skill_alt)/|($skill_alt)/references/" \
+  "$ROOT/skills"; then
+  echo "✘ runtime skill content contains repository-relative cross-skill references"
+  pack_boundary=1
+fi
+fail=$((fail || pack_boundary))
+[ "$pack_boundary" -eq 0 ] && echo "✔ pack-only install boundary and logical cross-skill references"
+
 exit "$fail"

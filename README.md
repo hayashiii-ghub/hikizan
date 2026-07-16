@@ -33,6 +33,9 @@ hikizan は Claude Code plugin / Agent Skills 対応の skill pack。動詞単�
 
 対応ハーネスは Claude Code / Codex / Cursor の 3 つ。**1 つのハーネスには 1 つのチャネルだけ**で入れる。skill を 2 経路で入れると二重定義になり、古い側に誤 route する (実際に過去発生した障害)。
 
+<!-- hikizan:pack-only -->
+hikizan の skill は相互に handoff と共通契約を参照するため pack 単位で導入し、個別 skill だけの部分 install はサポートしない。
+
 | ハーネス | 入るもの | 方法 | 検証状態 |
 | --- | --- | --- | --- |
 | Claude Code | skills + floors + 前文 | `/plugin` 2 コマンド (下記) | 検証済み (開発時に常用) |
@@ -75,7 +78,7 @@ hikizan は [Agent Skills 標準](https://agentskills.io) に沿った skill pac
 npx skills add github:hayashiii-ghub/hikizan -g   # universal (配置先 ~/.agents/skills/)
 ```
 
-`-g` で global、省略時は project local。詳細は [vercel-labs/skills](https://github.com/vercel-labs/skills)。
+選択画面が出る場合は hikizan の全 skill を選ぶ。`-g` で global、省略時は project local。詳細は [vercel-labs/skills](https://github.com/vercel-labs/skills)。
 
 ### 更新 (skill pack 経路のみ)
 

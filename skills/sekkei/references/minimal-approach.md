@@ -67,7 +67,7 @@ LLM agent は「丁寧に網羅する」方向に偏る場合がある。issue �
 - セキュリティ
 - アクセシビリティ
 
-このうちセキュリティ寄りの抜けは後段でも拾われやすい (`skills/sadoku/SKILL.md` の停止条件、security / architecture に触れる diff なら reviewer-security も起動)。ただし a11y とデータ損失は停止条件に明示が無い。だから 4 つとも、後段に頼らずこの段階で守る。
+このうちセキュリティ寄りの抜けは後段でも拾われやすい (`sadoku` の停止条件、security / architecture に触れる diff なら reviewer-security も起動)。ただし a11y とデータ損失は停止条件に明示が無い。だから 4 つとも、後段に頼らずこの段階で守る。
 
 ### 出典
 
