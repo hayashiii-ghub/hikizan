@@ -78,6 +78,8 @@ assert_eq "git stash push -> allow" "allow" "$(perm_of "$HZ_OUT")"
 # 3. non-draft PR without reviewer -> deny (parity with CC pre-pr-create)
 run_cursor 'gh pr create --title x' "/tmp"
 assert_eq "gh pr create bare -> deny" "deny" "$(perm_of "$HZ_OUT")"
+assert_contains "PR deny gives reachable manual recovery" "manually outside" \
+  "$(printf '%s' "$HZ_OUT" | jq -r '.agent_message // ""')"
 
 run_cursor 'gh pr create --draft --title x' "/tmp"
 assert_eq "gh pr create --draft -> allow" "allow" "$(perm_of "$HZ_OUT")"

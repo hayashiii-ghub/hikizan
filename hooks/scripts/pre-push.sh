@@ -46,7 +46,8 @@ if hikizan_push_is_forceful "$COMMAND"; then
     hz_decision deny "force-equivalent push (force / +refspec / delete / mirror / all) targeting protected branch '$HIT'.
 
 protected branches: main / master / develop. policy: require explicit user
-confirmation. abort and ask the user before re-running."
+confirmation. this deny has no agent-side override: abort and ask the user.
+if confirmed, the user must run the command manually outside the guarded agent."
     exit 0
   fi
 fi

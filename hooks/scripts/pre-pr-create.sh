@@ -30,8 +30,8 @@ if hz_prcreate_needs_review "$COMMAND"; then
 policy: a non-draft PR should name at least one reviewer. options:
   1. add --draft (start as draft, request review later)
   2. add --reviewer @user (or a comma-separated list)
-  3. confirm intentional and re-run with an explicit acknowledgement.
-hook will not auto-decide."
+this deny has no acknowledgement override. if neither option applies, the user
+must run the command manually outside the guarded agent."
   exit 0
 fi
 

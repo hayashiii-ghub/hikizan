@@ -49,7 +49,8 @@ if [ "$(hz_git_subcommand "$CMD")" = "push" ] && hikizan_push_is_forceful "$CMD"
   if [ -n "$HIT" ]; then
     hz_cursor_decision deny "force-equivalent push (force / +refspec / delete / mirror / all) targeting protected branch '$HIT'.
 
-protected: main / master / develop. confirm explicitly before re-running."
+protected: main / master / develop. this deny has no agent-side override.
+if confirmed, the user must run the command manually outside the guarded agent."
     exit 0
   fi
 fi
@@ -59,7 +60,8 @@ if hz_prcreate_needs_review "$CMD"; then
   hz_cursor_decision deny "gh pr create called without --draft and without a reviewer.
 
 policy: a non-draft PR should name at least one reviewer.
-options: add --draft, or --reviewer @user, or confirm intentional and re-run."
+options: add --draft or --reviewer @user. otherwise the user must run the
+command manually outside the guarded agent."
   exit 0
 fi
 
