@@ -65,4 +65,10 @@ run_post "gh pr create --draft --title \"x\""
 assert_eq "pr create --draft: exit 0" "0" "$HZ_CODE"
 assert_eq "pr create --draft: 0 metrics lines" "0" "$(metrics_lines)"
 
+# 6. segment-local flags: a later command's --draft cannot exempt the PR.
+run_post "gh pr create --title x&&echo --draft"
+assert_eq "compound PR: exit 0" "0" "$HZ_CODE"
+assert_eq "compound PR: 1 metrics line" "1" "$(metrics_lines)"
+assert_eq "compound PR: condition" "no_draft_no_reviewer" "$(jq -r '.condition' "$METRICS_FILE")"
+
 hz_test_summary

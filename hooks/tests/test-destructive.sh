@@ -73,6 +73,50 @@ assert_eq "reset --soft then echo --hard (compound)" "no" \
   "$(hit 'git reset --soft HEAD~1 && echo --hard')"
 assert_eq "rm -r then tar -cf (compound, no rm -rf)" "no" \
   "$(hit 'rm -r x && tar -cf y.tar z')"
+assert_eq "adjacent reset --hard before &&" "yes" \
+  "$(hit 'git reset --hard&&echo ok')"
+assert_eq "later --hard after adjacent && does not leak" "no" \
+  "$(hit 'git reset --soft HEAD~1&&echo --hard')"
+assert_eq "later -f after semicolon does not leak into rm" "no" \
+  "$(hit 'rm -r x;echo -f')"
+assert_eq "later -f after pipe does not leak into rm" "no" \
+  "$(hit 'rm -r x|echo -f')"
+assert_eq "later -f after ampersand does not leak into rm" "no" \
+  "$(hit 'rm -r x&echo -f')"
+assert_eq "later destructive segment stays outside head policy" "no" \
+  "$(hit 'echo ok&&git reset --hard')"
+assert_eq "quoted operator argument is not a boundary" "yes" \
+  "$(hit 'rm -r "&&" -f x')"
+assert_eq "escaped operator argument is not a boundary" "yes" \
+  "$(hit 'rm -r \&\& -f x')"
+assert_eq "multiline quoted argument cannot hide later -f" "yes" \
+  "$(hit $'rm -r "foo\n\nbar" -f target')"
+assert_eq "command substitution cannot hide later -f" "yes" \
+  "$(hit 'rm -r $(printf nope&&printf x) -f target')"
+assert_eq "backtick substitution cannot hide later -f" "yes" \
+  "$(hit 'rm -r `printf nope&&printf x` -f target')"
+assert_eq "redirection before git subcommand is ignored" "yes" \
+  "$(hit 'git >/tmp/out reset --hard')"
+assert_eq "parameter expansion cannot hide later -f" "yes" \
+  "$(hit 'rm -r ${v:-a&&b} -f target')"
+assert_eq "backtick redirection target cannot hide subcommand" "yes" \
+  "$(hit 'git >`printf /tmp/out&&printf x` reset --hard')"
+assert_eq "top-level subshell exposes first destructive command" "yes" \
+  "$(hit '(git reset --hard)')"
+assert_eq "escaped backtick cannot hide later -f" "yes" \
+  "$(hit 'rm -r `printf "x\`y" && printf z` -f target')"
+assert_eq "nested escaped backticks cannot hide later -f" "yes" \
+  "$(hit 'rm -r `printf %s \`printf x\` && :` -f target')"
+assert_eq "command substitution quotes cannot hide later -f" "yes" \
+  "$(hit 'rm -r "$(printf "%s" "x && y")" -f target')"
+assert_eq "quoted io-number-shaped argv remains subcommand" "no" \
+  "$(hit 'git "2">out reset --hard')"
+assert_eq "escaped io-number-shaped argv remains subcommand" "no" \
+  "$(hit 'git \2>out reset --hard')"
+assert_eq "ANSI-C quoted force flag is destructive" "yes" \
+  "$(hit "rm -r \$'-f' target")"
+assert_eq "ANSI-C escaped hard flag is destructive" "yes" \
+  "$(hit "git reset \$'--ha\\x72d'")"
 # Known limitation (same class as conditions.md's cd-passthrough note): a
 # later segment's own discard checkout is not classified — only the first
 # segment is scanned, matching the head-anchor policy used everywhere else.

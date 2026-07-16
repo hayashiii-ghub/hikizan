@@ -55,7 +55,7 @@ protected: main / master / develop. confirm explicitly before re-running."
 fi
 
 # 3. non-draft PR without reviewer -> deny (workflow floor, CC の pre-pr-create と同条件)
-if hz_is_pr_create "$CMD" && hz_prcreate_needs_review "$CMD"; then
+if hz_prcreate_needs_review "$CMD"; then
   hz_cursor_decision deny "gh pr create called without --draft and without a reviewer.
 
 policy: a non-draft PR should name at least one reviewer.

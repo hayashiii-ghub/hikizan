@@ -46,6 +46,15 @@ assert_eq "--reviewer real token, quoted -d in title -> allow" "allow" "$(hz_dec
 hz_run_hook "$HOOK" 'cd /tmp && gh pr create --draft' "/tmp"
 assert_eq "compound command still finds gh pr create --draft -> allow" "allow" "$(hz_decision_of "$HZ_OUT")"
 
+hz_run_hook "$HOOK" 'gh pr create --title x&&echo --draft' "/tmp"
+assert_eq "later segment --draft does not approve create -> deny" "deny" "$(hz_decision_of "$HZ_OUT")"
+
+hz_run_hook "$HOOK" 'gh pr create --draft&&gh pr create --title x' "/tmp"
+assert_eq "any unsafe create segment -> deny" "deny" "$(hz_decision_of "$HZ_OUT")"
+
+hz_run_hook "$HOOK" 'gh pr create --title x # --draft' "/tmp"
+assert_eq "commented --draft does not approve create -> deny" "deny" "$(hz_decision_of "$HZ_OUT")"
+
 hz_run_hook "$HOOK" 'echo "gh pr create"' "/tmp"
 assert_eq "gh pr create only inside quotes -> allow" "allow" "$(hz_decision_of "$HZ_OUT")"
 

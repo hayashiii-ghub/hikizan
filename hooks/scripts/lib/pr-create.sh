@@ -15,6 +15,7 @@ command -v hz_tokenize >/dev/null 2>&1 || source "$(dirname "${BASH_SOURCE[0]}")
 hz_is_pr_create() {
   local tok prev="" prev2="" rc=1
   while IFS= read -r tok; do
+    if [ -z "$tok" ]; then prev=""; prev2=""; continue; fi
     if [ "$prev2" = "gh" ] && [ "$prev" = "pr" ] && [ "$tok" = "create" ]; then
       rc=0
       break
@@ -30,10 +31,15 @@ EOF
 # `gh pr create` AND names neither --draft/-d nor --reviewer/--reviewer=*/-r
 # (i.e. it should be denied). Exit 1 otherwise (allow, or not pr-create).
 hz_prcreate_needs_review() {
-  hz_is_pr_create "$1" || return 1
-
   local tok has_draft=0 has_reviewer=0 is_pr_create=0 prev="" prev2=""
   while IFS= read -r tok; do
+    if [ -z "$tok" ]; then
+      if [ "$is_pr_create" = 1 ] && [ "$has_draft" = 0 ] && [ "$has_reviewer" = 0 ]; then
+        return 0
+      fi
+      has_draft=0; has_reviewer=0; is_pr_create=0; prev=""; prev2=""
+      continue
+    fi
     if [ "$is_pr_create" = 0 ]; then
       [ "$prev2" = "gh" ] && [ "$prev" = "pr" ] && [ "$tok" = "create" ] && is_pr_create=1
       prev2="$prev"; prev="$tok"
@@ -47,5 +53,5 @@ hz_prcreate_needs_review() {
 $(hz_tokenize "$1")
 EOF
 
-  [ "$has_draft" = 0 ] && [ "$has_reviewer" = 0 ]
+  [ "$is_pr_create" = 1 ] && [ "$has_draft" = 0 ] && [ "$has_reviewer" = 0 ]
 }

@@ -55,7 +55,7 @@ if [ "$(hz_git_subcommand "$COMMAND")" = "push" ] && hikizan_push_is_forceful "$
 fi
 
 # 3. non-draft PR without reviewer executed -> would have been a `block`.
-if hz_is_pr_create "$COMMAND" && hz_prcreate_needs_review "$COMMAND"; then
+if hz_prcreate_needs_review "$COMMAND"; then
   hikizan_metrics_log command_executed post-command no_draft_no_reviewer block "$SESSION_ID"
   exit 0
 fi
