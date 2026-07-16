@@ -4,6 +4,8 @@
 
 simplify findings は **発見と提案まで**。実装は jikkou に handoff で委譲する (sadoku の役割境界)。
 
+通常レビューの `reviewer-code-quality` は、対象変更が既存の書き方から外れていないか、対象変更自体を単純にできるかだけを見る。この checklist を使う simplify モードは、user が明示した範囲の production code 全体から整理候補を探す。
+
 ## 1. 重複
 
 **判定基準** (いずれか):
@@ -26,7 +28,7 @@ simplify findings は **発見と提案まで**。実装は jikkou に handoff �
 - 既存 convention と外れる新規導入 (例: snake_case 中心の repo に camelCase 関数を追加)
 
 **書き直し方**:
-- 命名規約を `project-context.md` (3. 命名規則の踏襲) で確認、揃える
+- 命名規約を `project-context.md` (4. 明文化された規約 / 命名規則の踏襲) で確認、揃える
 - 一括 rename の影響範囲確認は sekkei に handoff
 
 **severity 目安**: public API の命名揺れは high、internal helper の揺れは medium / low。

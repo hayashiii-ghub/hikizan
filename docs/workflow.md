@@ -90,7 +90,7 @@ trigger 表は「どう呼ばれうるか」の定義。実際の起動経路は
 | jikkou 診断     | jikkou 計画実行        | root cause 確定             | root cause 1 文 + fix 候補 |
 | jikkou 計画実行      | sadoku 通常レビュー    | 実装完了                    | handoff + 報告 + 完成 diff |
 | (user)               | sadoku 通常レビュー    | 「レビューして」            | diff                  |
-| sadoku 通常レビュー  | subagent (reviewer-*)  | Standard 以上 + 専門観点該当 | diff + 範囲           |
+| sadoku 通常レビュー  | subagent (reviewer-*)  | Standard 以上の production code / 専門観点該当 | 対象 + 近隣の比較対象 + repo convention の出典 + 設計前提 |
 | subagent             | sadoku                 | 評価完了                    | findings（要裏取り）  |
 | (user)               | sadoku simplify findings | 「整理して」「simplify」(明示) | diff (範囲)        |
 | sadoku simplify findings | jikkou 計画実行    | simplify finding (high)     | 対象 finding + file:line |

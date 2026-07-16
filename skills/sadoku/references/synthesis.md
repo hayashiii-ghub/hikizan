@@ -6,7 +6,7 @@ subagent は軸ごとの構造化データ (finding + 判定 + severity + ripple
 
 ## 入力
 
-- 各 reviewer subagent の出力 (security / architecture / …)。inline 実行した adversarial の観察も同じ扱い
+- 各 reviewer subagent の出力 (code-quality / security / architecture / …)。inline 実行した adversarial の観察も同じ扱い
 - controller 自身が diff / コードを裏取りした結果 (subagent の finding は裏取り済みのものだけ採用)
 - 対象に渡した脅威モデル / 設計意図 (採否判定の基準として再掲するため)
 
