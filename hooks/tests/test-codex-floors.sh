@@ -14,6 +14,10 @@ PRE_PUSH="$ROOT/hooks/scripts/pre-push.sh"
 PRE_DESTRUCTIVE="$ROOT/hooks/scripts/pre-destructive.sh"
 PRE_PR_CREATE="$ROOT/hooks/scripts/pre-pr-create.sh"
 SESSION_CONTEXT="$ROOT/codex/scripts/session-context.sh"
+CODEX_HOOKS="$ROOT/codex/hooks.json"
+
+assert_eq "codex SessionStart is startup-only" "startup" \
+  "$(jq -r '.hooks.SessionStart[0].matcher' "$CODEX_HOOKS")"
 
 hz_mkrepo() { local b="$1" d; d="$(mktemp -d)"; git -C "$d" init -q
   git -C "$d" config user.email t@example.com; git -C "$d" config user.name t

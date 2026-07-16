@@ -52,7 +52,7 @@ plugin が使えない環境向けの fallback。
        ],
        "SessionStart": [
          {
-           "matcher": "startup|resume",
+           "matcher": "startup",
            "hooks": [
              { "type": "command", "command": "/abs/path/to/hikizan/codex/scripts/session-context.sh" }
            ]
@@ -84,6 +84,7 @@ matcher は tool 名の regex (CC の `if` prefix のような per-hook 条件�
 (`{"hookSpecificOutput":{"hookEventName":"SessionStart","additionalContext":"..."}}`) にしたもの。
 `HIKIZAN_TIER=standard` (既定) では routing/ルールに加えて opt-out 前文が additionalContext に入る。
 `HIKIZAN_TIER=guided` では前文は入らない。
+発火は新規 session の `startup` だけで、resume 時に同じ前文を重ねて注入しない。
 
 ## 既知の限界
 
