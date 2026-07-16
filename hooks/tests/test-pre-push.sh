@@ -20,6 +20,7 @@ hz_mkrepo() { # <branch> -> path of a fresh repo on <branch>, no upstream
 
 REPO_MAIN="$(hz_mkrepo main)"
 REPO_FEAT="$(hz_mkrepo feature)"
+git -C "$REPO_FEAT" branch main
 
 # C3 #1 — force push to main via HEAD:main refspec must be denied
 hz_run_hook "$HOOK" "git push --force origin HEAD:main" "$REPO_MAIN"
@@ -66,6 +67,15 @@ assert_eq "--delete origin main -> deny" "deny" "$(hz_decision_of "$HZ_OUT")"
 
 hz_run_hook "$HOOK" "git push --mirror origin" "$REPO_FEAT"
 assert_eq "--mirror -> deny" "deny" "$(hz_decision_of "$HZ_OUT")"
+
+hz_run_hook "$HOOK" "git push --force --all origin" "$REPO_FEAT"
+assert_eq "--force --all from feature -> deny" "deny" "$(hz_decision_of "$HZ_OUT")"
+
+hz_run_hook "$HOOK" "git push --all origin" "$REPO_FEAT"
+assert_eq "plain --all from feature -> allow" "allow" "$(hz_decision_of "$HZ_OUT")"
+
+hz_run_hook "$HOOK" "git push --force -o --all origin feature" "$REPO_FEAT"
+assert_eq "--all push-option value -> allow" "allow" "$(hz_decision_of "$HZ_OUT")"
 
 hz_run_hook "$HOOK" "git push -d origin develop" "$REPO_FEAT"
 assert_eq "-d origin develop -> deny" "deny" "$(hz_decision_of "$HZ_OUT")"

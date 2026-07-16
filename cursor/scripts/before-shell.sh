@@ -47,7 +47,7 @@ if [ "$(hz_git_subcommand "$CMD")" = "push" ] && hikizan_push_is_forceful "$CMD"
   else BRANCH=$(git branch --show-current 2>/dev/null || true); fi
   HIT=$(hikizan_push_protected_hit "$CMD" "$BRANCH") || HIT=""
   if [ -n "$HIT" ]; then
-    hz_cursor_decision deny "force-equivalent push (force / +refspec / delete / mirror) targeting protected branch '$HIT'.
+    hz_cursor_decision deny "force-equivalent push (force / +refspec / delete / mirror / all) targeting protected branch '$HIT'.
 
 protected: main / master / develop. confirm explicitly before re-running."
     exit 0

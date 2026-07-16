@@ -31,6 +31,7 @@ assert_eq "-d is forceful"                          "yes" "$(forceful 'git push 
 assert_eq "--mirror is forceful"                    "yes" "$(forceful 'git push --mirror origin')"
 assert_eq "--prune is forceful"                      "yes" "$(forceful 'git push --prune origin main')"
 assert_eq "--force is forceful (delegated)"         "yes" "$(forceful 'git push --force origin main')"
+assert_eq "--all without force is not forceful"      "no"  "$(forceful 'git push --all origin')"
 assert_eq "src:dst refspec is not forceful"         "no"  "$(forceful 'git push origin feature:main')"
 assert_eq "value of value-taking flag is not forceful" "no" "$(forceful 'git push -o +weird origin main')"
 assert_eq "trailing --delete is forceful"           "yes" "$(forceful 'git push origin main --delete')"
@@ -91,6 +92,10 @@ assert_eq "delete refspec hits develop"          "develop" "$(hit 'git push orig
 assert_eq "delete of non-protected branch: no hit" ""      "$(hit 'git push --delete origin feature' x)"
 assert_contains "--mirror hits regardless of target" "mirror" \
   "$(hit 'git push --mirror origin' feature)"
+assert_contains "--force --all hits regardless of current branch" "--all" \
+  "$(hit 'git push --force --all origin' feature)"
+assert_eq "--all as push-option value is not a hit" "" \
+  "$(hit 'git push --force -o --all origin feature' feature)"
 assert_contains "wildcard force refspec hit mentions wildcard" "wildcard" \
   "$(hit 'git push --force origin refs/heads/*:refs/heads/*' x)"
 assert_eq "non-protected plain push: no hit"     ""        "$(hit 'git push origin feature' feature)"
