@@ -116,7 +116,7 @@ tier は「環境構築時にどこまで仕組みを用意したか」を表す
 | `sekkei` | 設計判断, 方針決め, design decision, kill or keep, 計画立案 |
 | `jikkou` | 計画実行, 実装, エラー診断, root cause, バグ修正 |
 | `teishutsu` | PR提出, PR出す, PR ready, PR文書いて, PR description, submission, PR open |
-| `shippitsu` | 執筆, 推敲, リライト, 文章を書く |
+| `shippitsu` | 執筆, 推敲, リライト, 文章を書く, 平坦な文章, 緩急, 読ませる文章 |
 
 各 skill の mode 別トリガーと遷移は `docs/workflow.md`、発動条件の正本は各 SKILL.md frontmatter `description`。
 <!-- hikizan:triggers:end -->

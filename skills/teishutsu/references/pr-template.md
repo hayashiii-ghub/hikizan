@@ -2,6 +2,18 @@
 
 `teishutsu` が PR 作成前に読む reference。出力は 6 セクション固定。これが hikizan の出口契約。どの進め方で実装しても、PR はこの形に収束させる。
 
+## 目次
+
+- [Intake](#intake)
+- [Procedure](#procedure)
+- [Stop Conditions](#stop-conditions)
+- [PR Title](#pr-title)
+- [Output Template](#output-template)
+- [Granularity](#granularity)
+- [Writing Checks](#writing-checks)
+- [Structure Preference](#structure-preference)
+- [PII / Secrets scan](#pii--secrets-scan)
+
 ## Intake
 
 必須:

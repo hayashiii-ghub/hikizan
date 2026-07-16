@@ -26,7 +26,7 @@ core skill (init を除く全 skill) 共通。正本は `scripts/contract.md` �
 - 日本語の文章は skills/shippitsu/references/writing-style.md の規範に従う
 <!-- hikizan:contract:end -->
 
-## 2 つのモード
+## 3 つのモード
 
 | モード | きっかけ | 出すもの |
 | --- | --- | --- |
