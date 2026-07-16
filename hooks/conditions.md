@@ -62,12 +62,12 @@ force push の対象 branch は `scripts/lib/push-parse.sh` の `hikizan_push_ta
 ## メトリクス記録
 
 書き込み先: `~/.hikizan/metrics.jsonl` (環境変数 `HIKIZAN_METRICS_DIR` で上書き可、append only)。
-実装: `scripts/lib/metrics.sh` の `hikizan_metrics_log` 関数を各 hook が source して呼ぶ。silent on failure (jq 不在 / dir 書き込み不可 等で hook 本体は壊さない)。session_id が非空かつ CC の UUID 形 (`^[0-9a-f]{8}-`) でないもの (手動テストの合成 id) は書き込み時に skip する。よって集計側で合成 id を除外する前置きフィルタは不要 (write 時に同一 regex で強制)。
+実装: `scripts/lib/metrics.sh` の `hikizan_metrics_log` 関数を各 hook が source して呼ぶ。silent on failure (jq 不在 / dir 書き込み不可 等で hook 本体は壊さない)。session_id が非空かつ UUID 形 (`^[0-9a-f]{8}-`) でないもの (手動テストの合成 id) は書き込み時に skip する。よって集計側で合成 id を除外する前置きフィルタは不要 (write 時に同一 regex で強制)。
 
 ### スキーマ (1 行 1 JSON event)
 
 ```json
-{"ts":"2026-06-10T14:46:00Z","event":"hook_fired","hook":"pre-push","condition":"force_protected","decision":"block","session_id":"abc123"}
+{"ts":"2026-06-10T14:46:00Z","event":"hook_fired","hook":"pre-push","condition":"force_protected","decision":"block","session_id":"deadbeef-0000-0000-0000-000000000000"}
 ```
 
 | field | 値 |
@@ -77,7 +77,7 @@ force push の対象 branch は `scripts/lib/push-parse.sh` の `hikizan_push_ta
 | `hook` | `pre-push` / `pre-pr-create` / `pre-destructive` / `post-command` / `session-context` |
 | `condition` | `nff` / `force_protected` / `no_draft_no_reviewer` / `destructive` / `inject` / `noop` / `none` |
 | `decision` | `allow` / `block` (= deny) / `ask` |
-| `session_id` | CC session id (stdin JSON より取得)、無ければ空文字 |
+| `session_id` | harness の session id (stdin JSON より取得)、無ければ空文字 |
 
 `event: "command_executed"` は `post-command` (PostToolUse) が floor 対象クラスの実行そのものを記録したもの。`decision` はそのコマンドに対して floor が下したであろう判定 (実際の決定ではない。PostToolUse は tool 実行後に発火するため介入できない)。`decision: "block"` の `command_executed` は floor がすり抜けられた bypass の証拠であり、見つけたら原因を切り分けたうえで回帰テストを足す。
 
