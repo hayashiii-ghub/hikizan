@@ -42,18 +42,13 @@ ACTUAL="$(jq -r '
   [$ev.key, (.if // $entry.matcher), (.args[0] | split("/") | last)] | join("|")
 ' "$HOOKS_JSON" | sort)"
 
-EXPECTED='PostToolUse|Bash(gh pr create*)|post-command.sh
-PostToolUse|Bash(git checkout*)|post-command.sh
-PostToolUse|Bash(git clean*)|post-command.sh
-PostToolUse|Bash(git push*)|post-command.sh
-PostToolUse|Bash(git reset*)|post-command.sh
-PostToolUse|Bash(rm -*)|post-command.sh
-PreToolUse|Bash(gh pr create*)|pre-pr-create.sh
-PreToolUse|Bash(git checkout*)|pre-destructive.sh
-PreToolUse|Bash(git clean*)|pre-destructive.sh
-PreToolUse|Bash(git push*)|pre-push.sh
-PreToolUse|Bash(git reset*)|pre-destructive.sh
-PreToolUse|Bash(rm -*)|pre-destructive.sh
+EXPECTED='PostToolUse|Bash(gh*)|post-command.sh
+PostToolUse|Bash(git*)|post-command.sh
+PostToolUse|Bash(rm*)|post-command.sh
+PreToolUse|Bash(gh*)|pre-pr-create.sh
+PreToolUse|Bash(git*)|pre-destructive.sh
+PreToolUse|Bash(git*)|pre-push.sh
+PreToolUse|Bash(rm*)|pre-destructive.sh
 SessionStart|startup|session-context.sh'
 
 assert_eq "hooks.json wiring matches the pinned expectation" "$EXPECTED" "$ACTUAL"

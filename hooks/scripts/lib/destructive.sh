@@ -24,7 +24,7 @@ hz_cmd_head() {
   while IFS= read -r tok; do
     case "$tok" in sudo|command|*=*) continue ;; *) out="$tok"; break ;; esac
   done <<EOF
-$(hz_tokenize "$1")
+$(hz_first_segment "$1")
 EOF
   printf '%s' "$out"
 }
@@ -48,7 +48,7 @@ hz_git_subcommand() {
       *)   out="$tok"; break ;;
     esac
   done <<EOF
-$(hz_tokenize "$1")
+$(hz_first_segment "$1")
 EOF
   printf '%s' "$out"
 }
@@ -68,31 +68,17 @@ hz_is_rm_rf() {
       -*[fF]*)                   hasf=1 ;;        # short cluster with f only
     esac
   done <<EOF
-$(_hz_first_segment "$c")
+$(hz_first_segment "$c")
 EOF
   [ "$rc" = 1 ] && [ "$hasr" = 1 ] && [ "$hasf" = 1 ] && rc=0
   return $rc
-}
-
-# _hz_first_segment "<command>" -> print the tokens of the first pipeline
-# segment only (stop at &&, ||, ;, | or &). Flag scans must not read tokens
-# from later segments: `git checkout -q -b x && grep y .` carries a bare
-# `.` that belongs to grep, not to checkout (observed false ask, 2026-07-05).
-_hz_first_segment() {
-  local tok
-  while IFS= read -r tok; do
-    case "$tok" in '&&'|'||'|'|'|'&') break ;; *';') break ;; esac
-    printf '%s\n' "$tok"
-  done <<EOF
-$(hz_tokenize "$1")
-EOF
 }
 
 # _hz_has_tok "<command>" "<token>" -> exit 0 if an exact token is present.
 _hz_has_tok() {
   local tok rc=1
   while IFS= read -r tok; do [ "$tok" = "$2" ] && { rc=0; break; }; done <<EOF
-$(_hz_first_segment "$1")
+$(hz_first_segment "$1")
 EOF
   return $rc
 }
@@ -103,7 +89,7 @@ _hz_has_short_f() {
   while IFS= read -r tok; do
     case "$tok" in --*) : ;; -*[fF]*) rc=0; break ;; esac
   done <<EOF
-$(_hz_first_segment "$1")
+$(hz_first_segment "$1")
 EOF
   return $rc
 }

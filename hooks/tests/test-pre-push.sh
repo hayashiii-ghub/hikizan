@@ -71,6 +71,12 @@ assert_eq "--mirror -> deny" "deny" "$(hz_decision_of "$HZ_OUT")"
 hz_run_hook "$HOOK" "git push --force --all origin" "$REPO_FEAT"
 assert_eq "--force --all from feature -> deny" "deny" "$(hz_decision_of "$HZ_OUT")"
 
+hz_run_hook "$HOOK" "git push --force origin main&&echo ok" "$REPO_FEAT"
+assert_eq "adjacent compound suffix keeps protected target -> deny" "deny" "$(hz_decision_of "$HZ_OUT")"
+
+hz_run_hook "$HOOK" "git push --force origin feature&&echo --all" "$REPO_FEAT"
+assert_eq "later --all does not leak into first push -> allow" "allow" "$(hz_decision_of "$HZ_OUT")"
+
 hz_run_hook "$HOOK" "git push --all origin" "$REPO_FEAT"
 assert_eq "plain --all from feature -> allow" "allow" "$(hz_decision_of "$HZ_OUT")"
 

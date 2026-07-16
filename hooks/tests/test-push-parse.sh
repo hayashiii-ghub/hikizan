@@ -19,6 +19,11 @@ assert_eq "-f detected"                          "yes" "$(force 'git push -f ori
 assert_eq "-f in short cluster (-fv) detected"   "yes" "$(force 'git push -fv origin main')"
 assert_eq "trailing --force detected"            "yes" "$(force 'git push origin main --force')"
 assert_eq "-v alone is not force"                "no"  "$(force 'git push -v origin main')"
+assert_eq "adjacent boundary keeps first push force" "yes" "$(force 'git push --force origin main&&echo ok')"
+assert_eq "later segment --force does not leak"  "no"  "$(force 'git push origin feature&&echo --force')"
+assert_eq "quoted operator is a push-option value" "no" "$(force 'git push -o "&&" origin feature')"
+assert_eq "nested operator in option value does not hide force" "yes" \
+  "$(force 'git push -o $(printf x&&printf y) --force origin main')"
 
 # ── hikizan_push_is_forceful ──────────────────────────────────────────────
 forceful() { if hikizan_push_is_forceful "$1"; then echo yes; else echo no; fi; }
@@ -35,6 +40,7 @@ assert_eq "--all without force is not forceful"      "no"  "$(forceful 'git push
 assert_eq "src:dst refspec is not forceful"         "no"  "$(forceful 'git push origin feature:main')"
 assert_eq "value of value-taking flag is not forceful" "no" "$(forceful 'git push -o +weird origin main')"
 assert_eq "trailing --delete is forceful"           "yes" "$(forceful 'git push origin main --delete')"
+assert_eq "later segment delete does not leak"      "no"  "$(forceful 'git push origin feature;echo --delete')"
 
 # quote-aware floors: a quoted branch name or flag must not smuggle a literal
 # quote character into the token and defeat the exact-match checks below.
@@ -60,6 +66,7 @@ assert_eq "delete refspec :main"                 "main"          "$(tgt 'git pus
 assert_eq "refs/heads/ stripped"                 "main"          "$(tgt 'git push origin refs/heads/main' x)"
 assert_eq "multiple refspecs"                    "main,develop"  "$(tgt 'git push origin main develop' x)"
 assert_eq "--repo value not treated as ref"      "main"          "$(tgt 'git push --repo origin main' x)"
+assert_eq "adjacent later command not treated as ref" "main"     "$(tgt 'git push --force origin main&&echo ok' feat)"
 
 # quote-aware floors: quoting a refspec token must not leave literal quote
 # characters in the resolved target name.
@@ -83,6 +90,8 @@ assert_eq "--repo value wins"                    "upstream" "$(remote 'git push 
 assert_eq "--repo=value wins"                    "upstream" "$(remote 'git push --repo=upstream')"
 assert_eq "git -C prefix"                        "other"    "$(remote 'git -C /tmp/x push other feat')"
 assert_eq "value-taking flag skip"               "other"    "$(remote 'git push -o opt other main')"
+assert_eq "adjacent later command not treated as remote/ref" "origin" \
+  "$(remote 'git push origin main||echo fallback')"
 
 # ── hikizan_push_protected_hit ────────────────────────────────────────────
 hit() { hikizan_push_protected_hit "$1" "$2" || true; }
@@ -99,6 +108,26 @@ assert_eq "--all as push-option value is not a hit" "" \
 assert_contains "wildcard force refspec hit mentions wildcard" "wildcard" \
   "$(hit 'git push --force origin refs/heads/*:refs/heads/*' x)"
 assert_eq "non-protected plain push: no hit"     ""        "$(hit 'git push origin feature' feature)"
+assert_eq "later --all does not leak into protected scan" "" \
+  "$(hit 'git push --force origin feature&&echo --all' feature)"
+assert_contains "adjacent protected target still hits main" "main" \
+  "$(hit 'git push --force origin main&&echo ok' feature)"
+assert_contains "redirection before push subcommand still hits main" "main" \
+  "$(hit 'git >/tmp/out push --force origin main' feature)"
+assert_contains "redirection target cannot consume real main target" "main" \
+  "$(hit 'git push --force origin > --repo main' feature)"
+assert_contains "backtick redirection target cannot hide protected push" "main" \
+  "$(hit 'git >`printf /tmp/out&&printf x` push --force origin main' feature)"
+assert_contains "top-level subshell exposes first protected push" "main" \
+  "$(hit '(git push --force origin main)' feature)"
+assert_eq "quoted command substitution cannot hide force" "yes" \
+  "$(force 'git push -o "$(printf "%s" "x && y")" --force origin main')"
+assert_eq "nested escaped backticks cannot hide force" "yes" \
+  "$(force 'git push -o `printf %s \`printf x\` && :` --force origin main')"
+assert_eq "ANSI-C quoted force flag is forceful" "yes" \
+  "$(force "git push \$'--fo\\x72ce' origin main")"
+assert_eq "ANSI-C control suffix is not exact force flag" "no" \
+  "$(force "git push \$'--force\\cX' origin main")"
 
 # quote-aware floors: quoting the target/--delete/:dst must still hit main.
 assert_contains "--delete quoted main hits"      "main"    "$(hit 'git push origin --delete "main"' x)"

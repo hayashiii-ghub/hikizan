@@ -28,7 +28,7 @@ hz_push_dir() {
     if [ "$prev" = "-C" ]; then out="$tok"; break; fi
     prev="$tok"
   done <<EOF
-$(hz_tokenize "$1")
+$(hz_first_segment "$1")
 EOF
   printf '%s' "$out"
 }
@@ -43,7 +43,7 @@ hikizan_push_has_force() {
       -*f*|-*F*) rc=0; break ;; # short cluster containing f (e.g. -f, -fv, -vf)
     esac
   done <<EOF
-$(hz_tokenize "$1")
+$(hz_first_segment "$1")
 EOF
   return $rc
 }
@@ -74,7 +74,7 @@ hikizan_push_is_forceful() {
       *)                                       : ;;
     esac
   done <<EOF
-$(hz_tokenize "$1")
+$(hz_first_segment "$1")
 EOF
   return $rc
 }
@@ -112,7 +112,7 @@ hikizan_push_targets() {
       *)   positionals+=("$tok") ;;
     esac
   done <<EOF
-$(hz_tokenize "$cmd")
+$(hz_first_segment "$cmd")
 EOF
 
   local -a refspecs=()
@@ -158,7 +158,7 @@ hikizan_push_remote() {
       *)   positionals+=("$tok") ;;
     esac
   done <<EOF
-$(hz_tokenize "$cmd")
+$(hz_first_segment "$cmd")
 EOF
 
   if [ "$repo_flag" = "1" ]; then
@@ -193,7 +193,7 @@ hikizan_push_protected_hit() {
       --prune)  has_prune=1 ;;
     esac
   done <<EOF
-$(hz_tokenize "$cmd")
+$(hz_first_segment "$cmd")
 EOF
 
   if [ "$has_mirror" = "1" ]; then

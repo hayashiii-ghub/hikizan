@@ -53,6 +53,9 @@ assert_eq "pre-push: plain push origin main -> allow" "allow" "$(decision_of "$H
 run_codex_pretooluse "$PRE_PUSH" "git push --force --all origin" "$REPO_FEAT"
 assert_eq "pre-push: --force --all from feature -> deny" "deny" "$(decision_of "$HZ_OUT")"
 
+run_codex_pretooluse "$PRE_PUSH" "git push --force origin main&&echo ok" "$REPO_FEAT"
+assert_eq "pre-push: adjacent protected push -> deny" "deny" "$(decision_of "$HZ_OUT")"
+
 run_codex_pretooluse "$PRE_PUSH" "git push --all origin" "$REPO_FEAT"
 assert_eq "pre-push: plain --all from feature -> allow" "allow" "$(decision_of "$HZ_OUT")"
 
@@ -75,12 +78,21 @@ assert_eq "pre-destructive: Codex deny is recorded as metrics block" "block" \
 run_codex_pretooluse "$PRE_DESTRUCTIVE" "ls -la" "/tmp"
 assert_eq "pre-destructive: ls -la -> allow" "allow" "$(decision_of "$HZ_OUT")"
 
+run_codex_pretooluse "$PRE_DESTRUCTIVE" "git reset --hard&&echo ok" "/tmp" deny
+assert_eq "pre-destructive: adjacent reset --hard -> deny" "deny" "$(decision_of "$HZ_OUT")"
+
 # --- pre-pr-create.sh ---
 run_codex_pretooluse "$PRE_PR_CREATE" "gh pr create --title x" "/tmp"
 assert_eq "pre-pr-create: no draft/reviewer -> deny" "deny" "$(decision_of "$HZ_OUT")"
 
 run_codex_pretooluse "$PRE_PR_CREATE" "gh pr create --draft --title x" "/tmp"
 assert_eq "pre-pr-create: --draft -> allow" "allow" "$(decision_of "$HZ_OUT")"
+
+run_codex_pretooluse "$PRE_PR_CREATE" "gh pr create --title x&&echo --draft" "/tmp"
+assert_eq "pre-pr-create: later --draft does not approve -> deny" "deny" "$(decision_of "$HZ_OUT")"
+
+run_codex_pretooluse "$PRE_PR_CREATE" "gh pr create --title x # --draft" "/tmp"
+assert_eq "pre-pr-create: commented --draft does not approve -> deny" "deny" "$(decision_of "$HZ_OUT")"
 
 # --- codex/scripts/session-context.sh (SessionStart) ---
 run_codex_sessionstart() { # <cwd> -> sets HZ_OUT
