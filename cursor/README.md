@@ -17,7 +17,7 @@ pure logic (`push-parse.sh` / `destructive.sh` / `pr-create.sh`) は CC hooks �
 
 ## install (GitHub から plugin 追加、推奨)
 
-Cursor の Plugins 画面で GitHub repo `hayashiii-ghub/hikizan` を plugin として追加する。`.cursor-plugin/plugin.json` が宣言する floors hooks (`cursor/hooks.json` 経由の `before-shell.sh`) と前文 rule (`cursor/rules/hikizan.mdc`) に加えて、`skills/` と `agents/` が auto-discover されるため、skills 7 個 + subagent 3 個 (reviewer-architecture / reviewer-security / reviewer-code-quality) もまとめて入る。`npx skills add -a cursor` は併用しない (skill が二重定義される)。
+Cursor の Plugins 画面で GitHub repo `hayashiii-ghub/hikizan` を plugin として追加する。`.cursor-plugin/plugin.json` が宣言する floors hooks (`cursor/hooks.json` 経由の `before-shell.sh`) と前文 rule (`cursor/rules/hikizan.mdc`) に加えて、`skills/` と `agents/` も auto-discover される。`npx skills add -a cursor` は併用しない (skill が二重定義される)。
 
 - **実機確認済み (2026-07-03)**: GitHub 追加での load (Skills / Subagents / Rules の認識) と floors の発火 (deny / ask) を実 Cursor で確認した
 - 追加時の commit SHA に固定される (`~/.cursor/plugins/marketplaces/github.com/<owner>/<repo>/<sha>/` に clone される)。更新は Plugins 画面から行い、**古い版が残っていたら Uninstall する** (削除済みの旧 skill が routing を奪うため)
