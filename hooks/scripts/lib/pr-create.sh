@@ -55,7 +55,7 @@ hz_is_pr_create() {
 # `gh pr create` AND names neither --draft/-d nor --reviewer/--reviewer=*/-r
 # (i.e. it should be denied). Exit 1 otherwise (allow, or not pr-create).
 _hz_prcreate_segment_needs_review() {
-  local tok has_draft=0 has_reviewer=0 state=0
+  local tok has_draft=0 has_reviewer=0 state=0 skip_value=0
   while IFS= read -r tok; do
     if [ "$state" -lt 3 ]; then
       case "$state:$tok" in
@@ -67,9 +67,15 @@ _hz_prcreate_segment_needs_review() {
       esac
       continue
     fi
+    if [ "$skip_value" = 1 ]; then
+      skip_value=0
+      continue
+    fi
     case "$tok" in
       --draft|-d)                  has_draft=1 ;;
       --reviewer|--reviewer=*|-r)  has_reviewer=1 ;;
+      --title|--body|--body-file|--base|--head|--assignee|--label|--milestone|--project|--template|-t|-b|-F|-B|-H|-a|-l|-m|-p|-T)
+        skip_value=1 ;;
     esac
   done <<EOF
 $(hz_first_segment "$1")

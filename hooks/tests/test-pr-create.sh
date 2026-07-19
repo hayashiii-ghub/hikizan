@@ -38,6 +38,12 @@ assert_eq "--reviewer=bob -> allow"                 "no"  "$(needs_review 'gh pr
 assert_eq "-r bob -> allow"                          "no"  "$(needs_review 'gh pr create -r bob')"
 assert_eq 'quoted --draft in title -> deny (still needs review)' "yes" \
   "$(needs_review 'gh pr create --title "add --draft flag"')"
+assert_eq 'exact --draft title value -> deny' "yes" \
+  "$(needs_review 'gh pr create --title "--draft"')"
+assert_eq 'exact --reviewer body value -> deny' "yes" \
+  "$(needs_review 'gh pr create --body "--reviewer"')"
+assert_eq 'exact -d short title value -> deny' "yes" \
+  "$(needs_review 'gh pr create -t "-d"')"
 assert_eq "non pr-create command -> allow (not applicable)" "no" "$(needs_review 'gh pr list')"
 assert_eq "echo gh pr create mention -> allow" "no" "$(needs_review 'echo gh pr create')"
 assert_eq "later --draft does not approve earlier create" "yes" \
