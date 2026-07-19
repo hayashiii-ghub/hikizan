@@ -836,6 +836,7 @@ hz_collect_command_segments() {
     esac
   done
   if [ -n "$cur" ]; then
+    # shellcheck disable=SC2034 # public result array consumed by sourced callers
     HZ_COMMAND_SEGMENTS[$HZ_COMMAND_SEGMENT_COUNT]="$cur"
     HZ_COMMAND_SEGMENT_COUNT=$((HZ_COMMAND_SEGMENT_COUNT + 1))
   fi
