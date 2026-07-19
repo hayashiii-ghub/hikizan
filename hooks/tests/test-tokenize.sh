@@ -13,6 +13,7 @@ tok_records() {
 }
 nested() { hz_nested_commands "$1" | paste -sd'|' -; }
 argv() { hz_command_argv "$1" | paste -sd'|' -; }
+unresolved() { if hz_command_has_unresolved_env_split "$1"; then echo yes; else echo no; fi; }
 collect_nested_count() { hz_collect_nested_commands "$1"; printf '%s' "${#HZ_NESTED_COMMANDS[@]}"; }
 collect_segment_count() { hz_collect_command_segments "$1"; printf '%s' "${#HZ_COMMAND_SEGMENTS[@]}"; }
 
@@ -41,6 +42,10 @@ assert_eq "expand assigned env split-string command head" 'git|push|--force|orig
   "$(argv "CMD=git env -S '\${CMD} push --force origin main'")"
 assert_eq "mark unresolved env split-string command head" '__hikizan_unresolved_env_split__' \
   "$(argv "env -S '\${HIKIZAN_TEST_UNDEFINED} push --force origin main'")"
+assert_eq "find unresolved env split after earlier segment" 'yes' \
+  "$(unresolved "rm -rf /tmp/x; env -S '\${HIKIZAN_TEST_UNDEFINED} harmless'")"
+assert_eq "find nested unresolved env split" 'yes' \
+  "$(unresolved "echo \"\$(env -S '\${HIKIZAN_TEST_UNDEFINED} harmless')\"")"
 assert_eq "normalize BSD env utility path" 'git|push|--force|origin|main' \
   "$(argv 'env -P /usr/bin git push --force origin main')"
 assert_eq "normalize sudo options" 'rm|-rf|/tmp/x' \

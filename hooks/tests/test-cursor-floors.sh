@@ -66,6 +66,15 @@ assert_eq "force push after cd -> deny" "deny" "$(perm_of "$HZ_OUT")"
 run_cursor "echo \"\$(cd '$REPO_MAIN' && git push --force origin)\"" "$REPO_FEAT"
 assert_eq "nested force push after cd -> deny" "deny" "$(perm_of "$HZ_OUT")"
 
+run_cursor 'rm -rf /tmp/x; git push --force origin main' "$REPO_MAIN"
+assert_eq "force deny takes precedence over destructive ask" "deny" "$(perm_of "$HZ_OUT")"
+
+run_cursor 'rm -rf /tmp/x; gh pr create --title x' "/tmp"
+assert_eq "PR deny takes precedence over destructive ask" "deny" "$(perm_of "$HZ_OUT")"
+
+run_cursor "rm -rf /tmp/x; env -S '\${HIKIZAN_TEST_UNDEFINED} harmless'" "/tmp"
+assert_eq "unresolved deny takes precedence over destructive ask" "deny" "$(perm_of "$HZ_OUT")"
+
 run_cursor "git push \$'--fo\\x72ce' origin main" "$REPO_MAIN"
 assert_eq "ANSI-C escaped force main -> deny" "deny" "$(perm_of "$HZ_OUT")"
 

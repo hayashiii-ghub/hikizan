@@ -29,22 +29,16 @@ CMD=$(printf '%s' "$JSON" | jq -r '.command // ""')
 CWD=$(printf '%s' "$JSON" | jq -r '.cwd // ""')
 [ -n "$CWD" ] && cd "$CWD" 2>/dev/null || true
 
-# 1. irreversible op -> ask for confirmation
-LABEL=$(hz_destructive_label "$CMD")
-if [ "$LABEL" = "env -S (unresolved command expansion)" ]; then
+# Fail-closed classifications must run before any ask: Cursor accepts one
+# decision, so an early ask would otherwise mask a later deny in the command.
+if hz_command_has_unresolved_env_split "$CMD"; then
   hz_cursor_decision deny "env -S command contains an unresolved variable expansion, so the hook cannot identify which floor applies safely.
 
 policy: fail closed. use an explicit command without indirect env -S expansion."
   exit 0
 fi
-if [ -n "$LABEL" ]; then
-  hz_cursor_decision ask "destructive operation detected: $LABEL
 
-this is irreversible. confirm it is intended before running."
-  exit 0
-fi
-
-# 2. force-equivalent push to a protected branch -> deny. Check the top-level
+# 1. force-equivalent push to a protected branch -> deny. Check the top-level
 # command and executable command substitutions with the same classifier.
 hz_cursor_check_push() {
   local command="$1" pushdir branch hit
@@ -108,13 +102,22 @@ while [ "$NESTED_COMMAND_INDEX" -lt "$NESTED_COMMAND_COUNT" ]; do
   NESTED_COMMAND_INDEX=$((NESTED_COMMAND_INDEX + 1))
 done
 
-# 3. non-draft PR without reviewer -> deny (workflow floor, CC の pre-pr-create と同条件)
+# 2. non-draft PR without reviewer -> deny (workflow floor, CC の pre-pr-create と同条件)
 if hz_prcreate_needs_review "$CMD"; then
   hz_cursor_decision deny "gh pr create called without --draft and without a reviewer.
 
 policy: a non-draft PR should name at least one reviewer.
 options: add --draft or --reviewer @user. otherwise the user must run the
 command manually outside the guarded agent."
+  exit 0
+fi
+
+# 3. deny floors are clear, so an irreversible op may now ask for confirmation.
+LABEL=$(hz_destructive_label "$CMD")
+if [ -n "$LABEL" ]; then
+  hz_cursor_decision ask "destructive operation detected: $LABEL
+
+this is irreversible. confirm it is intended before running."
   exit 0
 fi
 

@@ -965,3 +965,30 @@ hz_command_argv() {
 $(hz_first_segment "$1")
 EOF
 }
+
+# hz_command_has_unresolved_env_split "<command>" -> success when any top-level
+# or nested executable segment contains an env -S expansion the hook cannot
+# resolve. Adapters use this to give fail-closed deny rules precedence.
+hz_command_has_unresolved_env_split() {
+  local command="$1" segment nested head i=0 j=0 nested_count
+  local -a nested_commands=()
+  hz_collect_command_segments "$command"
+  while [ "$i" -lt "$HZ_COMMAND_SEGMENT_COUNT" ]; do
+    segment="${HZ_COMMAND_SEGMENTS[$i]}"
+    head=""
+    while IFS= read -r head; do break; done <<EOF
+$(hz_command_argv "$segment")
+EOF
+    [ "$head" = "__hikizan_unresolved_env_split__" ] && return 0
+    i=$((i + 1))
+  done
+  hz_collect_nested_commands "$command"
+  nested_count="$HZ_NESTED_COUNT"
+  if [ "$nested_count" -gt 0 ]; then nested_commands=("${HZ_NESTED_COMMANDS[@]}"); fi
+  while [ "$j" -lt "$nested_count" ]; do
+    nested="${nested_commands[$j]}"
+    hz_command_has_unresolved_env_split "$nested" && return 0
+    j=$((j + 1))
+  done
+  return 1
+}
