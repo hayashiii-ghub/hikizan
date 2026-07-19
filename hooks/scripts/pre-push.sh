@@ -38,7 +38,7 @@ hz_git_in_push_dir() {
 }
 
 hz_check_push_command() {
-  local command="$1" branch hit remote upstream behind
+  local command="$1" branch hit remote upstream behind remote_shell branch_shell
   [ "$(hz_git_subcommand "$command")" = "push" ] || return 0
 
   if hikizan_push_is_forceful "$command" && ! hz_push_context_supported "$command"; then
@@ -81,10 +81,12 @@ if confirmed, the user must run the command manually outside the guarded agent."
   if hz_git_in_push_dir rev-parse --verify "$upstream" >/dev/null 2>&1; then
     behind=$(hz_git_in_push_dir rev-list --count "HEAD..$upstream" 2>/dev/null || printf '0')
     if [ "$behind" -gt 0 ] 2>/dev/null; then
+      printf -v remote_shell '%q' "$remote"
+      printf -v branch_shell '%q' "$branch"
       hikizan_metrics_log hook_fired pre-push nff block "$SESSION_ID"
       hz_decision deny "non-fast-forward push on branch '$branch': local is $behind commit(s) behind $upstream.
 
-options: 1) git pull --rebase $remote $branch then push  2) push to a new branch  3) abort.
+options: 1) git pull --rebase $remote_shell $branch_shell then push  2) push to a new branch  3) abort.
 hook will not auto-decide; confirm explicitly in your next message."
       exit 0
     fi
