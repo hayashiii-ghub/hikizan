@@ -229,4 +229,27 @@ fi
 fail=$((fail || secret_scan))
 [ "$secret_scan" -eq 0 ] && echo "✔ documented token scan covers representative current formats"
 
+# 17. Distribution maintenance docs must point at hand-edited sources, keep
+#     the pack-only boundary, and avoid hard-coded skill counts.
+distribution_docs=0
+skill_change_line="$(grep -F '**skill を足す / 減らすときは連動編集を全部通す**' "$ROOT/AGENTS.md" || true)"
+printf '%s' "$skill_change_line" | grep -qF '`plugin.src.json`' || {
+  echo "✘ AGENTS.md skill-change workflow does not point at plugin.src.json"
+  distribution_docs=1
+}
+if printf '%s' "$skill_change_line" | grep -qF '`.claude-plugin/plugin.json`'; then
+  echo "✘ AGENTS.md skill-change workflow tells editors to change a generated manifest"
+  distribution_docs=1
+fi
+if grep -qF 'per-skill distribution channels' "$ROOT/scripts/gen-agents.sh"; then
+  echo "✘ gen-agents.sh still describes unsupported per-skill distribution"
+  distribution_docs=1
+fi
+if grep -qE 'skills [0-9]+ 個' "$ROOT/codex/README.md"; then
+  echo "✘ codex/README.md hard-codes a stale skill count"
+  distribution_docs=1
+fi
+fail=$((fail || distribution_docs))
+[ "$distribution_docs" -eq 0 ] && echo "✔ distribution maintenance docs follow source and pack boundaries"
+
 exit "$fail"

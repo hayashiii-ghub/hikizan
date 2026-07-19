@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Stamp the first-class subagent definitions under agents/ from
-# skills/sadoku/references/agents/ (the SoT — that copy is what per-skill
-# distribution channels receive, so it must never dangle). agents/ is what
+# skills/sadoku/references/agents/ (the SoT — the pack installer carries this
+# source with sadoku, so it must never dangle). agents/ is what
 # Claude Code and Cursor auto-discover; the stamped copies are committed.
 # Do not edit agents/*.md by hand — edit the source and rerun.
 #   bash scripts/gen-agents.sh           # write the copies

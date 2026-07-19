@@ -8,7 +8,7 @@ envelope に限定する。Codex の PreToolUse は `ask` を扱えないため�
 ## install (plugin、推奨)
 
 repo に marketplace catalog (`.agents/plugins/marketplace.json`) と plugin manifest
-(`.codex-plugin/plugin.json`) が同梱されているので、2 コマンドで入る。skills 6 個 + floors hooks +
+(`.codex-plugin/plugin.json`) が同梱されているので、2 コマンドで入る。core skills + init utility + floors hooks +
 前文 (SessionStart) が一括で入り、`npx skills add -a codex` も `~/.codex/hooks.json` への絶対パス
 手書きも不要:
 
