@@ -54,6 +54,9 @@ assert_eq "case arm force push -> deny" "deny" "$(perm_of "$HZ_OUT")"
 run_cursor 'env -S "rm -rf /tmp/x"' "/tmp"
 assert_eq "env split-string rm -rf -> ask" "ask" "$(perm_of "$HZ_OUT")"
 
+run_cursor 'env -P /bin rm -rf /tmp/x' "/tmp"
+assert_eq "env utility-path rm -rf -> ask" "ask" "$(perm_of "$HZ_OUT")"
+
 run_cursor "git push \$'--fo\\x72ce' origin main" "$REPO_MAIN"
 assert_eq "ANSI-C escaped force main -> deny" "deny" "$(perm_of "$HZ_OUT")"
 

@@ -123,6 +123,12 @@ assert_eq "then body force push -> deny" "deny" "$(hz_decision_of "$HZ_OUT")"
 hz_run_hook "$HOOK" "env -S 'git push --force origin main'" "$REPO_MAIN"
 assert_eq "env split-string force push -> deny" "deny" "$(hz_decision_of "$HZ_OUT")"
 
+hz_run_hook "$HOOK" "env -S'git\\_push\\_--force\\_origin\\_main'" "$REPO_MAIN"
+assert_eq "attached env split-string force push -> deny" "deny" "$(hz_decision_of "$HZ_OUT")"
+
+hz_run_hook "$HOOK" "env -P /usr/bin git push --force origin main" "$REPO_MAIN"
+assert_eq "env utility-path force push -> deny" "deny" "$(hz_decision_of "$HZ_OUT")"
+
 hz_run_hook "$HOOK" "case x in x) git push --force origin main ;; esac" "$REPO_MAIN"
 assert_eq "case arm force push -> deny" "deny" "$(hz_decision_of "$HZ_OUT")"
 

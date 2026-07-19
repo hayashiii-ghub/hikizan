@@ -48,13 +48,16 @@ hz_push_context_supported() {
     if [ "$seen_git" = 0 ]; then
       case "$tok" in
         GIT_DIR=*|GIT_WORK_TREE=*|GIT_NAMESPACE=*) return 1 ;;
+        -D|-D?*) return 1 ;; # sudo chdir changes the repository seen by git
+        --chdir|--chdir=*) return 1 ;; # env/sudo working-directory override
         env) seen_env=1; continue ;;
-        -C|--chdir) [ "$seen_env" = 1 ] && return 1 ;;
-        --chdir=*) [ "$seen_env" = 1 ] && return 1 ;;
+        -C|-C?*) [ "$seen_env" = 1 ] && return 1 ;;
         -S|--split-string) [ "$seen_env" = 1 ] && { env_split=1; continue; } ;;
+        -S?*) [ "$seen_env" = 1 ] && { hz_push_context_supported "$(hz_env_split_text "${tok#-S}")"; return $?; } ;;
+        --split-string=*) [ "$seen_env" = 1 ] && { hz_push_context_supported "$(hz_env_split_text "${tok#--split-string=}")"; return $?; } ;;
         sudo|command|exec|time|nohup|*=*|--|-*) continue ;;
         git) seen_git=1; continue ;;
-        *) return 0 ;;
+        *) continue ;;
       esac
     fi
     if [ "$skip" = 1 ]; then skip=0; continue; fi

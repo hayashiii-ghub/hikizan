@@ -136,6 +136,20 @@ assert_eq "env chdir makes force context unsupported" "unsupported" \
   "$(context 'env -C /other git push --force origin')"
 assert_eq "env split-string GIT_DIR makes context unsupported" "unsupported" \
   "$(context 'env -S "GIT_DIR=/other/.git git push --force origin"')"
+assert_eq "env unset value cannot hide git-dir context" "unsupported" \
+  "$(context 'env -u FOO git --git-dir=/other.git push --force origin')"
+assert_eq "exec argv0 value cannot hide git-dir context" "unsupported" \
+  "$(context 'exec -a fake git --git-dir=/other.git push --force origin')"
+assert_eq "sudo user value cannot hide git-dir context" "unsupported" \
+  "$(context 'sudo -u root git --git-dir=/other.git push --force origin')"
+assert_eq "sudo chdir value cannot hide git context" "unsupported" \
+  "$(context 'sudo -D /other git push --force origin')"
+assert_eq "attached env chdir makes force context unsupported" "unsupported" \
+  "$(context 'env -C/other git push --force origin')"
+assert_eq "attached env split-string GIT_DIR is unsupported" "unsupported" \
+  "$(context 'env -S"GIT_DIR=/other/.git git push --force origin"')"
+assert_eq "long env split-string GIT_DIR is unsupported" "unsupported" \
+  "$(context 'env --split-string="GIT_DIR=/other/.git git push --force origin"')"
 assert_contains "--force --all hits regardless of current branch" "--all" \
   "$(hit 'git push --force --all origin' feature)"
 assert_eq "--all as push-option value is not a hit" "" \

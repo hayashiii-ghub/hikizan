@@ -31,6 +31,14 @@ assert_eq "normalize env wrapper" 'git|push|--force|origin|main' \
   "$(argv 'env FOO=x git push --force origin main')"
 assert_eq "normalize env split-string command" 'git|push|--force|origin|main' \
   "$(argv 'env -S "git push --force origin main"')"
+assert_eq "normalize attached env split-string command" 'git|push|--force|origin|main' \
+  "$(argv 'env -S"git push --force origin main"')"
+assert_eq "normalize long env split-string command" 'git|push|--force|origin|main' \
+  "$(argv 'env --split-string="git push --force origin main"')"
+assert_eq "normalize env split-string blank escape" 'git|push|--force|origin|main' \
+  "$(argv "env -S 'git\\_push\\_--force\\_origin\\_main'")"
+assert_eq "normalize BSD env utility path" 'git|push|--force|origin|main' \
+  "$(argv 'env -P /usr/bin git push --force origin main')"
 assert_eq "normalize sudo options" 'rm|-rf|/tmp/x' \
   "$(argv 'sudo -n -u root rm -rf /tmp/x')"
 assert_eq "normalize sudo environment assignment" 'rm|-rf|/tmp/x' \

@@ -84,6 +84,8 @@ assert_eq "reserved then rm" "yes" "$(hit 'then rm -rf /tmp/x')"
 assert_eq "brace group reset" "yes" "$(hit '{ git reset --hard')"
 assert_eq "command query is benign" "no" "$(hit 'command -v rm -rf /tmp/x')"
 assert_eq "env split-string rm -rf" "yes" "$(hit 'env -S "rm -rf /tmp/x"')"
+assert_eq "attached env split-string rm -rf" "yes" "$(hit 'env -S"rm -rf /tmp/x"')"
+assert_eq "env utility-path rm -rf" "yes" "$(hit 'env -P /bin rm -rf /tmp/x')"
 assert_eq "case arm rm -rf" "yes" "$(hit 'case x in x) rm -rf /tmp/x ;; esac')"
 assert_eq "single-quoted nested-looking text is benign" "no" \
   "$(hit "echo '\$(rm -rf /tmp/x)'")"
