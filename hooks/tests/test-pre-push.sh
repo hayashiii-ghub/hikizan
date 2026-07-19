@@ -144,6 +144,9 @@ assert_eq "force push after pushd -> deny" "deny" "$(hz_decision_of "$HZ_OUT")"
 hz_run_hook "$HOOK" "echo \"\$(cd '$REPO_MAIN' && git push --force origin)\"" "$REPO_FEAT"
 assert_eq "nested force push after cd -> deny" "deny" "$(hz_decision_of "$HZ_OUT")"
 
+hz_run_hook "$HOOK" "cd '$REPO_MAIN' && echo \"\$(git push --force origin)\"" "$REPO_FEAT"
+assert_eq "nested force push inherits outer cd -> deny" "deny" "$(hz_decision_of "$HZ_OUT")"
+
 hz_run_hook "$HOOK" "case x in x) git push --force origin main ;; esac" "$REPO_MAIN"
 assert_eq "case arm force push -> deny" "deny" "$(hz_decision_of "$HZ_OUT")"
 
