@@ -854,11 +854,25 @@ $(hz_tokenize "$1")
 EOF
 }
 
-# env -S uses its own split-string escape where `\_` represents a blank.
-# Decode that escape before feeding the value back through the shell tokenizer.
+# env -S uses its own split-string escapes and expands ${VARNAME}. Decode the
+# blank escape and resolve variables from preceding assignments or the hook
+# environment before feeding the value back through the shell tokenizer.
 hz_env_split_text() {
-  local value="$1"
+  local value="$1" needle name replacement found i
   value="${value//\\_/ }"
+  while [[ "$value" =~ (\$\{[A-Za-z_][A-Za-z0-9_]*\}) ]]; do
+    needle="${BASH_REMATCH[1]}"
+    name="${needle#\$\{}"; name="${name%\}}"
+    found=0
+    for ((i=${#env_names[@]} - 1; i >= 0; i--)); do
+      if [ "${env_names[$i]}" = "$name" ]; then
+        replacement="${env_values[$i]}"; found=1; break
+      fi
+    done
+    if [ "$found" = 0 ] && replacement=$(printenv "$name" 2>/dev/null); then found=1; fi
+    [ "$found" = 1 ] || return 1
+    value="${value//"$needle"/$replacement}"
+  done
   printf '%s' "$value"
 }
 
@@ -866,7 +880,8 @@ hz_env_split_text() {
 # per line. Shell control reserved words and common direct-exec wrappers are
 # removed before anchored classifiers inspect the command head.
 hz_command_argv() {
-  local tok state='scan' skip_value=0
+  local tok state='scan' skip_value=0 split name
+  local -a env_names=() env_values=()
   while IFS= read -r tok; do
     if [ "$state" = emit ]; then printf '%s\n' "$tok"; continue; fi
     if [ "$skip_value" = 1 ]; then skip_value=0; continue; fi
@@ -876,7 +891,7 @@ hz_command_argv() {
           case) state='case_subject'; continue ;;
           if|then|elif|else|while|until|do|'!'|'{'|'}') continue ;;
           *')') continue ;; # case pattern head after a `|` segment boundary
-          *=*) continue ;;
+          *=*) name="${tok%%=*}"; env_names+=("$name"); env_values+=("${tok#*=}"); continue ;;
           sudo) state='sudo'; continue ;;
           env) state='env'; continue ;;
           command) state='command'; continue ;;
@@ -905,16 +920,20 @@ hz_command_argv() {
           --) state='scan' ;;
           -u|-C|-P|--unset|--chdir) skip_value=1 ;;
           -S|--split-string) state='env_split' ;;
-          -S?*) hz_command_argv "$(hz_env_split_text "${tok#-S}")"; state='emit' ;;
-          --split-string=*) hz_command_argv "$(hz_env_split_text "${tok#--split-string=}")"; state='emit' ;;
+          -S?*)
+            if split=$(hz_env_split_text "${tok#-S}"); then hz_command_argv "$split"; else printf '%s\n' '__hikizan_unresolved_env_split__'; fi
+            state='emit' ;;
+          --split-string=*)
+            if split=$(hz_env_split_text "${tok#--split-string=}"); then hz_command_argv "$split"; else printf '%s\n' '__hikizan_unresolved_env_split__'; fi
+            state='emit' ;;
           --unset=*|--chdir=*|-*) : ;;
-          *=*) : ;;
+          *=*) name="${tok%%=*}"; env_names+=("$name"); env_values+=("${tok#*=}") ;;
           *) state='scan'
              case "$tok" in sudo|env|command|exec|time|nohup) state="$tok" ;; *) state='emit'; printf '%s\n' "$tok" ;; esac ;;
         esac
         ;;
       env_split)
-        hz_command_argv "$(hz_env_split_text "$tok")"
+        if split=$(hz_env_split_text "$tok"); then hz_command_argv "$split"; else printf '%s\n' '__hikizan_unresolved_env_split__'; fi
         state='emit'
         ;;
       command)

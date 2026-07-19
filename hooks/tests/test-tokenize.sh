@@ -37,6 +37,10 @@ assert_eq "normalize long env split-string command" 'git|push|--force|origin|mai
   "$(argv 'env --split-string="git push --force origin main"')"
 assert_eq "normalize env split-string blank escape" 'git|push|--force|origin|main' \
   "$(argv "env -S 'git\\_push\\_--force\\_origin\\_main'")"
+assert_eq "expand assigned env split-string command head" 'git|push|--force|origin|main' \
+  "$(argv "CMD=git env -S '\${CMD} push --force origin main'")"
+assert_eq "mark unresolved env split-string command head" '__hikizan_unresolved_env_split__' \
+  "$(argv "env -S '\${HIKIZAN_TEST_UNDEFINED} push --force origin main'")"
 assert_eq "normalize BSD env utility path" 'git|push|--force|origin|main' \
   "$(argv 'env -P /usr/bin git push --force origin main')"
 assert_eq "normalize sudo options" 'rm|-rf|/tmp/x' \

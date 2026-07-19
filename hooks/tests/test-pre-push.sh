@@ -129,6 +129,18 @@ assert_eq "attached env split-string force push -> deny" "deny" "$(hz_decision_o
 hz_run_hook "$HOOK" "env -P /usr/bin git push --force origin main" "$REPO_MAIN"
 assert_eq "env utility-path force push -> deny" "deny" "$(hz_decision_of "$HZ_OUT")"
 
+hz_run_hook "$HOOK" "CMD=git env -S '\${CMD} push --force origin main'" "$REPO_MAIN"
+assert_eq "expanded env split-string force push -> deny" "deny" "$(hz_decision_of "$HZ_OUT")"
+
+hz_run_hook "$HOOK" "env -S '\${HIKIZAN_TEST_UNDEFINED} harmless'" "$REPO_MAIN"
+assert_eq "unresolved env split-string command -> deny" "deny" "$(hz_decision_of "$HZ_OUT")"
+
+hz_run_hook "$HOOK" "cd '$REPO_MAIN' && git push --force origin" "$REPO_FEAT"
+assert_eq "force push after cd -> deny" "deny" "$(hz_decision_of "$HZ_OUT")"
+
+hz_run_hook "$HOOK" "pushd '$REPO_MAIN'; git push --force origin" "$REPO_FEAT"
+assert_eq "force push after pushd -> deny" "deny" "$(hz_decision_of "$HZ_OUT")"
+
 hz_run_hook "$HOOK" "case x in x) git push --force origin main ;; esac" "$REPO_MAIN"
 assert_eq "case arm force push -> deny" "deny" "$(hz_decision_of "$HZ_OUT")"
 

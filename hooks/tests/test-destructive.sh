@@ -86,6 +86,10 @@ assert_eq "command query is benign" "no" "$(hit 'command -v rm -rf /tmp/x')"
 assert_eq "env split-string rm -rf" "yes" "$(hit 'env -S "rm -rf /tmp/x"')"
 assert_eq "attached env split-string rm -rf" "yes" "$(hit 'env -S"rm -rf /tmp/x"')"
 assert_eq "env utility-path rm -rf" "yes" "$(hit 'env -P /bin rm -rf /tmp/x')"
+assert_eq "assigned env split-string rm -rf" "yes" \
+  "$(hit "CMD=rm env -S '\${CMD} -rf /tmp/x'")"
+assert_eq "unresolved env split-string fails closed" "yes" \
+  "$(hit "env -S '\${HIKIZAN_TEST_UNDEFINED} harmless'")"
 assert_eq "case arm rm -rf" "yes" "$(hit 'case x in x) rm -rf /tmp/x ;; esac')"
 assert_eq "single-quoted nested-looking text is benign" "no" \
   "$(hit "echo '\$(rm -rf /tmp/x)'")"

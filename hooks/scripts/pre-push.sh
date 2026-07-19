@@ -39,7 +39,24 @@ hz_git_in_push_dir() {
 
 hz_check_push_command() {
   local command="$1" branch hit remote upstream behind remote_shell branch_shell
+  if [ "$(hz_cmd_head "$command")" = "__hikizan_unresolved_env_split__" ]; then
+    hikizan_metrics_log hook_fired pre-push force_protected block "$SESSION_ID"
+    hz_decision deny "env -S command contains an unresolved variable expansion, so the hook cannot identify the command safely.
+
+policy: fail closed. abort and ask the user to run an explicit command without
+indirect env -S expansion."
+    exit 0
+  fi
   [ "$(hz_git_subcommand "$command")" = "push" ] || return 0
+
+  if [ "${HZ_PRIOR_CONTEXT_CHANGE:-0}" = 1 ] && hikizan_push_is_forceful "$command"; then
+    hikizan_metrics_log hook_fired pre-push force_protected block "$SESSION_ID"
+    hz_decision deny "force-equivalent push follows cd/pushd in the same shell command, so the hook cannot reproduce repository context exactly.
+
+policy: fail closed because the current branch may be protected. abort and ask
+the user to run the directory change and push as separate commands."
+    exit 0
+  fi
 
   if hikizan_push_is_forceful "$command" && ! hz_push_context_supported "$command"; then
     hikizan_metrics_log hook_fired pre-push force_protected block "$SESSION_ID"
@@ -94,10 +111,12 @@ hook will not auto-decide; confirm explicitly in your next message."
 }
 
 hz_collect_command_segments "$COMMAND"
+HZ_PRIOR_CONTEXT_CHANGE=0
 COMMAND_SEGMENT_INDEX=0
 while [ "$COMMAND_SEGMENT_INDEX" -lt "$HZ_COMMAND_SEGMENT_COUNT" ]; do
   COMMAND_SEGMENT="${HZ_COMMAND_SEGMENTS[$COMMAND_SEGMENT_INDEX]}"
   hz_check_push_command "$COMMAND_SEGMENT"
+  case "$(hz_cmd_head "$COMMAND_SEGMENT")" in cd|pushd) HZ_PRIOR_CONTEXT_CHANGE=1 ;; esac
   COMMAND_SEGMENT_INDEX=$((COMMAND_SEGMENT_INDEX + 1))
 done
 
@@ -107,6 +126,7 @@ NESTED_COMMAND_INDEX=0
 while [ "$NESTED_COMMAND_INDEX" -lt "$NESTED_COMMAND_COUNT" ]; do
   NESTED_COMMAND="${HZ_NESTED_COMMANDS[$NESTED_COMMAND_INDEX]}"
   hz_collect_command_segments "$NESTED_COMMAND"
+  HZ_PRIOR_CONTEXT_CHANGE=0
   COMMAND_SEGMENT_INDEX=0
   while [ "$COMMAND_SEGMENT_INDEX" -lt "$HZ_COMMAND_SEGMENT_COUNT" ]; do
     COMMAND_SEGMENT="${HZ_COMMAND_SEGMENTS[$COMMAND_SEGMENT_INDEX]}"

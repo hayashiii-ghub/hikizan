@@ -39,7 +39,8 @@ EOF
 # chained `-C` options are deliberately unsupported; a forceful push using
 # them must fail closed in the adapter instead of consulting the wrong repo.
 hz_push_context_supported() {
-  local tok seen_git=0 c_count=0 skip=0 seen_env=0 env_split=0
+  local tok seen_git=0 c_count=0 skip=0 seen_env=0 env_split=0 name
+  local -a env_names=() env_values=()
   while IFS= read -r tok; do
     if [ "$env_split" = 1 ]; then
       hz_push_context_supported "$tok"
@@ -55,7 +56,8 @@ hz_push_context_supported() {
         -S|--split-string) [ "$seen_env" = 1 ] && { env_split=1; continue; } ;;
         -S?*) [ "$seen_env" = 1 ] && { hz_push_context_supported "$(hz_env_split_text "${tok#-S}")"; return $?; } ;;
         --split-string=*) [ "$seen_env" = 1 ] && { hz_push_context_supported "$(hz_env_split_text "${tok#--split-string=}")"; return $?; } ;;
-        sudo|command|exec|time|nohup|*=*|--|-*) continue ;;
+        *=*) name="${tok%%=*}"; env_names+=("$name"); env_values+=("${tok#*=}"); continue ;;
+        sudo|command|exec|time|nohup|--|-*) continue ;;
         git) seen_git=1; continue ;;
         *) continue ;;
       esac

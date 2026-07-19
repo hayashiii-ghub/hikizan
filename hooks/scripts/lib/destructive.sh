@@ -96,6 +96,10 @@ EOF
 # Classify one simple command segment.
 _hz_destructive_label_segment() {
   local c="$1" sub
+  if [ "$(hz_cmd_head "$c")" = "__hikizan_unresolved_env_split__" ]; then
+    printf 'env -S (unresolved command expansion)'
+    return 0
+  fi
   if hz_is_rm_rf "$c"; then
     printf 'rm -rf (recursive force delete)'
     return 0
