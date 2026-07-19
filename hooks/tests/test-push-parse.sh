@@ -41,6 +41,10 @@ assert_eq "src:dst refspec is not forceful"         "no"  "$(forceful 'git push 
 assert_eq "value of value-taking flag is not forceful" "no" "$(forceful 'git push -o +weird origin main')"
 assert_eq "trailing --delete is forceful"           "yes" "$(forceful 'git push origin main --delete')"
 assert_eq "later segment delete does not leak"      "no"  "$(forceful 'git push origin feature;echo --delete')"
+assert_eq "empty push-option value cannot hide --delete" "yes" \
+  "$(forceful 'git push -o "" --delete origin main')"
+assert_eq "empty receive-pack value cannot hide --delete" "yes" \
+  "$(forceful 'git push --receive-pack "" --delete origin main')"
 
 # quote-aware floors: a quoted branch name or flag must not smuggle a literal
 # quote character into the token and defeat the exact-match checks below.
@@ -92,6 +96,16 @@ assert_eq "git -C prefix"                        "other"    "$(remote 'git -C /t
 assert_eq "value-taking flag skip"               "other"    "$(remote 'git push -o opt other main')"
 assert_eq "adjacent later command not treated as remote/ref" "origin" \
   "$(remote 'git push origin main||echo fallback')"
+
+context() { if hz_push_context_supported "$1"; then echo supported; else echo unsupported; fi; }
+assert_eq "single -C context is supported" "supported" \
+  "$(context 'git -C /tmp/a push --force origin')"
+assert_eq "multiple -C context is unsupported" "unsupported" \
+  "$(context 'git -C /tmp/a -C ../b push --force origin')"
+assert_eq "--git-dir context is unsupported" "unsupported" \
+  "$(context 'git --git-dir=/tmp/repo.git push --force origin')"
+assert_eq "--work-tree context is unsupported" "unsupported" \
+  "$(context 'git --work-tree /tmp/work push --force origin')"
 
 # ── hikizan_push_protected_hit ────────────────────────────────────────────
 hit() { hikizan_push_protected_hit "$1" "$2" || true; }

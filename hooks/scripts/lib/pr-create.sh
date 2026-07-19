@@ -12,7 +12,7 @@ command -v hz_tokenize >/dev/null 2>&1 || source "$(dirname "${BASH_SOURCE[0]}")
 
 # hz_is_pr_create "<command>" -> exit 0 iff the command contains `gh pr
 # create` as three consecutive tokens.
-hz_is_pr_create() {
+_hz_is_pr_create_top() {
   local tok prev="" prev2="" rc=1
   while IFS= read -r tok; do
     if [ -z "$tok" ]; then prev=""; prev2=""; continue; fi
@@ -27,10 +27,22 @@ EOF
   return $rc
 }
 
+hz_is_pr_create() {
+  local nested i=0
+  _hz_is_pr_create_top "$1" && return 0
+  hz_collect_nested_commands "$1"
+  while [ "$i" -lt "$HZ_NESTED_COUNT" ]; do
+    nested="${HZ_NESTED_COMMANDS[$i]}"
+    _hz_is_pr_create_top "$nested" && return 0
+    i=$((i + 1))
+  done
+  return 1
+}
+
 # hz_prcreate_needs_review "<command>" -> exit 0 iff the command is a
 # `gh pr create` AND names neither --draft/-d nor --reviewer/--reviewer=*/-r
 # (i.e. it should be denied). Exit 1 otherwise (allow, or not pr-create).
-hz_prcreate_needs_review() {
+_hz_prcreate_needs_review_top() {
   local tok has_draft=0 has_reviewer=0 is_pr_create=0 prev="" prev2=""
   while IFS= read -r tok; do
     if [ -z "$tok" ]; then
@@ -54,4 +66,16 @@ $(hz_tokenize "$1")
 EOF
 
   [ "$is_pr_create" = 1 ] && [ "$has_draft" = 0 ] && [ "$has_reviewer" = 0 ]
+}
+
+hz_prcreate_needs_review() {
+  local nested i=0
+  _hz_prcreate_needs_review_top "$1" && return 0
+  hz_collect_nested_commands "$1"
+  while [ "$i" -lt "$HZ_NESTED_COUNT" ]; do
+    nested="${HZ_NESTED_COMMANDS[$i]}"
+    _hz_prcreate_needs_review_top "$nested" && return 0
+    i=$((i + 1))
+  done
+  return 1
 }

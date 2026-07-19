@@ -57,6 +57,29 @@ assert_contains "deny reason names protected branch" "protected" \
 assert_contains "force deny gives reachable manual recovery" "manually outside" \
   "$(printf '%s' "$HZ_OUT" | jq -r '.hookSpecificOutput.permissionDecisionReason // ""')"
 
+hz_run_hook "$HOOK" 'echo "$(git push --force origin main)"' "$REPO_MAIN"
+assert_eq "nested force push to main -> deny" "deny" "$(hz_decision_of "$HZ_OUT")"
+
+hz_run_hook "$HOOK" "git -C $REPO_FEAT -C . push --force origin" "/tmp"
+assert_eq "unresolved multi-C force push -> deny" "deny" "$(hz_decision_of "$HZ_OUT")"
+assert_contains "unresolved context deny explains context" "resolve git repository context" \
+  "$(printf '%s' "$HZ_OUT" | jq -r '.hookSpecificOutput.permissionDecisionReason // ""')"
+
+hz_run_hook "$HOOK" 'echo ok; git push --force origin main' "$REPO_MAIN"
+assert_eq "later top-level force push -> deny" "deny" "$(hz_decision_of "$HZ_OUT")"
+
+hz_run_hook "$HOOK" 'echo "$(echo ok; git push --force origin main)"' "$REPO_MAIN"
+assert_eq "later nested force push -> deny" "deny" "$(hz_decision_of "$HZ_OUT")"
+
+hz_run_hook "$HOOK" $'echo "$(echo x # )\ngit push --force origin main\n)"' "$REPO_MAIN"
+assert_eq "comment close-paren cannot hide nested force push" "deny" "$(hz_decision_of "$HZ_OUT")"
+
+hz_run_hook "$HOOK" $'((1 << \'2\'\n + $(git push --force origin main; echo 0)))' "$REPO_MAIN"
+assert_eq "arithmetic command cannot hide nested force push" "deny" "$(hz_decision_of "$HZ_OUT")"
+
+hz_run_hook "$HOOK" $'a[1 << \'2\'\n + $(git push --force origin main; echo 0)]=x' "$REPO_MAIN"
+assert_eq "array subscript cannot hide nested force push" "deny" "$(hz_decision_of "$HZ_OUT")"
+
 # force-equivalent pushes (no --force flag) targeting a protected branch -> deny
 hz_run_hook "$HOOK" "git push origin +HEAD:main" "$REPO_FEAT"
 assert_eq "+refspec to main -> deny" "deny" "$(hz_decision_of "$HZ_OUT")"

@@ -19,6 +19,9 @@ assert_eq "quoted gh pr create in commit msg -> not pr create" "no" \
 assert_eq "bare gh pr create -> is pr create"       "yes" "$(is_pr_create 'gh pr create')"
 assert_eq "adjacent command still finds pr create"  "yes" "$(is_pr_create 'cd /tmp&&gh pr create')"
 assert_eq "tokens split by boundary are not a pr create" "no" "$(is_pr_create 'gh&&pr create')"
+assert_eq "empty argv prevents false adjacent pr create" "no" "$(is_pr_create 'gh "" pr create')"
+assert_eq "nested command substitution is pr create" "yes" \
+  "$(is_pr_create 'echo "$(gh pr create --title x)"')"
 
 # ── hz_prcreate_needs_review ───────────────────────────────────────────────
 assert_eq "bare create -> needs review (deny)"      "yes" "$(needs_review 'gh pr create --title x')"
@@ -60,5 +63,9 @@ assert_eq "multiple heredoc bodies are not commands" "no" \
   "$(needs_review $'cat <<A <<B\nB\nA\ngh pr create --title x\nB')"
 assert_eq "quoted command substitution preserves later draft" "no" \
   "$(needs_review 'gh pr create --title "$(printf "%s" "x && y")" --draft')"
+assert_eq "nested unsafe create needs review" "yes" \
+  "$(needs_review 'echo "$(gh pr create --title x)"')"
+assert_eq "nested draft create is safe" "no" \
+  "$(needs_review 'echo "$(gh pr create --draft --title x)"')"
 
 hz_test_summary

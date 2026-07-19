@@ -32,9 +32,8 @@ $ARGS
 EOF
 
 # 3. the full (event, if-or-matcher, script basename) wiring, in one shot.
-# SessionStart carries its condition as the entry-level "matcher" (no "if"
-# on the hook itself); PreToolUse/PostToolUse carry it as "if" on each hook
-# inside the entry's "hooks" array. Resolve both the same way jq sees them.
+# SessionStart and PreToolUse use entry-level matchers. PostToolUse retains
+# per-command `if` filters because it records metrics but makes no decision.
 ACTUAL="$(jq -r '
   .hooks | to_entries[] as $ev |
   $ev.value[] as $entry |
@@ -45,10 +44,9 @@ ACTUAL="$(jq -r '
 EXPECTED='PostToolUse|Bash(gh*)|post-command.sh
 PostToolUse|Bash(git*)|post-command.sh
 PostToolUse|Bash(rm*)|post-command.sh
-PreToolUse|Bash(gh*)|pre-pr-create.sh
-PreToolUse|Bash(git*)|pre-destructive.sh
-PreToolUse|Bash(git*)|pre-push.sh
-PreToolUse|Bash(rm*)|pre-destructive.sh
+PreToolUse|Bash|pre-destructive.sh
+PreToolUse|Bash|pre-pr-create.sh
+PreToolUse|Bash|pre-push.sh
 SessionStart|startup|session-context.sh'
 
 assert_eq "hooks.json wiring matches the pinned expectation" "$EXPECTED" "$ACTUAL"
