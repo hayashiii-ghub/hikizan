@@ -36,11 +36,7 @@ hikizan_metrics_log() {
   local decision="${4:-allow}"
   local session_id="${5:-}"
 
-  # Drop synthetic session ids. A non-empty session_id that is not the accepted UUID
-  # form (^[0-9a-f]{8}-) is a hand-crafted manual-test payload; skip the write
-  # so ad-hoc hook testing without HIKIZAN_METRICS_DIR cannot pollute the real
-  # metrics file. Empty session_id (genuinely unavailable) is still recorded.
-  # Same regex the aggregation examples used to filter on at read time.
+  # Enforce the synthetic-id guard documented above.
   if [ -n "$session_id" ] && [[ ! "$session_id" =~ ^[0-9a-f]{8}- ]]; then
     return 0
   fi
