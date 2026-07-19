@@ -853,3 +853,76 @@ hz_first_segment() {
 $(hz_tokenize "$1")
 EOF
 }
+
+# hz_command_argv "<simple segment>" -> normalized executable argv, one token
+# per line. Shell control reserved words and common direct-exec wrappers are
+# removed before anchored classifiers inspect the command head.
+hz_command_argv() {
+  local tok state=scan skip_value=0
+  while IFS= read -r tok; do
+    if [ "$state" = emit ]; then printf '%s\n' "$tok"; continue; fi
+    if [ "$skip_value" = 1 ]; then skip_value=0; continue; fi
+    case "$state" in
+      scan)
+        case "$tok" in
+          if|then|elif|else|while|until|do|'!'|'{'|'}') continue ;;
+          *=*) continue ;;
+          sudo) state=sudo; continue ;;
+          env) state=env; continue ;;
+          command) state=command; continue ;;
+          exec) state=exec; continue ;;
+          time) state=time; continue ;;
+          nohup) state=nohup; continue ;;
+          *) state=emit; printf '%s\n' "$tok" ;;
+        esac
+        ;;
+      sudo)
+        case "$tok" in
+          --) state=scan ;;
+          -u|-g|-h|-p|-r|-t|-C|-D|-T|--user|--group|--host|--prompt|--role|--type|--chdir)
+            skip_value=1 ;;
+          -*) : ;;
+          *=*) : ;;
+          *) state=scan
+             case "$tok" in sudo|env|command|exec|time|nohup) state="$tok" ;; *) state=emit; printf '%s\n' "$tok" ;; esac ;;
+        esac
+        ;;
+      env)
+        case "$tok" in
+          --) state=scan ;;
+          -u|-C|-S|--unset|--chdir|--split-string) skip_value=1 ;;
+          --unset=*|--chdir=*|--split-string=*|-*) : ;;
+          *=*) : ;;
+          *) state=scan
+             case "$tok" in sudo|env|command|exec|time|nohup) state="$tok" ;; *) state=emit; printf '%s\n' "$tok" ;; esac ;;
+        esac
+        ;;
+      command)
+        case "$tok" in
+          -v|-V) return 0 ;; # query only; does not execute the named command
+          --) state=scan ;;
+          -p) : ;;
+          *) state=scan
+             case "$tok" in sudo|env|command|exec|time|nohup) state="$tok" ;; *) state=emit; printf '%s\n' "$tok" ;; esac ;;
+        esac
+        ;;
+      exec)
+        case "$tok" in
+          --) state=scan ;;
+          -a) skip_value=1 ;;
+          -*) : ;;
+          *) state=scan
+             case "$tok" in sudo|env|command|exec|time|nohup) state="$tok" ;; *) state=emit; printf '%s\n' "$tok" ;; esac ;;
+        esac
+        ;;
+      time)
+        case "$tok" in -p|--) [ "$tok" = -- ] && state=scan ;; *) state=emit; printf '%s\n' "$tok" ;; esac
+        ;;
+      nohup)
+        case "$tok" in --) state=scan ;; *) state=emit; printf '%s\n' "$tok" ;; esac
+        ;;
+    esac
+  done <<EOF
+$(hz_first_segment "$1")
+EOF
+}

@@ -33,4 +33,7 @@ assert_eq "quoted rm -rf -> ask" "ask" "$(hz_decision_of "$HZ_OUT")"
 hz_run_hook "$HOOK" 'git reset "--hard"' "/tmp"
 assert_eq "quoted git reset --hard -> ask" "ask" "$(hz_decision_of "$HZ_OUT")"
 
+hz_run_hook "$HOOK" 'if true; then rm -rf /tmp/x; fi' "/tmp"
+assert_eq "reserved-word wrapped rm -rf -> ask" "ask" "$(hz_decision_of "$HZ_OUT")"
+
 hz_test_summary

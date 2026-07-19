@@ -12,6 +12,7 @@ tok_records() {
   hz_tokenize "$1" | awk '{ if (length($0) == 0) print "<boundary>"; else print }' | paste -sd'|' -
 }
 nested() { hz_nested_commands "$1" | paste -sd'|' -; }
+argv() { hz_command_argv "$1" | paste -sd'|' -; }
 collect_nested_count() { hz_collect_nested_commands "$1"; printf '%s' "${#HZ_NESTED_COMMANDS[@]}"; }
 collect_segment_count() { hz_collect_command_segments "$1"; printf '%s' "${#HZ_COMMAND_SEGMENTS[@]}"; }
 
@@ -26,6 +27,17 @@ assert_eq "empty quoted argv keeps its position" 'git|push|-o|__hikizan_empty_ar
   "$(tok 'git push -o "" --delete origin main')"
 assert_eq "empty single-quoted argv keeps its position" 'gh|__hikizan_empty_arg__|pr|create' \
   "$(tok "gh '' pr create")"
+assert_eq "normalize env wrapper" 'git|push|--force|origin|main' \
+  "$(argv 'env FOO=x git push --force origin main')"
+assert_eq "normalize sudo options" 'rm|-rf|/tmp/x' \
+  "$(argv 'sudo -n -u root rm -rf /tmp/x')"
+assert_eq "normalize sudo environment assignment" 'rm|-rf|/tmp/x' \
+  "$(argv 'sudo FOO=x rm -rf /tmp/x')"
+assert_eq "normalize command separator" 'git|push|--force|origin|main' \
+  "$(argv 'command -- git push --force origin main')"
+assert_eq "command query does not execute" '' "$(argv 'command -v git')"
+assert_eq "normalize reserved command head" 'git|push|--force|origin|main' \
+  "$(argv 'then ! exec git push --force origin main')"
 assert_eq "extract double-quoted command substitution" 'git push --force origin main' \
   "$(nested 'echo "$(git push --force origin main)"')"
 assert_eq "extract backtick command substitution" 'git reset --hard' \

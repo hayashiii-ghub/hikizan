@@ -75,6 +75,14 @@ assert_eq "quoted heredoc nested-looking rm is benign" "no" \
   "$(hit $'cat <<\'EOF\'\n$(rm -rf /tmp/x)\nEOF')"
 assert_eq "unquoted heredoc nested rm is destructive" "yes" \
   "$(hit $'cat <<EOF\n$(rm -rf /tmp/x)\nEOF')"
+assert_eq "env rm -rf" "yes" "$(hit 'env FOO=x rm -rf /tmp/x')"
+assert_eq "sudo option rm -rf" "yes" "$(hit 'sudo -n rm -rf /tmp/x')"
+assert_eq "command separator reset" "yes" "$(hit 'command -- git reset --hard')"
+assert_eq "exec reset" "yes" "$(hit 'exec git reset --hard')"
+assert_eq "reserved bang rm" "yes" "$(hit '! rm -rf /tmp/x')"
+assert_eq "reserved then rm" "yes" "$(hit 'then rm -rf /tmp/x')"
+assert_eq "brace group reset" "yes" "$(hit '{ git reset --hard')"
+assert_eq "command query is benign" "no" "$(hit 'command -v rm -rf /tmp/x')"
 assert_eq "single-quoted nested-looking text is benign" "no" \
   "$(hit "echo '\$(rm -rf /tmp/x)'")"
 

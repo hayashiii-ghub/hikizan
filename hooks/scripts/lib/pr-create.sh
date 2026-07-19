@@ -16,14 +16,13 @@ _hz_is_pr_create_segment() {
   local tok state=0
   while IFS= read -r tok; do
     case "$state:$tok" in
-      0:sudo|0:command|0:*=*) continue ;;
       0:gh) state=1 ;;
       1:pr) state=2 ;;
       2:create) return 0 ;;
       *) return 1 ;;
     esac
   done <<EOF
-$(hz_first_segment "$1")
+$(hz_command_argv "$1")
 EOF
   return 1
 }
@@ -59,7 +58,6 @@ _hz_prcreate_segment_needs_review() {
   while IFS= read -r tok; do
     if [ "$state" -lt 3 ]; then
       case "$state:$tok" in
-        0:sudo|0:command|0:*=*) continue ;;
         0:gh) state=1 ;;
         1:pr) state=2 ;;
         2:create) state=3 ;;
@@ -78,7 +76,7 @@ _hz_prcreate_segment_needs_review() {
         skip_value=1 ;;
     esac
   done <<EOF
-$(hz_first_segment "$1")
+$(hz_command_argv "$1")
 EOF
 
   [ "$state" = 3 ] && [ "$has_draft" = 0 ] && [ "$has_reviewer" = 0 ]

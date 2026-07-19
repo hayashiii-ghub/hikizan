@@ -105,6 +105,18 @@ assert_eq "abbreviated --mirror -> deny" "deny" "$(hz_decision_of "$HZ_OUT")"
 hz_run_hook "$HOOK" "git push --pru origin main" "$REPO_FEAT"
 assert_eq "abbreviated --prune -> deny" "deny" "$(hz_decision_of "$HZ_OUT")"
 
+hz_run_hook "$HOOK" "env FOO=x git push --force origin main" "$REPO_MAIN"
+assert_eq "env wrapped force push -> deny" "deny" "$(hz_decision_of "$HZ_OUT")"
+
+hz_run_hook "$HOOK" "exec git push --force origin main" "$REPO_MAIN"
+assert_eq "exec wrapped force push -> deny" "deny" "$(hz_decision_of "$HZ_OUT")"
+
+hz_run_hook "$HOOK" "if git push --force origin main; then :; fi" "$REPO_MAIN"
+assert_eq "if condition force push -> deny" "deny" "$(hz_decision_of "$HZ_OUT")"
+
+hz_run_hook "$HOOK" "if true; then git push --force origin main; fi" "$REPO_MAIN"
+assert_eq "then body force push -> deny" "deny" "$(hz_decision_of "$HZ_OUT")"
+
 hz_run_hook "$HOOK" "git push --force --all origin" "$REPO_FEAT"
 assert_eq "--force --all from feature -> deny" "deny" "$(hz_decision_of "$HZ_OUT")"
 

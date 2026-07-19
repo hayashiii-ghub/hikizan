@@ -54,6 +54,9 @@ assert_eq "pre-push: nested force origin main -> deny" "deny" "$(decision_of "$H
 run_codex_pretooluse "$PRE_PUSH" 'git -C /tmp/a -C ../b push --force origin main' "$REPO_MAIN"
 assert_eq "pre-push: unresolved git context -> deny" "deny" "$(decision_of "$HZ_OUT")"
 
+run_codex_pretooluse "$PRE_PUSH" 'env FOO=x git push --force origin main' "$REPO_MAIN"
+assert_eq "pre-push: env wrapped force push -> deny" "deny" "$(decision_of "$HZ_OUT")"
+
 run_codex_pretooluse "$PRE_PUSH" 'git push --force origin "main"' "$REPO_MAIN"
 assert_eq "pre-push: force origin quoted \"main\" -> deny (quote evasion closed)" "deny" "$(decision_of "$HZ_OUT")"
 
@@ -93,6 +96,9 @@ assert_eq "pre-destructive: ls -la -> allow" "allow" "$(decision_of "$HZ_OUT")"
 
 run_codex_pretooluse "$PRE_DESTRUCTIVE" "git reset --hard&&echo ok" "/tmp" deny
 assert_eq "pre-destructive: adjacent reset --hard -> deny" "deny" "$(decision_of "$HZ_OUT")"
+
+run_codex_pretooluse "$PRE_DESTRUCTIVE" "if true; then rm -rf /tmp/x; fi" "/tmp" deny
+assert_eq "pre-destructive: reserved-word wrapped rm -rf -> deny" "deny" "$(decision_of "$HZ_OUT")"
 
 # --- pre-pr-create.sh ---
 run_codex_pretooluse "$PRE_PR_CREATE" "gh pr create --title x" "/tmp"

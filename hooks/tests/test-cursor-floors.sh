@@ -42,6 +42,12 @@ assert_eq "unresolved git context force push -> deny" "deny" "$(perm_of "$HZ_OUT
 run_cursor 'echo "$(rm -rf /tmp/x)"' "/tmp"
 assert_eq "nested rm -rf -> ask" "ask" "$(perm_of "$HZ_OUT")"
 
+run_cursor 'env FOO=x git push --force origin main' "$REPO_MAIN"
+assert_eq "env wrapped force push -> deny" "deny" "$(perm_of "$HZ_OUT")"
+
+run_cursor 'if true; then rm -rf /tmp/x; fi' "/tmp"
+assert_eq "reserved-word wrapped rm -rf -> ask" "ask" "$(perm_of "$HZ_OUT")"
+
 run_cursor "git push \$'--fo\\x72ce' origin main" "$REPO_MAIN"
 assert_eq "ANSI-C escaped force main -> deny" "deny" "$(perm_of "$HZ_OUT")"
 
