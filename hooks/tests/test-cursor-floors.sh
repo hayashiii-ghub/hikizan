@@ -57,6 +57,15 @@ assert_eq "env split-string rm -rf -> ask" "ask" "$(perm_of "$HZ_OUT")"
 run_cursor 'env -P /bin rm -rf /tmp/x' "/tmp"
 assert_eq "env utility-path rm -rf -> ask" "ask" "$(perm_of "$HZ_OUT")"
 
+run_cursor "env -S '\${HIKIZAN_TEST_UNDEFINED} harmless'" "/tmp"
+assert_eq "unresolved env split-string -> deny" "deny" "$(perm_of "$HZ_OUT")"
+
+run_cursor "cd '$REPO_MAIN' && git push --force origin" "$REPO_FEAT"
+assert_eq "force push after cd -> deny" "deny" "$(perm_of "$HZ_OUT")"
+
+run_cursor "echo \"\$(cd '$REPO_MAIN' && git push --force origin)\"" "$REPO_FEAT"
+assert_eq "nested force push after cd -> deny" "deny" "$(perm_of "$HZ_OUT")"
+
 run_cursor "git push \$'--fo\\x72ce' origin main" "$REPO_MAIN"
 assert_eq "ANSI-C escaped force main -> deny" "deny" "$(perm_of "$HZ_OUT")"
 
