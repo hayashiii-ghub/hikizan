@@ -39,12 +39,20 @@ EOF
 # chained `-C` options are deliberately unsupported; a forceful push using
 # them must fail closed in the adapter instead of consulting the wrong repo.
 hz_push_context_supported() {
-  local tok seen_git=0 c_count=0 skip=0
+  local tok seen_git=0 c_count=0 skip=0 seen_env=0 env_split=0
   while IFS= read -r tok; do
+    if [ "$env_split" = 1 ]; then
+      hz_push_context_supported "$tok"
+      return $?
+    fi
     if [ "$seen_git" = 0 ]; then
       case "$tok" in
         GIT_DIR=*|GIT_WORK_TREE=*|GIT_NAMESPACE=*) return 1 ;;
-        sudo|command|*=*) continue ;;
+        env) seen_env=1; continue ;;
+        -C|--chdir) [ "$seen_env" = 1 ] && return 1 ;;
+        --chdir=*) [ "$seen_env" = 1 ] && return 1 ;;
+        -S|--split-string) [ "$seen_env" = 1 ] && { env_split=1; continue; } ;;
+        sudo|command|exec|time|nohup|*=*|--|-*) continue ;;
         git) seen_git=1; continue ;;
         *) return 0 ;;
       esac
@@ -62,7 +70,7 @@ hz_push_context_supported() {
       -c|--exec-path) skip=1 ;;
     esac
   done <<EOF
-$(hz_command_argv "$1")
+$(hz_first_segment "$1")
 EOF
   return 0
 }
@@ -100,7 +108,7 @@ hikizan_push_is_forceful() {
       -o|--push-option|--receive-pack|--exec) skip_next=1 ;;  # value-taking
       --repo=*)                               : ;;
       --repo)                                 skip_next=1 ;;
-      --delete|--del*|--mirror|--mir*|--prune|--pru*) rc=0; break ;;
+      --delete|--de*|--mirror|--m*|--prune|--pru*) rc=0; break ;;
       --*)                                     : ;;           # other long flag
       -*d*)                                    rc=0; break ;; # short cluster containing d (-d, -vd)
       +*)                                      rc=0; break ;; # force-update refspec marker
@@ -222,8 +230,8 @@ hikizan_push_protected_hit() {
     fi
     case "$tok" in
       -o|--push-option|--receive-pack|--exec|--repo) skip_next=1 ;;
-      --all)    has_all=1 ;;
-      --mirror|--mir*) has_mirror=1 ;;
+      --all|--al*) has_all=1 ;;
+      --mirror|--m*) has_mirror=1 ;;
       --prune|--pru*)  has_prune=1 ;;
     esac
   done <<EOF

@@ -105,6 +105,9 @@ assert_eq "abbreviated --mirror -> deny" "deny" "$(hz_decision_of "$HZ_OUT")"
 hz_run_hook "$HOOK" "git push --pru origin main" "$REPO_FEAT"
 assert_eq "abbreviated --prune -> deny" "deny" "$(hz_decision_of "$HZ_OUT")"
 
+hz_run_hook "$HOOK" "git push --force --al origin" "$REPO_FEAT"
+assert_eq "abbreviated --all with force -> deny" "deny" "$(hz_decision_of "$HZ_OUT")"
+
 hz_run_hook "$HOOK" "env FOO=x git push --force origin main" "$REPO_MAIN"
 assert_eq "env wrapped force push -> deny" "deny" "$(hz_decision_of "$HZ_OUT")"
 
@@ -116,6 +119,15 @@ assert_eq "if condition force push -> deny" "deny" "$(hz_decision_of "$HZ_OUT")"
 
 hz_run_hook "$HOOK" "if true; then git push --force origin main; fi" "$REPO_MAIN"
 assert_eq "then body force push -> deny" "deny" "$(hz_decision_of "$HZ_OUT")"
+
+hz_run_hook "$HOOK" "env -S 'git push --force origin main'" "$REPO_MAIN"
+assert_eq "env split-string force push -> deny" "deny" "$(hz_decision_of "$HZ_OUT")"
+
+hz_run_hook "$HOOK" "case x in x) git push --force origin main ;; esac" "$REPO_MAIN"
+assert_eq "case arm force push -> deny" "deny" "$(hz_decision_of "$HZ_OUT")"
+
+hz_run_hook "$HOOK" "env GIT_DIR=/other/.git git push --force origin" "$REPO_FEAT"
+assert_eq "env changed git context force push -> deny" "deny" "$(hz_decision_of "$HZ_OUT")"
 
 hz_run_hook "$HOOK" "git push --force --all origin" "$REPO_FEAT"
 assert_eq "--force --all from feature -> deny" "deny" "$(hz_decision_of "$HZ_OUT")"

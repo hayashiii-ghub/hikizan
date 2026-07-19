@@ -36,7 +36,7 @@ force push の対象 branch は `scripts/lib/push-parse.sh` の `hikizan_push_ta
 - `command git push ...` / 複数 refspec / `refs/heads/main`
 - `git push origin +HEAD:main` / `git push origin :main` (削除)：`--force` 系フラグが無くても、`+refspec` マーカーや空 src (`:branch`) の refspec は force 相当として同じ検査を受ける (`hikizan_push_is_forceful`)
 - `git push --delete origin main` / `git push -d origin main` も同様に force 相当として扱う
-- Git が受理する一意な長 option 省略形 (`--force-w` / `--del` / `--mir` / `--pru`) も対応する force 相当 option と同じ判定を受ける
+- Git が受理する一意な長 option 省略形 (`--force-w` / `--de` / `--m` / `--pru` / `--al`) も対応する force 相当 option と同じ判定を受ける
 - **glob を含む refspec** (例 `git push --force origin refs/heads/*:refs/heads/*`) は解決先が `*` 等のメタ文字を含むため、保護 branch にマッチしうると見なして保守的に **deny** する
 - **`--mirror` / `--prune`** は push 対象の branch を個別に列挙できない (全 ref を force 更新・削除しうる) ため、対象を特定せず保守的に **deny** する
 - forceful push の **`--all`** は全 local branch を更新し、current branch が feature でも main / master / develop を含みうるため、対象を特定せず保守的に **deny** する
@@ -47,7 +47,7 @@ force push の対象 branch は `scripts/lib/push-parse.sh` の `hikizan_push_ta
 破壊的コマンドの分類規約:
 
 - **判定は anchored**: rm 系は「コマンド先頭 (sudo / command / 環境変数 prefix は skip) が `rm`」、git 系は「git の subcommand が reset / clean / checkout」のときだけ評価する。引用文字列に `--force push` や `reset --hard` が現れるだけのコマンド (例: `git commit -m "see reset --hard docs"`) は発火しない
-- **command head の正規化**: `if` / `then` / `while` / `do` / `!` / brace group 等の先頭 reserved word と、`sudo` / `env` / `command` / `exec` / `time` / `nohup` の direct-exec wrapper・option を除いてから各 segment を anchored 判定する
+- **command head の正規化**: `if` / `then` / `while` / `do` / `case` / `!` / brace group 等の先頭 reserved word と、`sudo` / `env` / `command` / `exec` / `time` / `nohup` の direct-exec wrapper・option を除いてから各 segment を anchored 判定する。`env -S` の split string は実行 argv として再 token 化する
 - **rm**: 再帰 (`-r`/`-R`/`--recursive`、`-rv` 等のクラスタ含む) **かつ** 強制 (`-f`/`--force`) の両方を持つ時だけ ask。`rm --force file` (再帰なし) や `rm -f file` 単体は対象外
 - **checkout**: `--` トークンを含む形 (`git checkout [-tree-ish] -- <path>`) / `git checkout .` / `-f`・`--force` を ask。ブランチ切替や `--` なしの pathspec (`git checkout file.txt`) は対象外
 

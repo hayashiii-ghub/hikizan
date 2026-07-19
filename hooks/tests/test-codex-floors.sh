@@ -100,6 +100,9 @@ assert_eq "pre-destructive: adjacent reset --hard -> deny" "deny" "$(decision_of
 run_codex_pretooluse "$PRE_DESTRUCTIVE" "if true; then rm -rf /tmp/x; fi" "/tmp" deny
 assert_eq "pre-destructive: reserved-word wrapped rm -rf -> deny" "deny" "$(decision_of "$HZ_OUT")"
 
+run_codex_pretooluse "$PRE_DESTRUCTIVE" 'env -S "rm -rf /tmp/x"' "/tmp" deny
+assert_eq "pre-destructive: env split-string rm -rf -> deny" "deny" "$(decision_of "$HZ_OUT")"
+
 # --- pre-pr-create.sh ---
 run_codex_pretooluse "$PRE_PR_CREATE" "gh pr create --title x" "/tmp"
 assert_eq "pre-pr-create: no draft/reviewer -> deny" "deny" "$(decision_of "$HZ_OUT")"

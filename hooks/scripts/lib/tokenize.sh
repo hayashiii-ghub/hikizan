@@ -865,7 +865,9 @@ hz_command_argv() {
     case "$state" in
       scan)
         case "$tok" in
+          case) state=case_subject; continue ;;
           if|then|elif|else|while|until|do|'!'|'{'|'}') continue ;;
+          *')') continue ;; # case pattern head after a `|` segment boundary
           *=*) continue ;;
           sudo) state=sudo; continue ;;
           env) state=env; continue ;;
@@ -876,6 +878,9 @@ hz_command_argv() {
           *) state=emit; printf '%s\n' "$tok" ;;
         esac
         ;;
+      case_subject) state=case_in ;;
+      case_in) [ "$tok" = in ] && state=case_pattern ;;
+      case_pattern) state=scan ;;
       sudo)
         case "$tok" in
           --) state=scan ;;
@@ -890,12 +895,17 @@ hz_command_argv() {
       env)
         case "$tok" in
           --) state=scan ;;
-          -u|-C|-S|--unset|--chdir|--split-string) skip_value=1 ;;
+          -u|-C|--unset|--chdir) skip_value=1 ;;
+          -S|--split-string) state=env_split ;;
           --unset=*|--chdir=*|--split-string=*|-*) : ;;
           *=*) : ;;
           *) state=scan
              case "$tok" in sudo|env|command|exec|time|nohup) state="$tok" ;; *) state=emit; printf '%s\n' "$tok" ;; esac ;;
         esac
+        ;;
+      env_split)
+        hz_command_argv "$tok"
+        state=emit
         ;;
       command)
         case "$tok" in

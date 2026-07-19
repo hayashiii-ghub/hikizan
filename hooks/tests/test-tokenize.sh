@@ -29,6 +29,8 @@ assert_eq "empty single-quoted argv keeps its position" 'gh|__hikizan_empty_arg_
   "$(tok "gh '' pr create")"
 assert_eq "normalize env wrapper" 'git|push|--force|origin|main' \
   "$(argv 'env FOO=x git push --force origin main')"
+assert_eq "normalize env split-string command" 'git|push|--force|origin|main' \
+  "$(argv 'env -S "git push --force origin main"')"
 assert_eq "normalize sudo options" 'rm|-rf|/tmp/x' \
   "$(argv 'sudo -n -u root rm -rf /tmp/x')"
 assert_eq "normalize sudo environment assignment" 'rm|-rf|/tmp/x' \
@@ -38,6 +40,8 @@ assert_eq "normalize command separator" 'git|push|--force|origin|main' \
 assert_eq "command query does not execute" '' "$(argv 'command -v git')"
 assert_eq "normalize reserved command head" 'git|push|--force|origin|main' \
   "$(argv 'then ! exec git push --force origin main')"
+assert_eq "normalize case arm command head" 'git|push|--force|origin|main' \
+  "$(argv 'case x in x) git push --force origin main')"
 assert_eq "extract double-quoted command substitution" 'git push --force origin main' \
   "$(nested 'echo "$(git push --force origin main)"')"
 assert_eq "extract backtick command substitution" 'git reset --hard' \
