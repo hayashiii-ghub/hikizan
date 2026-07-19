@@ -191,6 +191,20 @@ git -C "$WORK" config branch.main.remote other
 hz_run_hook "$HOOK" "git push" "$WORK"
 assert_eq "config fallback to other (not ahead) -> allow" "allow" "$(hz_decision_of "$HZ_OUT")"
 
+# Repository-controlled branch names in deny guidance must be shell-escaped.
+git -C "$WORK" branch -m '$(id)'
+git -C "$WORK" update-ref 'refs/remotes/origin/$(id)' refs/remotes/origin/main
+git -C "$WORK" config 'branch.$(id).remote' origin
+hz_run_hook "$HOOK" 'git push origin $(id)' "$WORK"
+REASON="$(printf '%s' "$HZ_OUT" | jq -r '.hookSpecificOutput.permissionDecisionReason // ""')"
+assert_eq "hostile branch name still denies non-fast-forward push" "deny" "$(hz_decision_of "$HZ_OUT")"
+assert_contains "deny guidance shell-escapes branch name" '\$\(id\)' "$REASON"
+case "$REASON" in
+  *'git pull --rebase origin $(id)'*)
+    HZ_FAIL=$((HZ_FAIL + 1)); printf '  FAIL: deny guidance contains an unescaped executable branch name\n' ;;
+  *) HZ_PASS=$((HZ_PASS + 1)) ;;
+esac
+
 rm -rf "$WORK" "$HZ_BARE_ORIGIN" "$HZ_BARE_OTHER"
 
 hz_test_summary
