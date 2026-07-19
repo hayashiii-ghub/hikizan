@@ -182,4 +182,22 @@ fi
 fail=$((fail || pack_boundary))
 [ "$pack_boundary" -eq 0 ] && echo "✔ pack-only install boundary and logical cross-skill references"
 
+# 15. Version-pin examples must survive a release without a docs-only bump.
+#     vX.Y.Z is shell-safe; angle-bracket placeholders would be parsed as
+#     redirection if copied as-is.
+version_pin=0
+if grep -nE -- '(--ref[[:space:]]+|--ref=)v[0-9]+\.[0-9]+\.[0-9]+' \
+  "$ROOT/README.md" "$ROOT/codex/README.md"; then
+  echo "✘ release-specific Codex --ref example remains in install docs"
+  version_pin=1
+fi
+for file in "$ROOT/README.md" "$ROOT/codex/README.md"; do
+  grep -qF -- '--ref vX.Y.Z' "$file" || {
+    echo "✘ ${file#$ROOT/} is missing the release-independent --ref vX.Y.Z example"
+    version_pin=1
+  }
+done
+fail=$((fail || version_pin))
+[ "$version_pin" -eq 0 ] && echo "✔ Codex version-pin examples are release-independent"
+
 exit "$fail"

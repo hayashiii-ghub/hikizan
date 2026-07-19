@@ -17,7 +17,7 @@ codex plugin marketplace add hayashiii-ghub/hikizan
 codex plugin add hikizan@hikizan
 ```
 
-- 特定 version に固定するなら `codex plugin marketplace add hayashiii-ghub/hikizan --ref v0.10.3`
+- 特定 version に固定するなら `codex plugin marketplace add hayashiii-ghub/hikizan --ref vX.Y.Z` (`X.Y.Z` は実在する release tag の version に置き換える)
 - TUI 派は 1 行目のあと `/plugins` で marketplace `hikizan` から選んでもよい
 - `jq` が必要 (CC / Cursor と同じ)
 - install 後は表示された hooks の内容を確認して信頼し、新しい task を開始する

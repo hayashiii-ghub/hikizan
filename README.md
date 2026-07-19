@@ -62,7 +62,7 @@ codex plugin marketplace add hayashiii-ghub/hikizan
 codex plugin add hikizan@hikizan
 ```
 
-skills + floors (force push deny / 破壊的操作 deny / 非 draft PR deny) + SessionStart 経由の前文がまとめて入り、`HIKIZAN_TIER=standard` を宣言できる。特定 version への固定は marketplace 追加時に `--ref v0.10.3` を付ける。Codex CLI 0.144.2 の隔離した `CODEX_HOME` で marketplace 追加・plugin install・一覧表示までは確認済み。install 後は hooks の内容を確認して信頼し、新しい task を開始する。実 tool call での hooks 発火は未 live 検証なので、floors は完全な security boundary ではなく補助 guardrail として扱う。詳細と fallback (手動 hooks.json) は `codex/README.md`。`npx skills add -a codex` は併用しない。
+skills + floors (force push deny / 破壊的操作 deny / 非 draft PR deny) + SessionStart 経由の前文がまとめて入り、`HIKIZAN_TIER=standard` を宣言できる。特定 version への固定は marketplace 追加時に `--ref vX.Y.Z` を付け、`X.Y.Z` を実在する release tag の version に置き換える。Codex CLI 0.144.2 の隔離した `CODEX_HOME` で marketplace 追加・plugin install・一覧表示までは確認済み。install 後は hooks の内容を確認して信頼し、新しい task を開始する。実 tool call での hooks 発火は未 live 検証なので、floors は完全な security boundary ではなく補助 guardrail として扱う。詳細と fallback (手動 hooks.json) は `codex/README.md`。`npx skills add -a codex` は併用しない。
 
 ### Cursor
 
