@@ -42,6 +42,9 @@ assert_eq "wildcard refspec force -> deny" "deny" "$(hz_decision_of "$HZ_OUT")"
 hz_run_hook "$HOOK" "git push --force-with-lease origin main" "$REPO_MAIN"
 assert_eq "force-with-lease main -> deny" "deny" "$(hz_decision_of "$HZ_OUT")"
 
+hz_run_hook "$HOOK" "git push --force-w origin main" "$REPO_MAIN"
+assert_eq "abbreviated force-with-lease main -> deny" "deny" "$(hz_decision_of "$HZ_OUT")"
+
 # force push to a non-protected branch is allowed
 hz_run_hook "$HOOK" "git push --force origin HEAD:feature" "$REPO_FEAT"
 assert_eq "force to feature -> allow" "allow" "$(hz_decision_of "$HZ_OUT")"
@@ -92,6 +95,15 @@ assert_eq "--delete origin main -> deny" "deny" "$(hz_decision_of "$HZ_OUT")"
 
 hz_run_hook "$HOOK" "git push --mirror origin" "$REPO_FEAT"
 assert_eq "--mirror -> deny" "deny" "$(hz_decision_of "$HZ_OUT")"
+
+hz_run_hook "$HOOK" "git push --del origin main" "$REPO_FEAT"
+assert_eq "abbreviated --delete main -> deny" "deny" "$(hz_decision_of "$HZ_OUT")"
+
+hz_run_hook "$HOOK" "git push --mir origin" "$REPO_FEAT"
+assert_eq "abbreviated --mirror -> deny" "deny" "$(hz_decision_of "$HZ_OUT")"
+
+hz_run_hook "$HOOK" "git push --pru origin main" "$REPO_FEAT"
+assert_eq "abbreviated --prune -> deny" "deny" "$(hz_decision_of "$HZ_OUT")"
 
 hz_run_hook "$HOOK" "git push --force --all origin" "$REPO_FEAT"
 assert_eq "--force --all from feature -> deny" "deny" "$(hz_decision_of "$HZ_OUT")"
