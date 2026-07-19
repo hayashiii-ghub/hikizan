@@ -61,6 +61,22 @@ assert_eq "quoted git clean -f"       "yes" "$(hit 'git clean "-f"')"
 assert_eq "quoted git checkout --force" "yes" "$(hit 'git checkout "--force"')"
 assert_eq "quoted head token (git)"   "yes" "$(hit '"git" reset --hard')"
 assert_eq "quoted subcommand (reset)" "yes" "$(hit 'git "reset" --hard')"
+assert_eq "nested command substitution rm -rf" "yes" \
+  "$(hit 'echo "$(rm -rf /tmp/x)"')"
+assert_eq "nested backtick reset --hard" "yes" \
+  "$(hit 'echo `git reset --hard`')"
+assert_eq "later top-level rm -rf" "yes" \
+  "$(hit 'echo ok; rm -rf /tmp/x')"
+assert_eq "later nested rm -rf" "yes" \
+  "$(hit 'echo "$(echo ok; rm -rf /tmp/x)"')"
+assert_eq "commented nested-looking rm is benign" "no" \
+  "$(hit 'echo ok # $(rm -rf /tmp/x)')"
+assert_eq "quoted heredoc nested-looking rm is benign" "no" \
+  "$(hit $'cat <<\'EOF\'\n$(rm -rf /tmp/x)\nEOF')"
+assert_eq "unquoted heredoc nested rm is destructive" "yes" \
+  "$(hit $'cat <<EOF\n$(rm -rf /tmp/x)\nEOF')"
+assert_eq "single-quoted nested-looking text is benign" "no" \
+  "$(hit "echo '\$(rm -rf /tmp/x)'")"
 
 # ── compound commands: flag scans must not cross into later segments ─────
 # Real false-asks (2026-07-05): a benign `git checkout -b` followed by an
@@ -83,7 +99,7 @@ assert_eq "later -f after pipe does not leak into rm" "no" \
   "$(hit 'rm -r x|echo -f')"
 assert_eq "later -f after ampersand does not leak into rm" "no" \
   "$(hit 'rm -r x&echo -f')"
-assert_eq "later destructive segment stays outside head policy" "no" \
+assert_eq "later destructive segment is classified independently" "yes" \
   "$(hit 'echo ok&&git reset --hard')"
 assert_eq "quoted operator argument is not a boundary" "yes" \
   "$(hit 'rm -r "&&" -f x')"
@@ -117,10 +133,9 @@ assert_eq "ANSI-C quoted force flag is destructive" "yes" \
   "$(hit "rm -r \$'-f' target")"
 assert_eq "ANSI-C escaped hard flag is destructive" "yes" \
   "$(hit "git reset \$'--ha\\x72d'")"
-# Known limitation (same class as conditions.md's cd-passthrough note): a
-# later segment's own discard checkout is not classified — only the first
-# segment is scanned, matching the head-anchor policy used everywhere else.
-assert_eq "checkout -b then checkout -- . (compound, known limit)" "no" \
+# Each segment is classified independently, so flags do not leak across the
+# boundary and a later destructive command is still caught.
+assert_eq "checkout -b then checkout -- ." "yes" \
   "$(hit 'git checkout -q -b x && git checkout -- .')"
 
 hz_test_summary

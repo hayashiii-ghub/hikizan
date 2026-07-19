@@ -94,8 +94,8 @@ EOF
   return $rc
 }
 
-# hz_destructive_label "<command>" -> print a label, or nothing if benign.
-hz_destructive_label() {
+# Classify one simple command segment.
+_hz_destructive_label_segment() {
   local c="$1" sub
   if hz_is_rm_rf "$c"; then
     printf 'rm -rf (recursive force delete)'
@@ -119,5 +119,42 @@ hz_destructive_label() {
         printf 'git checkout (discards working-tree changes)'
       fi ;;
   esac
+
+  return 0
+}
+
+# hz_destructive_label "<command>" -> print a label, or nothing if benign.
+hz_destructive_label() {
+  local c="$1" segment nested label i=0 j=0 nested_count
+
+  hz_collect_command_segments "$c"
+  while [ "$i" -lt "$HZ_COMMAND_SEGMENT_COUNT" ]; do
+    segment="${HZ_COMMAND_SEGMENTS[$i]}"
+    label="$(_hz_destructive_label_segment "$segment")"
+    if [ -n "$label" ]; then
+      printf '%s' "$label"
+      return 0
+    fi
+    i=$((i + 1))
+  done
+
+  hz_collect_nested_commands "$c"
+  nested_count="$HZ_NESTED_COUNT"
+  i=0
+  while [ "$i" -lt "$nested_count" ]; do
+    nested="${HZ_NESTED_COMMANDS[$i]}"
+    hz_collect_command_segments "$nested"
+    j=0
+    while [ "$j" -lt "$HZ_COMMAND_SEGMENT_COUNT" ]; do
+      segment="${HZ_COMMAND_SEGMENTS[$j]}"
+      label="$(_hz_destructive_label_segment "$segment")"
+      if [ -n "$label" ]; then
+        printf 'nested command: %s' "$label"
+        return 0
+      fi
+      j=$((j + 1))
+    done
+    i=$((i + 1))
+  done
   return 0
 }

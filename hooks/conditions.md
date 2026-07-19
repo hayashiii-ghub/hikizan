@@ -7,10 +7,10 @@ Claude Code plugin の hooks で監視する条件 / 挙動 / 決定の一覧。
 | event | matcher / if | 条件 | 決定 | reason 伝達 |
 |---|---|---|---|---|
 | SessionStart | matcher `startup` | セッション開始 (startup) | `context/routing.md` の routing / ルールと active tier を stdout に出力し context 注入。tier=standard なら `context/standard-preamble.md` (opt-out 前文) も注入。host repo は書き換えない | stdout (context) |
-| PreToolUse | `Bash(git*)` | local が push 先 remote から N コミット遅れている (non-fast-forward)。remote はコマンドの明示 remote → branch.<name>.remote → origin の順に解決 | `permissionDecision: "deny"` + 選択肢 (pull --rebase / 別 branch / abort) | JSON reason |
-| PreToolUse | `Bash(git*)` | force 相当 (`--force` / `--force-with-lease` / `-f` / `-fv` に加え `+refspec` / `:branch` (削除) / `--delete`・`-d` / `--mirror` / `--prune`) が main / master / develop を対象にする | `permissionDecision: "deny"` + 確認要求 | JSON reason |
-| PreToolUse | `Bash(rm*)` / `Bash(git*)` | 不可逆操作 (`rm -rf` / `git reset --hard` / `git clean -f` / `git checkout` discard) | CC / Cursor: `ask`、Codex: `deny` (`ask` 非対応のため) | JSON reason |
-| PreToolUse | `Bash(gh*)` | `--draft` / `-d` も `--reviewer` / `-r` も無い (flag 判定は quote-aware tokenizer によるセグメント内のトークン一致。引用文字列内・comment・別コマンドの `-d` 等では発火・解除しない) | `permissionDecision: "deny"` + 選択肢 | JSON reason |
+| PreToolUse | matcher `Bash` | local が push 先 remote から N コミット遅れている (non-fast-forward)。remote はコマンドの明示 remote → branch.<name>.remote → origin の順に解決 | `permissionDecision: "deny"` + 選択肢 (pull --rebase / 別 branch / abort) | JSON reason |
+| PreToolUse | matcher `Bash` | force 相当 (`--force` / `--force-with-lease` / `-f` / `-fv` に加え `+refspec` / `:branch` (削除) / `--delete`・`-d` / `--mirror` / `--prune`) が main / master / develop を対象にする。または複数 `-C` / `--git-dir` 等により force push の repo context を一意に解決できない | `permissionDecision: "deny"` + 確認要求 | JSON reason |
+| PreToolUse | matcher `Bash` | 不可逆操作 (`rm -rf` / `git reset --hard` / `git clean -f` / `git checkout` discard) | CC / Cursor: `ask`、Codex: `deny` (`ask` 非対応のため) | JSON reason |
+| PreToolUse | matcher `Bash` | `--draft` / `-d` も `--reviewer` / `-r` も無い (flag 判定は quote-aware tokenizer によるセグメント内のトークン一致。引用文字列内・comment・別コマンドの `-d` 等では発火・解除しない) | `permissionDecision: "deny"` + 選択肢 | JSON reason |
 | PostToolUse (Bash) | `Bash(git*)` / `Bash(gh*)` / `Bash(rm*)` | floor 対象クラスの実行を記録、介入なし・決定なし | なし (metrics のみ) | metrics.jsonl |
 
 ## 決定の出し方
@@ -39,8 +39,9 @@ force push の対象 branch は `scripts/lib/push-parse.sh` の `hikizan_push_ta
 - **glob を含む refspec** (例 `git push --force origin refs/heads/*:refs/heads/*`) は解決先が `*` 等のメタ文字を含むため、保護 branch にマッチしうると見なして保守的に **deny** する
 - **`--mirror` / `--prune`** は push 対象の branch を個別に列挙できない (全 ref を force 更新・削除しうる) ため、対象を特定せず保守的に **deny** する
 - forceful push の **`--all`** は全 local branch を更新し、current branch が feature でも main / master / develop を含みうるため、対象を特定せず保守的に **deny** する
+- forceful push で複数 `-C`、`--git-dir`、`--work-tree`、`--namespace`、`--bare`、または対応する環境変数指定を含む場合、hook が repo context を一意に再現できないため保守的に **deny** する。単一の `-C <dir>` は解決する
 - ターゲット解決とコマンドのトークン化は `set -f` (noglob) 下で行い、cwd のファイル名に依存しない (決定論)
-- 未引用かつ top-level の shell 制御演算子 (`&&` / `||` / `;` / `|` / `|&` / `&` / 改行) は tokenizer が型付き境界として出力する。push / destructive の判定は最初の command segment で止まり、後続コマンドの flag や引数を混ぜない。PR create は全 segment を探すが、draft / reviewer の状態は segment ごとにリセットし、unsafe な create が 1 つでもあれば deny する。引用・escape 済みまたは command / process substitution 内の演算子は境界にしない。redirection (`2>&1` / `&>out` / `>|out` 等) は target とともに argv token から除外し、unquoted comment も判定対象から除く
+- 未引用かつ top-level の shell 制御演算子 (`&&` / `||` / `;` / `|` / `|&` / `&` / 改行) は command segment の境界として扱う。push / destructive / PR create は各 segment を独立に判定するため、後続コマンドの flag や引数を前のコマンドへ混ぜず、unsafe な segment が 1 つでもあれば停止する。空の quoted argv も位置を保つ。引用・escape 済みの演算子は境界にしない。実行される command / process substitution (`$(...)` / backtick / `<(...)` / `>(...)`) の body も改行を保持したまま再帰的に segment 化し、同じ floor で分類する。shell comment と quoted heredoc body は実行対象から除外し、unquoted heredoc body の command substitution は分類する。redirection (`2>&1` / `&>out` / `>|out` 等) は target とともに argv token から除外する
 
 破壊的コマンドの分類規約:
 
@@ -52,9 +53,7 @@ force push の対象 branch は `scripts/lib/push-parse.sh` の `hikizan_push_ta
 
 決定論層の floor であり、prose の停止条件 (各 SKILL.md) と二重化する前提。以下は hook 単独ではカバーしない:
 
-- **compound command**: `cd x && rm -rf y` のように先頭が対象コマンドでない複合コマンドは `if` matcher (prefix) に一致せず発火しない (anchored 判定も head ≠ 対象で skip する)。skill 本文の停止条件で補完する。pre-pr-create はトークン列上で `gh pr create` を探すため `gh ... && gh pr create` も script 段では拾えるが、`cd` 等から始まると CC の `if` matcher を通らない。push / destructive の flag 分類は最初のセグメントだけを見る (`git checkout -b x && git checkout -- .` の後続セグメントは分類されない)。
-- **`if` prefix に外れる rm**: `sudo rm -rf` / `/bin/rm -rf` は CC の `if: "Bash(rm*)"` に一致せず、CC では script に届かない。`rm >/tmp/log -rf x` のように head が `rm` の形は広い matcher と redirection-aware tokenizer で拾う。Cursor adapter (if なし) では `sudo rm -rf` は head 判定で拾うが、`/bin/rm` は拾わない。
-- **exotic な git 呼び出し**: 絶対パス `/usr/bin/git push` / `command git push` / alias 経由など、matcher の prefix に外れる形は CC で素通りしうる。head が `git` の形は途中に redirection があっても `Bash(git*)` から script に届き、`hz_git_subcommand` が anchored 判定する。
+- **実行ファイルの別表記**: `sudo rm -rf` / `command git push` は wrapper を skip して分類するが、絶対パス `/bin/rm` / `/usr/bin/git` や alias 経由は拾わない。
 - **non-fast-forward 検査の範囲**: 比較対象は「解決した remote の current branch」(`<remote>/<branch>`)。URL 直指定の push (`git push https://... main`) は remote-tracking ref が無いため検査対象外。refspec で current branch 以外に push する形 (`HEAD:other`) の non-ff は見ない (force 相当の検査は別途効く)。
 - **destructive 分類**: `rm -rf` / `reset --hard` / `clean -f` / `checkout` discard の 4 系統に限定。`git restore` 等は対象外。
 - **Codex の shell tool coverage**: `codex/hooks.json` は `matcher: "Bash"` に配線する。Codex の shell execution 経路や tool 名が増えた場合に全経路を捕捉できる保証はなく、hook 単独を完全な security boundary として扱わない。

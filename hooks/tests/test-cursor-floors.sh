@@ -33,6 +33,15 @@ assert_eq "adjacent reset --hard -> ask" "ask" "$(perm_of "$HZ_OUT")"
 run_cursor "git push --force origin HEAD:main" "$REPO_MAIN"
 assert_eq "force HEAD:main -> deny" "deny" "$(perm_of "$HZ_OUT")"
 
+run_cursor 'echo "$(git push --force origin main)"' "$REPO_MAIN"
+assert_eq "nested force push to main -> deny" "deny" "$(perm_of "$HZ_OUT")"
+
+run_cursor 'git -C /tmp/a -C ../b push --force origin main' "$REPO_MAIN"
+assert_eq "unresolved git context force push -> deny" "deny" "$(perm_of "$HZ_OUT")"
+
+run_cursor 'echo "$(rm -rf /tmp/x)"' "/tmp"
+assert_eq "nested rm -rf -> ask" "ask" "$(perm_of "$HZ_OUT")"
+
 run_cursor "git push \$'--fo\\x72ce' origin main" "$REPO_MAIN"
 assert_eq "ANSI-C escaped force main -> deny" "deny" "$(perm_of "$HZ_OUT")"
 
@@ -78,6 +87,8 @@ assert_eq "git stash push -> allow" "allow" "$(perm_of "$HZ_OUT")"
 # 3. non-draft PR without reviewer -> deny (parity with CC pre-pr-create)
 run_cursor 'gh pr create --title x' "/tmp"
 assert_eq "gh pr create bare -> deny" "deny" "$(perm_of "$HZ_OUT")"
+run_cursor 'echo "$(gh pr create --title x)"' "/tmp"
+assert_eq "nested gh pr create bare -> deny" "deny" "$(perm_of "$HZ_OUT")"
 assert_contains "PR deny gives reachable manual recovery" "manually outside" \
   "$(printf '%s' "$HZ_OUT" | jq -r '.agent_message // ""')"
 

@@ -33,6 +33,40 @@ EOF
   printf '%s' "$out"
 }
 
+# hz_push_context_supported "<command>" -> exit 0 when the hook can resolve
+# the repository exactly enough to read the current branch. A single `-C` is
+# supported. Context-changing env vars, git-dir/work-tree/namespace/bare, and
+# chained `-C` options are deliberately unsupported; a forceful push using
+# them must fail closed in the adapter instead of consulting the wrong repo.
+hz_push_context_supported() {
+  local tok seen_git=0 c_count=0 skip=0
+  while IFS= read -r tok; do
+    if [ "$seen_git" = 0 ]; then
+      case "$tok" in
+        GIT_DIR=*|GIT_WORK_TREE=*|GIT_NAMESPACE=*) return 1 ;;
+        sudo|command|*=*) continue ;;
+        git) seen_git=1; continue ;;
+        *) return 0 ;;
+      esac
+    fi
+    if [ "$skip" = 1 ]; then skip=0; continue; fi
+    [ "$tok" = push ] && break
+    case "$tok" in
+      -C)
+        c_count=$((c_count + 1))
+        [ "$c_count" -gt 1 ] && return 1
+        skip=1
+        ;;
+      --git-dir|--work-tree|--namespace) return 1 ;;
+      --git-dir=*|--work-tree=*|--namespace=*|--bare) return 1 ;;
+      -c|--exec-path) skip=1 ;;
+    esac
+  done <<EOF
+$(hz_first_segment "$1")
+EOF
+  return 0
+}
+
 # hikizan_push_has_force "<command>" -> exit 0 if a force flag is present.
 hikizan_push_has_force() {
   local tok rc=1
