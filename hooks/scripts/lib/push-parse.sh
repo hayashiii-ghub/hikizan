@@ -28,7 +28,7 @@ hz_push_dir() {
     if [ "$prev" = "-C" ]; then out="$tok"; break; fi
     prev="$tok"
   done <<EOF
-$(hz_first_segment "$1")
+$(hz_command_argv "$1")
 EOF
   printf '%s' "$out"
 }
@@ -39,14 +39,27 @@ EOF
 # chained `-C` options are deliberately unsupported; a forceful push using
 # them must fail closed in the adapter instead of consulting the wrong repo.
 hz_push_context_supported() {
-  local tok seen_git=0 c_count=0 skip=0
+  local tok seen_git=0 c_count=0 skip=0 seen_env=0 env_split=0 name
+  local -a env_names=() env_values=()
   while IFS= read -r tok; do
+    if [ "$env_split" = 1 ]; then
+      hz_push_context_supported "$tok"
+      return $?
+    fi
     if [ "$seen_git" = 0 ]; then
       case "$tok" in
         GIT_DIR=*|GIT_WORK_TREE=*|GIT_NAMESPACE=*) return 1 ;;
-        sudo|command|*=*) continue ;;
+        -D|-D?*) return 1 ;; # sudo chdir changes the repository seen by git
+        --chdir|--chdir=*) return 1 ;; # env/sudo working-directory override
+        env) seen_env=1; continue ;;
+        -C|-C?*) [ "$seen_env" = 1 ] && return 1 ;;
+        -S|--split-string) [ "$seen_env" = 1 ] && { env_split=1; continue; } ;;
+        -S?*) [ "$seen_env" = 1 ] && { hz_push_context_supported "$(hz_env_split_text "${tok#-S}")"; return $?; } ;;
+        --split-string=*) [ "$seen_env" = 1 ] && { hz_push_context_supported "$(hz_env_split_text "${tok#--split-string=}")"; return $?; } ;;
+        *=*) name="${tok%%=*}"; env_names+=("$name"); env_values+=("${tok#*=}"); continue ;;
+        sudo|command|exec|time|nohup|--|-*) continue ;;
         git) seen_git=1; continue ;;
-        *) return 0 ;;
+        *) continue ;;
       esac
     fi
     if [ "$skip" = 1 ]; then skip=0; continue; fi
@@ -77,7 +90,7 @@ hikizan_push_has_force() {
       -*f*|-*F*) rc=0; break ;; # short cluster containing f (e.g. -f, -fv, -vf)
     esac
   done <<EOF
-$(hz_first_segment "$1")
+$(hz_command_argv "$1")
 EOF
   return $rc
 }
@@ -100,7 +113,7 @@ hikizan_push_is_forceful() {
       -o|--push-option|--receive-pack|--exec) skip_next=1 ;;  # value-taking
       --repo=*)                               : ;;
       --repo)                                 skip_next=1 ;;
-      --delete|--del*|--mirror|--mir*|--prune|--pru*) rc=0; break ;;
+      --delete|--de*|--mirror|--m*|--prune|--pru*) rc=0; break ;;
       --*)                                     : ;;           # other long flag
       -*d*)                                    rc=0; break ;; # short cluster containing d (-d, -vd)
       +*)                                      rc=0; break ;; # force-update refspec marker
@@ -108,7 +121,7 @@ hikizan_push_is_forceful() {
       *)                                       : ;;
     esac
   done <<EOF
-$(hz_first_segment "$1")
+$(hz_command_argv "$1")
 EOF
   return $rc
 }
@@ -146,7 +159,7 @@ hikizan_push_targets() {
       *)   positionals+=("$tok") ;;
     esac
   done <<EOF
-$(hz_first_segment "$cmd")
+$(hz_command_argv "$cmd")
 EOF
 
   local -a refspecs=()
@@ -192,7 +205,7 @@ hikizan_push_remote() {
       *)   positionals+=("$tok") ;;
     esac
   done <<EOF
-$(hz_first_segment "$cmd")
+$(hz_command_argv "$cmd")
 EOF
 
   if [ "$repo_flag" = "1" ]; then
@@ -222,12 +235,12 @@ hikizan_push_protected_hit() {
     fi
     case "$tok" in
       -o|--push-option|--receive-pack|--exec|--repo) skip_next=1 ;;
-      --all)    has_all=1 ;;
-      --mirror|--mir*) has_mirror=1 ;;
+      --all|--al*) has_all=1 ;;
+      --mirror|--m*) has_mirror=1 ;;
       --prune|--pru*)  has_prune=1 ;;
     esac
   done <<EOF
-$(hz_first_segment "$cmd")
+$(hz_command_argv "$cmd")
 EOF
 
   if [ "$has_mirror" = "1" ]; then

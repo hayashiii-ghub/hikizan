@@ -22,9 +22,9 @@ command -v hz_tokenize >/dev/null 2>&1 || source "$(dirname "${BASH_SOURCE[0]}")
 hz_cmd_head() {
   local tok out=""
   while IFS= read -r tok; do
-    case "$tok" in sudo|command|*=*) continue ;; *) out="$tok"; break ;; esac
+    out="$tok"; break
   done <<EOF
-$(hz_first_segment "$1")
+$(hz_command_argv "$1")
 EOF
   printf '%s' "$out"
 }
@@ -36,7 +36,6 @@ hz_git_subcommand() {
   local tok seen_git=0 skip=0 out=""
   while IFS= read -r tok; do
     if [ "$seen_git" = 0 ]; then
-      case "$tok" in sudo|command|*=*) continue ;; esac
       [ "$tok" = "git" ] || break        # head is not git -> no subcommand
       seen_git=1; continue
     fi
@@ -48,7 +47,7 @@ hz_git_subcommand() {
       *)   out="$tok"; break ;;
     esac
   done <<EOF
-$(hz_first_segment "$1")
+$(hz_command_argv "$1")
 EOF
   printf '%s' "$out"
 }
@@ -68,7 +67,7 @@ hz_is_rm_rf() {
       -*[fF]*)                   hasf=1 ;;        # short cluster with f only
     esac
   done <<EOF
-$(hz_first_segment "$c")
+$(hz_command_argv "$c")
 EOF
   [ "$rc" = 1 ] && [ "$hasr" = 1 ] && [ "$hasf" = 1 ] && rc=0
   return $rc
@@ -78,7 +77,7 @@ EOF
 _hz_has_tok() {
   local tok rc=1
   while IFS= read -r tok; do [ "$tok" = "$2" ] && { rc=0; break; }; done <<EOF
-$(hz_first_segment "$1")
+$(hz_command_argv "$1")
 EOF
   return $rc
 }
@@ -89,7 +88,7 @@ _hz_has_short_f() {
   while IFS= read -r tok; do
     case "$tok" in --*) : ;; -*[fF]*) rc=0; break ;; esac
   done <<EOF
-$(hz_first_segment "$1")
+$(hz_command_argv "$1")
 EOF
   return $rc
 }
@@ -97,6 +96,10 @@ EOF
 # Classify one simple command segment.
 _hz_destructive_label_segment() {
   local c="$1" sub
+  if [ "$(hz_cmd_head "$c")" = "__hikizan_unresolved_env_split__" ]; then
+    printf 'env -S (unresolved command expansion)'
+    return 0
+  fi
   if hz_is_rm_rf "$c"; then
     printf 'rm -rf (recursive force delete)'
     return 0

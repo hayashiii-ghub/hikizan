@@ -12,6 +12,8 @@ tok_records() {
   hz_tokenize "$1" | awk '{ if (length($0) == 0) print "<boundary>"; else print }' | paste -sd'|' -
 }
 nested() { hz_nested_commands "$1" | paste -sd'|' -; }
+argv() { hz_command_argv "$1" | paste -sd'|' -; }
+unresolved() { if hz_command_has_unresolved_env_split "$1"; then echo yes; else echo no; fi; }
 collect_nested_count() { hz_collect_nested_commands "$1"; printf '%s' "${#HZ_NESTED_COMMANDS[@]}"; }
 collect_segment_count() { hz_collect_command_segments "$1"; printf '%s' "${#HZ_COMMAND_SEGMENTS[@]}"; }
 
@@ -26,6 +28,37 @@ assert_eq "empty quoted argv keeps its position" 'git|push|-o|__hikizan_empty_ar
   "$(tok 'git push -o "" --delete origin main')"
 assert_eq "empty single-quoted argv keeps its position" 'gh|__hikizan_empty_arg__|pr|create' \
   "$(tok "gh '' pr create")"
+assert_eq "normalize env wrapper" 'git|push|--force|origin|main' \
+  "$(argv 'env FOO=x git push --force origin main')"
+assert_eq "normalize env split-string command" 'git|push|--force|origin|main' \
+  "$(argv 'env -S "git push --force origin main"')"
+assert_eq "normalize attached env split-string command" 'git|push|--force|origin|main' \
+  "$(argv 'env -S"git push --force origin main"')"
+assert_eq "normalize long env split-string command" 'git|push|--force|origin|main' \
+  "$(argv 'env --split-string="git push --force origin main"')"
+assert_eq "normalize env split-string blank escape" 'git|push|--force|origin|main' \
+  "$(argv "env -S 'git\\_push\\_--force\\_origin\\_main'")"
+assert_eq "expand assigned env split-string command head" 'git|push|--force|origin|main' \
+  "$(argv "CMD=git env -S '\${CMD} push --force origin main'")"
+assert_eq "mark unresolved env split-string command head" '__hikizan_unresolved_env_split__' \
+  "$(argv "env -S '\${HIKIZAN_TEST_UNDEFINED} push --force origin main'")"
+assert_eq "find unresolved env split after earlier segment" 'yes' \
+  "$(unresolved "rm -rf /tmp/x; env -S '\${HIKIZAN_TEST_UNDEFINED} harmless'")"
+assert_eq "find nested unresolved env split" 'yes' \
+  "$(unresolved "echo \"\$(env -S '\${HIKIZAN_TEST_UNDEFINED} harmless')\"")"
+assert_eq "normalize BSD env utility path" 'git|push|--force|origin|main' \
+  "$(argv 'env -P /usr/bin git push --force origin main')"
+assert_eq "normalize sudo options" 'rm|-rf|/tmp/x' \
+  "$(argv 'sudo -n -u root rm -rf /tmp/x')"
+assert_eq "normalize sudo environment assignment" 'rm|-rf|/tmp/x' \
+  "$(argv 'sudo FOO=x rm -rf /tmp/x')"
+assert_eq "normalize command separator" 'git|push|--force|origin|main' \
+  "$(argv 'command -- git push --force origin main')"
+assert_eq "command query does not execute" '' "$(argv 'command -v git')"
+assert_eq "normalize reserved command head" 'git|push|--force|origin|main' \
+  "$(argv 'then ! exec git push --force origin main')"
+assert_eq "normalize case arm command head" 'git|push|--force|origin|main' \
+  "$(argv 'case x in x) git push --force origin main')"
 assert_eq "extract double-quoted command substitution" 'git push --force origin main' \
   "$(nested 'echo "$(git push --force origin main)"')"
 assert_eq "extract backtick command substitution" 'git reset --hard' \

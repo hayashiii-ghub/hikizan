@@ -36,17 +36,18 @@ force push の対象 branch は `scripts/lib/push-parse.sh` の `hikizan_push_ta
 - `command git push ...` / 複数 refspec / `refs/heads/main`
 - `git push origin +HEAD:main` / `git push origin :main` (削除)：`--force` 系フラグが無くても、`+refspec` マーカーや空 src (`:branch`) の refspec は force 相当として同じ検査を受ける (`hikizan_push_is_forceful`)
 - `git push --delete origin main` / `git push -d origin main` も同様に force 相当として扱う
-- Git が受理する一意な長 option 省略形 (`--force-w` / `--del` / `--mir` / `--pru`) も対応する force 相当 option と同じ判定を受ける
+- Git が受理する一意な長 option 省略形 (`--force-w` / `--de` / `--m` / `--pru` / `--al`) も対応する force 相当 option と同じ判定を受ける
 - **glob を含む refspec** (例 `git push --force origin refs/heads/*:refs/heads/*`) は解決先が `*` 等のメタ文字を含むため、保護 branch にマッチしうると見なして保守的に **deny** する
 - **`--mirror` / `--prune`** は push 対象の branch を個別に列挙できない (全 ref を force 更新・削除しうる) ため、対象を特定せず保守的に **deny** する
 - forceful push の **`--all`** は全 local branch を更新し、current branch が feature でも main / master / develop を含みうるため、対象を特定せず保守的に **deny** する
-- forceful push で複数 `-C`、`--git-dir`、`--work-tree`、`--namespace`、`--bare`、または対応する環境変数指定を含む場合、hook が repo context を一意に再現できないため保守的に **deny** する。単一の `-C <dir>` は解決する
+- forceful push で複数 `-C`、`--git-dir`、`--work-tree`、`--namespace`、`--bare`、対応する環境変数指定、`env` / `sudo` の working-directory override、または同じ shell command 内の先行 `cd` / `pushd` を含む場合、hook が repo context を一意に再現できないため保守的に **deny** する。単一の Git `-C <dir>` は解決する
 - ターゲット解決とコマンドのトークン化は `set -f` (noglob) 下で行い、cwd のファイル名に依存しない (決定論)
 - 未引用かつ top-level の shell 制御演算子 (`&&` / `||` / `;` / `|` / `|&` / `&` / 改行) は command segment の境界として扱う。push / destructive / PR create は各 segment を独立に判定するため、後続コマンドの flag や引数を前のコマンドへ混ぜず、unsafe な segment が 1 つでもあれば停止する。空の quoted argv も位置を保つ。引用・escape 済みの演算子は境界にしない。実行される command / process substitution (`$(...)` / backtick / `<(...)` / `>(...)`) の body も改行を保持したまま再帰的に segment 化し、同じ floor で分類する。shell comment と quoted heredoc body は実行対象から除外し、unquoted heredoc body の command substitution は分類する。redirection (`2>&1` / `&>out` / `>|out` 等) は target とともに argv token から除外する
 
 破壊的コマンドの分類規約:
 
 - **判定は anchored**: rm 系は「コマンド先頭 (sudo / command / 環境変数 prefix は skip) が `rm`」、git 系は「git の subcommand が reset / clean / checkout」のときだけ評価する。引用文字列に `--force push` や `reset --hard` が現れるだけのコマンド (例: `git commit -m "see reset --hard docs"`) は発火しない
+- **command head の正規化**: `if` / `then` / `while` / `do` / `case` / `!` / brace group 等の先頭 reserved word と、`sudo` / `env` / `command` / `exec` / `time` / `nohup` の direct-exec wrapper・option を除いてから各 segment を anchored 判定する。`env -S` の分離形・連結形・long option の split string は `\_` blank escape と `${VARNAME}` 展開を解決して実行 argv として再 token 化し、変数を解決できなければ保守的に停止する
 - **rm**: 再帰 (`-r`/`-R`/`--recursive`、`-rv` 等のクラスタ含む) **かつ** 強制 (`-f`/`--force`) の両方を持つ時だけ ask。`rm --force file` (再帰なし) や `rm -f file` 単体は対象外
 - **checkout**: `--` トークンを含む形 (`git checkout [-tree-ish] -- <path>`) / `git checkout .` / `-f`・`--force` を ask。ブランチ切替や `--` なしの pathspec (`git checkout file.txt`) は対象外
 
@@ -54,7 +55,7 @@ force push の対象 branch は `scripts/lib/push-parse.sh` の `hikizan_push_ta
 
 決定論層の floor であり、prose の停止条件 (各 SKILL.md) と二重化する前提。以下は hook 単独ではカバーしない:
 
-- **実行ファイルの別表記**: `sudo rm -rf` / `command git push` は wrapper を skip して分類するが、絶対パス `/bin/rm` / `/usr/bin/git` や alias 経由は拾わない。
+- **実行ファイルの別表記**: direct-exec wrapper は skip して分類するが、絶対パス `/bin/rm` / `/usr/bin/git`、alias、function / `eval` / `xargs` 等の間接実行は拾わない。
 - **non-fast-forward 検査の範囲**: 比較対象は「解決した remote の current branch」(`<remote>/<branch>`)。URL 直指定の push (`git push https://... main`) は remote-tracking ref が無いため検査対象外。refspec で current branch 以外に push する形 (`HEAD:other`) の non-ff は見ない (force 相当の検査は別途効く)。
 - **destructive 分類**: `rm -rf` / `reset --hard` / `clean -f` / `checkout` discard の 4 系統に限定。`git restore` 等は対象外。
 - **Codex の shell tool coverage**: `codex/hooks.json` は `matcher: "Bash"` に配線する。Codex の shell execution 経路や tool 名が増えた場合に全経路を捕捉できる保証はなく、hook 単独を完全な security boundary として扱わない。

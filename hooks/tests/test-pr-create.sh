@@ -28,6 +28,10 @@ assert_eq "commit arguments mentioning gh pr create are not a command" "no" \
 assert_eq "empty argv prevents false adjacent pr create" "no" "$(is_pr_create 'gh "" pr create')"
 assert_eq "nested command substitution is pr create" "yes" \
   "$(is_pr_create 'echo "$(gh pr create --title x)"')"
+assert_eq "env wrapped gh pr create is a command" "yes" \
+  "$(is_pr_create 'env FOO=x gh pr create --title x')"
+assert_eq "then body gh pr create is a command" "yes" \
+  "$(is_pr_create 'if true; then gh pr create --title x; fi')"
 
 # ── hz_prcreate_needs_review ───────────────────────────────────────────────
 assert_eq "bare create -> needs review (deny)"      "yes" "$(needs_review 'gh pr create --title x')"

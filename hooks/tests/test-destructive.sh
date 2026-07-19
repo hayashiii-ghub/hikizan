@@ -75,6 +75,22 @@ assert_eq "quoted heredoc nested-looking rm is benign" "no" \
   "$(hit $'cat <<\'EOF\'\n$(rm -rf /tmp/x)\nEOF')"
 assert_eq "unquoted heredoc nested rm is destructive" "yes" \
   "$(hit $'cat <<EOF\n$(rm -rf /tmp/x)\nEOF')"
+assert_eq "env rm -rf" "yes" "$(hit 'env FOO=x rm -rf /tmp/x')"
+assert_eq "sudo option rm -rf" "yes" "$(hit 'sudo -n rm -rf /tmp/x')"
+assert_eq "command separator reset" "yes" "$(hit 'command -- git reset --hard')"
+assert_eq "exec reset" "yes" "$(hit 'exec git reset --hard')"
+assert_eq "reserved bang rm" "yes" "$(hit '! rm -rf /tmp/x')"
+assert_eq "reserved then rm" "yes" "$(hit 'then rm -rf /tmp/x')"
+assert_eq "brace group reset" "yes" "$(hit '{ git reset --hard')"
+assert_eq "command query is benign" "no" "$(hit 'command -v rm -rf /tmp/x')"
+assert_eq "env split-string rm -rf" "yes" "$(hit 'env -S "rm -rf /tmp/x"')"
+assert_eq "attached env split-string rm -rf" "yes" "$(hit 'env -S"rm -rf /tmp/x"')"
+assert_eq "env utility-path rm -rf" "yes" "$(hit 'env -P /bin rm -rf /tmp/x')"
+assert_eq "assigned env split-string rm -rf" "yes" \
+  "$(hit "CMD=rm env -S '\${CMD} -rf /tmp/x'")"
+assert_eq "unresolved env split-string fails closed" "yes" \
+  "$(hit "env -S '\${HIKIZAN_TEST_UNDEFINED} harmless'")"
+assert_eq "case arm rm -rf" "yes" "$(hit 'case x in x) rm -rf /tmp/x ;; esac')"
 assert_eq "single-quoted nested-looking text is benign" "no" \
   "$(hit "echo '\$(rm -rf /tmp/x)'")"
 

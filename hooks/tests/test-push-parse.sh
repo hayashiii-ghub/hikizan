@@ -38,6 +38,8 @@ assert_eq "--mirror is forceful"                    "yes" "$(forceful 'git push 
 assert_eq "--prune is forceful"                      "yes" "$(forceful 'git push --prune origin main')"
 assert_eq "abbreviated --delete is forceful"         "yes" "$(forceful 'git push --del origin main')"
 assert_eq "abbreviated --mirror is forceful"         "yes" "$(forceful 'git push --mir origin')"
+assert_eq "shortest abbreviated --mirror is forceful" "yes" "$(forceful 'git push --m origin')"
+assert_eq "shortest abbreviated --delete is forceful" "yes" "$(forceful 'git push --de origin main')"
 assert_eq "abbreviated --prune is forceful"          "yes" "$(forceful 'git push --pru origin main')"
 assert_eq "--force is forceful (delegated)"         "yes" "$(forceful 'git push --force origin main')"
 assert_eq "--all without force is not forceful"      "no"  "$(forceful 'git push --all origin')"
@@ -123,6 +125,31 @@ assert_contains "abbreviated --mirror hits regardless of target" "mirror" \
   "$(hit 'git push --mir origin' feature)"
 assert_contains "abbreviated --prune hits regardless of target" "prune" \
   "$(hit 'git push --pru origin' feature)"
+assert_contains "abbreviated --all hits regardless of current branch" "all" \
+  "$(hit 'git push --force --al origin' feature)"
+
+assert_eq "GIT_DIR assignment makes force context unsupported" "unsupported" \
+  "$(context 'GIT_DIR=/other/.git git push --force origin')"
+assert_eq "env GIT_DIR makes force context unsupported" "unsupported" \
+  "$(context 'env GIT_DIR=/other/.git git push --force origin')"
+assert_eq "env chdir makes force context unsupported" "unsupported" \
+  "$(context 'env -C /other git push --force origin')"
+assert_eq "env split-string GIT_DIR makes context unsupported" "unsupported" \
+  "$(context 'env -S "GIT_DIR=/other/.git git push --force origin"')"
+assert_eq "env unset value cannot hide git-dir context" "unsupported" \
+  "$(context 'env -u FOO git --git-dir=/other.git push --force origin')"
+assert_eq "exec argv0 value cannot hide git-dir context" "unsupported" \
+  "$(context 'exec -a fake git --git-dir=/other.git push --force origin')"
+assert_eq "sudo user value cannot hide git-dir context" "unsupported" \
+  "$(context 'sudo -u root git --git-dir=/other.git push --force origin')"
+assert_eq "sudo chdir value cannot hide git context" "unsupported" \
+  "$(context 'sudo -D /other git push --force origin')"
+assert_eq "attached env chdir makes force context unsupported" "unsupported" \
+  "$(context 'env -C/other git push --force origin')"
+assert_eq "attached env split-string GIT_DIR is unsupported" "unsupported" \
+  "$(context 'env -S"GIT_DIR=/other/.git git push --force origin"')"
+assert_eq "long env split-string GIT_DIR is unsupported" "unsupported" \
+  "$(context 'env --split-string="GIT_DIR=/other/.git git push --force origin"')"
 assert_contains "--force --all hits regardless of current branch" "--all" \
   "$(hit 'git push --force --all origin' feature)"
 assert_eq "--all as push-option value is not a hit" "" \

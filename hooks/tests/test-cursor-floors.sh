@@ -42,6 +42,42 @@ assert_eq "unresolved git context force push -> deny" "deny" "$(perm_of "$HZ_OUT
 run_cursor 'echo "$(rm -rf /tmp/x)"' "/tmp"
 assert_eq "nested rm -rf -> ask" "ask" "$(perm_of "$HZ_OUT")"
 
+run_cursor 'env FOO=x git push --force origin main' "$REPO_MAIN"
+assert_eq "env wrapped force push -> deny" "deny" "$(perm_of "$HZ_OUT")"
+
+run_cursor 'if true; then rm -rf /tmp/x; fi' "/tmp"
+assert_eq "reserved-word wrapped rm -rf -> ask" "ask" "$(perm_of "$HZ_OUT")"
+
+run_cursor 'case x in x) git push --force origin main ;; esac' "$REPO_MAIN"
+assert_eq "case arm force push -> deny" "deny" "$(perm_of "$HZ_OUT")"
+
+run_cursor 'env -S "rm -rf /tmp/x"' "/tmp"
+assert_eq "env split-string rm -rf -> ask" "ask" "$(perm_of "$HZ_OUT")"
+
+run_cursor 'env -P /bin rm -rf /tmp/x' "/tmp"
+assert_eq "env utility-path rm -rf -> ask" "ask" "$(perm_of "$HZ_OUT")"
+
+run_cursor "env -S '\${HIKIZAN_TEST_UNDEFINED} harmless'" "/tmp"
+assert_eq "unresolved env split-string -> deny" "deny" "$(perm_of "$HZ_OUT")"
+
+run_cursor "cd '$REPO_MAIN' && git push --force origin" "$REPO_FEAT"
+assert_eq "force push after cd -> deny" "deny" "$(perm_of "$HZ_OUT")"
+
+run_cursor "echo \"\$(cd '$REPO_MAIN' && git push --force origin)\"" "$REPO_FEAT"
+assert_eq "nested force push after cd -> deny" "deny" "$(perm_of "$HZ_OUT")"
+
+run_cursor "cd '$REPO_MAIN' && echo \"\$(git push --force origin)\"" "$REPO_FEAT"
+assert_eq "nested force push inherits outer cd -> deny" "deny" "$(perm_of "$HZ_OUT")"
+
+run_cursor 'rm -rf /tmp/x; git push --force origin main' "$REPO_MAIN"
+assert_eq "force deny takes precedence over destructive ask" "deny" "$(perm_of "$HZ_OUT")"
+
+run_cursor 'rm -rf /tmp/x; gh pr create --title x' "/tmp"
+assert_eq "PR deny takes precedence over destructive ask" "deny" "$(perm_of "$HZ_OUT")"
+
+run_cursor "rm -rf /tmp/x; env -S '\${HIKIZAN_TEST_UNDEFINED} harmless'" "/tmp"
+assert_eq "unresolved deny takes precedence over destructive ask" "deny" "$(perm_of "$HZ_OUT")"
+
 run_cursor "git push \$'--fo\\x72ce' origin main" "$REPO_MAIN"
 assert_eq "ANSI-C escaped force main -> deny" "deny" "$(perm_of "$HZ_OUT")"
 
