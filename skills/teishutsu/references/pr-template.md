@@ -144,7 +144,8 @@ PR 本文の日本語は `shippitsu` の writing-style reference に従う。以
 # email
 grep -E '[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}' <draft>
 # token-like
-grep -E '(sk-|ghp_|ghs_|xox[bao]p)-?[A-Za-z0-9_]{16,}' <draft>
+# hikizan:token-pattern
+grep -E '(sk-(proj-)?|gh[pousr]_|github_pat_|xox[baprs]-)[A-Za-z0-9_-]{16,}' <draft>
 # 個人名 (チーム外の実名)
 # → 人手確認、機械では完全には判定できない
 ```
