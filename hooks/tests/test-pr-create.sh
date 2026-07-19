@@ -19,6 +19,12 @@ assert_eq "quoted gh pr create in commit msg -> not pr create" "no" \
 assert_eq "bare gh pr create -> is pr create"       "yes" "$(is_pr_create 'gh pr create')"
 assert_eq "adjacent command still finds pr create"  "yes" "$(is_pr_create 'cd /tmp&&gh pr create')"
 assert_eq "tokens split by boundary are not a pr create" "no" "$(is_pr_create 'gh&&pr create')"
+assert_eq "echo arguments mentioning gh pr create are not a command" "no" \
+  "$(is_pr_create 'echo gh pr create')"
+assert_eq "printf arguments mentioning gh pr create are not a command" "no" \
+  "$(is_pr_create 'printf %s gh pr create')"
+assert_eq "commit arguments mentioning gh pr create are not a command" "no" \
+  "$(is_pr_create 'git commit -m gh pr create')"
 assert_eq "empty argv prevents false adjacent pr create" "no" "$(is_pr_create 'gh "" pr create')"
 assert_eq "nested command substitution is pr create" "yes" \
   "$(is_pr_create 'echo "$(gh pr create --title x)"')"
@@ -32,7 +38,14 @@ assert_eq "--reviewer=bob -> allow"                 "no"  "$(needs_review 'gh pr
 assert_eq "-r bob -> allow"                          "no"  "$(needs_review 'gh pr create -r bob')"
 assert_eq 'quoted --draft in title -> deny (still needs review)' "yes" \
   "$(needs_review 'gh pr create --title "add --draft flag"')"
+assert_eq 'exact --draft title value -> deny' "yes" \
+  "$(needs_review 'gh pr create --title "--draft"')"
+assert_eq 'exact --reviewer body value -> deny' "yes" \
+  "$(needs_review 'gh pr create --body "--reviewer"')"
+assert_eq 'exact -d short title value -> deny' "yes" \
+  "$(needs_review 'gh pr create -t "-d"')"
 assert_eq "non pr-create command -> allow (not applicable)" "no" "$(needs_review 'gh pr list')"
+assert_eq "echo gh pr create mention -> allow" "no" "$(needs_review 'echo gh pr create')"
 assert_eq "later --draft does not approve earlier create" "yes" \
   "$(needs_review 'gh pr create --title x&&echo --draft')"
 assert_eq "earlier --draft does not approve later create" "yes" \
