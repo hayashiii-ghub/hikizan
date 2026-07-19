@@ -200,4 +200,33 @@ done
 fail=$((fail || version_pin))
 [ "$version_pin" -eq 0 ] && echo "✔ Codex version-pin examples are release-independent"
 
+# 16. The documented token scan is executable guidance, so pin representative
+#     fake formats here. Extract the regex from the recipe to keep one SoT.
+secret_scan=0
+token_line="$(awk '/^# hikizan:token-pattern$/ { getline; print; exit }' \
+  "$ROOT/skills/teishutsu/references/pr-template.md")"
+token_pattern="$(printf '%s' "$token_line" | sed "s/^grep -E '//; s/' <draft>$//")"
+if [ -z "$token_pattern" ] || [ "$token_pattern" = "$token_line" ]; then
+  echo "✘ token scan pattern is missing from the PR recipe"
+  secret_scan=1
+else
+  for fake in \
+    'sk-1234567890abcdef' \
+    'sk-proj-1234567890abcdef' \
+    'ghp_1234567890abcdef' \
+    'github_pat_1234567890abcdef' \
+    'xoxb-1234567890abcdef'; do
+    printf '%s\n' "$fake" | grep -Eq "$token_pattern" || {
+      echo "✘ token scan pattern misses fake format: ${fake%%[0-9]*}..."
+      secret_scan=1
+    }
+  done
+  if printf '%s\n' 'sk-short' | grep -Eq "$token_pattern"; then
+    echo "✘ token scan pattern matches an implausibly short token"
+    secret_scan=1
+  fi
+fi
+fail=$((fail || secret_scan))
+[ "$secret_scan" -eq 0 ] && echo "✔ documented token scan covers representative current formats"
+
 exit "$fail"
