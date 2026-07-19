@@ -72,7 +72,7 @@ hikizan_push_has_force() {
   local tok rc=1
   while IFS= read -r tok; do
     case "$tok" in
-      --force|--force-with-lease|--force-with-lease=*) rc=0; break ;;
+      --force|--force-with-lease|--force-with-lease=*|--force-w*) rc=0; break ;;
       --*) : ;;              # any other long flag is not a force flag
       -*f*|-*F*) rc=0; break ;; # short cluster containing f (e.g. -f, -fv, -vf)
     esac
@@ -100,7 +100,7 @@ hikizan_push_is_forceful() {
       -o|--push-option|--receive-pack|--exec) skip_next=1 ;;  # value-taking
       --repo=*)                               : ;;
       --repo)                                 skip_next=1 ;;
-      --delete|--mirror|--prune)               rc=0; break ;;
+      --delete|--del*|--mirror|--mir*|--prune|--pru*) rc=0; break ;;
       --*)                                     : ;;           # other long flag
       -*d*)                                    rc=0; break ;; # short cluster containing d (-d, -vd)
       +*)                                      rc=0; break ;; # force-update refspec marker
@@ -223,8 +223,8 @@ hikizan_push_protected_hit() {
     case "$tok" in
       -o|--push-option|--receive-pack|--exec|--repo) skip_next=1 ;;
       --all)    has_all=1 ;;
-      --mirror) has_mirror=1 ;;
-      --prune)  has_prune=1 ;;
+      --mirror|--mir*) has_mirror=1 ;;
+      --prune|--pru*)  has_prune=1 ;;
     esac
   done <<EOF
 $(hz_first_segment "$cmd")

@@ -36,6 +36,7 @@ force push の対象 branch は `scripts/lib/push-parse.sh` の `hikizan_push_ta
 - `command git push ...` / 複数 refspec / `refs/heads/main`
 - `git push origin +HEAD:main` / `git push origin :main` (削除)：`--force` 系フラグが無くても、`+refspec` マーカーや空 src (`:branch`) の refspec は force 相当として同じ検査を受ける (`hikizan_push_is_forceful`)
 - `git push --delete origin main` / `git push -d origin main` も同様に force 相当として扱う
+- Git が受理する一意な長 option 省略形 (`--force-w` / `--del` / `--mir` / `--pru`) も対応する force 相当 option と同じ判定を受ける
 - **glob を含む refspec** (例 `git push --force origin refs/heads/*:refs/heads/*`) は解決先が `*` 等のメタ文字を含むため、保護 branch にマッチしうると見なして保守的に **deny** する
 - **`--mirror` / `--prune`** は push 対象の branch を個別に列挙できない (全 ref を force 更新・削除しうる) ため、対象を特定せず保守的に **deny** する
 - forceful push の **`--all`** は全 local branch を更新し、current branch が feature でも main / master / develop を含みうるため、対象を特定せず保守的に **deny** する

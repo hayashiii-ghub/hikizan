@@ -15,6 +15,7 @@ assert_eq "plain push is not force"              "no"  "$(force 'git push origin
 assert_eq "--force detected"                     "yes" "$(force 'git push --force origin HEAD:main')"
 assert_eq "--force-with-lease detected"          "yes" "$(force 'git push --force-with-lease origin main')"
 assert_eq "--force-with-lease=ref detected"      "yes" "$(force 'git push --force-with-lease=main origin main')"
+assert_eq "abbreviated --force-with-lease detected" "yes" "$(force 'git push --force-w origin main')"
 assert_eq "-f detected"                          "yes" "$(force 'git push -f origin main')"
 assert_eq "-f in short cluster (-fv) detected"   "yes" "$(force 'git push -fv origin main')"
 assert_eq "trailing --force detected"            "yes" "$(force 'git push origin main --force')"
@@ -35,6 +36,9 @@ assert_eq "--delete is forceful"                    "yes" "$(forceful 'git push 
 assert_eq "-d is forceful"                          "yes" "$(forceful 'git push -d origin main')"
 assert_eq "--mirror is forceful"                    "yes" "$(forceful 'git push --mirror origin')"
 assert_eq "--prune is forceful"                      "yes" "$(forceful 'git push --prune origin main')"
+assert_eq "abbreviated --delete is forceful"         "yes" "$(forceful 'git push --del origin main')"
+assert_eq "abbreviated --mirror is forceful"         "yes" "$(forceful 'git push --mir origin')"
+assert_eq "abbreviated --prune is forceful"          "yes" "$(forceful 'git push --pru origin main')"
 assert_eq "--force is forceful (delegated)"         "yes" "$(forceful 'git push --force origin main')"
 assert_eq "--all without force is not forceful"      "no"  "$(forceful 'git push --all origin')"
 assert_eq "src:dst refspec is not forceful"         "no"  "$(forceful 'git push origin feature:main')"
@@ -115,6 +119,10 @@ assert_eq "delete refspec hits develop"          "develop" "$(hit 'git push orig
 assert_eq "delete of non-protected branch: no hit" ""      "$(hit 'git push --delete origin feature' x)"
 assert_contains "--mirror hits regardless of target" "mirror" \
   "$(hit 'git push --mirror origin' feature)"
+assert_contains "abbreviated --mirror hits regardless of target" "mirror" \
+  "$(hit 'git push --mir origin' feature)"
+assert_contains "abbreviated --prune hits regardless of target" "prune" \
+  "$(hit 'git push --pru origin' feature)"
 assert_contains "--force --all hits regardless of current branch" "--all" \
   "$(hit 'git push --force --all origin' feature)"
 assert_eq "--all as push-option value is not a hit" "" \
