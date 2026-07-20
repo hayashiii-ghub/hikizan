@@ -43,7 +43,7 @@ core skill (init を除く全 skill) 共通。正本は `scripts/contract.md` �
 2. step を 1 つずつ自分で実装する (subagent に投げない)
 3. 純ロジック / ビジネスルール / API / バグ修正の step は TDD 実装モードで書く: 1 slice ずつ RED→GREEN→PRUNE (下記「手順 (TDD 実装)」)
 4. 各 step の後に検証コマンドを実行し、出力の最終行を控える。失敗したら次の step に進まず診断に入る。意味的 checkpoint を保存する場合は `references/commit.md` に従い、現在の repo / branch / 承認済み scope を確認してから commit する
-5. UI / レイアウト / 視覚に触れる step は、検証コマンドに加えて視覚検証も通す (web project かつ `sitesnap` があるとき。shot で撮って --json の file を Read で読み戻して目視し、check --json の合否を step 通過判定にする)。撮れない環境では「視覚未確認」と報告に明記してスキップする
+5. UI / レイアウト / 視覚に触れる step は、検証コマンドに加えて視覚検証も通す。repo に `ui:verify` script があればそれを実行する。なければ `shimon.config.mjs` と install 済みの `shimon` があるときに `shimon verify --json` を実行し、JSON の pass を step 通過判定にして全 screenshot を読み戻して目視する。失敗 case は返された reproduce command で再検証する。自動 install や別ツールへの fallback はしない。shimon が未設定 / 実行不能なら「視覚未確認」と理由を報告する
 6. 計画に無いファイルに 5 つ以上触れそうになったら、または方針の再決定が要ると分かったら、止めて `sekkei` に差し戻す
 7. scope 外の発見は実装せず「実装中に分かったこと」にメモする
 8. 全 step 完了後、下の「報告」を埋めて `sadoku` に渡す。handoff の `brief` は実装した observable behavior + この実装固有の判断 / 受容リスク (あれば) とし、`evidence` は完成 diff と検証を特定できる file:line / command に絞る。報告・diff・検証ログ本体は handoff 行の外に添え、`sadoku` の共通観点は再掲しない
@@ -92,7 +92,7 @@ core skill (init を除く全 skill) 共通。正本は `scripts/contract.md` �
 - mode: [計画実行 / 診断 / TDD 実装]
 - done: [N / M step] (計画実行のみ)
 - verification: [コマンド] → [出力の最終行をそのまま]
-- visual: [shot のパス / 視覚未確認 (理由) / 該当なし] (UI step のみ)
+- visual: [shimon screenshot のパスと pass / 視覚未確認 (理由) / 該当なし] (UI step のみ)
 - root cause: [1 文 + before/after] (診断のみ)
 - scope: [計画どおり / 外れたもの → sekkei へ差し戻し or 別 issue へ]
 - RED/GREEN/PRUNE: [TDD 実装のみ] RED 最終行 / GREEN 最終行 / N 残し M 削除 + witness
