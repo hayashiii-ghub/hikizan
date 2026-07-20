@@ -22,9 +22,9 @@ command -v hz_tokenize >/dev/null 2>&1 || source "$(dirname "${BASH_SOURCE[0]}")
 hz_cmd_head() {
   local tok out=""
   while IFS= read -r tok; do
-    case "$tok" in sudo|command|*=*) continue ;; *) out="$tok"; break ;; esac
+    out="$tok"; break
   done <<EOF
-$(hz_tokenize "$1")
+$(hz_command_argv "$1")
 EOF
   printf '%s' "$out"
 }
@@ -36,7 +36,6 @@ hz_git_subcommand() {
   local tok seen_git=0 skip=0 out=""
   while IFS= read -r tok; do
     if [ "$seen_git" = 0 ]; then
-      case "$tok" in sudo|command|*=*) continue ;; esac
       [ "$tok" = "git" ] || break        # head is not git -> no subcommand
       seen_git=1; continue
     fi
@@ -48,7 +47,7 @@ hz_git_subcommand() {
       *)   out="$tok"; break ;;
     esac
   done <<EOF
-$(hz_tokenize "$1")
+$(hz_command_argv "$1")
 EOF
   printf '%s' "$out"
 }
@@ -68,31 +67,17 @@ hz_is_rm_rf() {
       -*[fF]*)                   hasf=1 ;;        # short cluster with f only
     esac
   done <<EOF
-$(_hz_first_segment "$c")
+$(hz_command_argv "$c")
 EOF
   [ "$rc" = 1 ] && [ "$hasr" = 1 ] && [ "$hasf" = 1 ] && rc=0
   return $rc
-}
-
-# _hz_first_segment "<command>" -> print the tokens of the first pipeline
-# segment only (stop at &&, ||, ;, | or &). Flag scans must not read tokens
-# from later segments: `git checkout -q -b x && grep y .` carries a bare
-# `.` that belongs to grep, not to checkout (observed false ask, 2026-07-05).
-_hz_first_segment() {
-  local tok
-  while IFS= read -r tok; do
-    case "$tok" in '&&'|'||'|'|'|'&') break ;; *';') break ;; esac
-    printf '%s\n' "$tok"
-  done <<EOF
-$(hz_tokenize "$1")
-EOF
 }
 
 # _hz_has_tok "<command>" "<token>" -> exit 0 if an exact token is present.
 _hz_has_tok() {
   local tok rc=1
   while IFS= read -r tok; do [ "$tok" = "$2" ] && { rc=0; break; }; done <<EOF
-$(_hz_first_segment "$1")
+$(hz_command_argv "$1")
 EOF
   return $rc
 }
@@ -103,14 +88,18 @@ _hz_has_short_f() {
   while IFS= read -r tok; do
     case "$tok" in --*) : ;; -*[fF]*) rc=0; break ;; esac
   done <<EOF
-$(_hz_first_segment "$1")
+$(hz_command_argv "$1")
 EOF
   return $rc
 }
 
-# hz_destructive_label "<command>" -> print a label, or nothing if benign.
-hz_destructive_label() {
+# Classify one simple command segment.
+_hz_destructive_label_segment() {
   local c="$1" sub
+  if [ "$(hz_cmd_head "$c")" = "__hikizan_unresolved_env_split__" ]; then
+    printf 'env -S (unresolved command expansion)'
+    return 0
+  fi
   if hz_is_rm_rf "$c"; then
     printf 'rm -rf (recursive force delete)'
     return 0
@@ -133,5 +122,42 @@ hz_destructive_label() {
         printf 'git checkout (discards working-tree changes)'
       fi ;;
   esac
+
+  return 0
+}
+
+# hz_destructive_label "<command>" -> print a label, or nothing if benign.
+hz_destructive_label() {
+  local c="$1" segment nested label i=0 j=0 nested_count
+
+  hz_collect_command_segments "$c"
+  while [ "$i" -lt "$HZ_COMMAND_SEGMENT_COUNT" ]; do
+    segment="${HZ_COMMAND_SEGMENTS[$i]}"
+    label="$(_hz_destructive_label_segment "$segment")"
+    if [ -n "$label" ]; then
+      printf '%s' "$label"
+      return 0
+    fi
+    i=$((i + 1))
+  done
+
+  hz_collect_nested_commands "$c"
+  nested_count="$HZ_NESTED_COUNT"
+  i=0
+  while [ "$i" -lt "$nested_count" ]; do
+    nested="${HZ_NESTED_COMMANDS[$i]}"
+    hz_collect_command_segments "$nested"
+    j=0
+    while [ "$j" -lt "$HZ_COMMAND_SEGMENT_COUNT" ]; do
+      segment="${HZ_COMMAND_SEGMENTS[$j]}"
+      label="$(_hz_destructive_label_segment "$segment")"
+      if [ -n "$label" ]; then
+        printf 'nested command: %s' "$label"
+        return 0
+      fi
+      j=$((j + 1))
+    done
+    i=$((i + 1))
+  done
   return 0
 }

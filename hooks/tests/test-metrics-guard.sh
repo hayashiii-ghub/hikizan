@@ -1,12 +1,11 @@
 #!/usr/bin/env bash
 # Regression test for lib/metrics.sh synthetic-session_id write guard.
 #
-# A non-empty session_id that is not CC's UUID form (^[0-9a-f]{8}-) is a
-# hand-crafted manual-test payload and must NOT be appended to the metrics
-# file. Otherwise ad-hoc hook testing without HIKIZAN_METRICS_DIR pollutes real
-# aggregation (36 such lines were purged 2026-07-06). Empty session_id
-# (genuinely unavailable) and real UUID-form ids are still recorded. Same regex
-# the aggregation examples used to filter on at read time, now enforced on write.
+# A non-empty session_id that is neither an accepted UUID nor a long OpenCode
+# ses_ id is a hand-crafted manual-test payload and must NOT be appended to the
+# metrics file. Otherwise ad-hoc hook testing without HIKIZAN_METRICS_DIR
+# pollutes real aggregation (36 such lines were purged 2026-07-06). Empty ids
+# and real harness ids are still recorded.
 
 DIR="$(cd "$(dirname "$0")" && pwd)"
 . "$DIR/lib/harness.sh"
@@ -28,11 +27,20 @@ assert_eq "synthetic 'x' dropped"    "0" "$(log_lines x)"
 assert_eq "synthetic 's1' dropped"   "0" "$(log_lines s1)"
 assert_eq "synthetic 'test' dropped" "0" "$(log_lines test)"
 
-# 2. real CC UUID-form ids are recorded (write path still works for real data).
+# 2. real harness UUID-form ids are recorded (write path still works for real data).
 assert_eq "real UUID recorded"          "1" "$(log_lines 0a1b2c3d-4e5f-6789-abcd-ef0123456789)"
 assert_eq "fixture UUID-shaped recorded" "1" "$(log_lines deadbeef-0000-0000-0000-000000000000)"
 
-# 3. empty session_id (genuinely unavailable) is still recorded.
+# 3. OpenCode emits ses_* ids; accept them without weakening the short
+# synthetic-id guard above.
+assert_eq "OpenCode ses_* id recorded" "1" "$(log_lines ses_01JTESTABCDEF23456789)"
+
+# 4. empty session_id (genuinely unavailable) is still recorded.
 assert_eq "empty session_id recorded" "1" "$(log_lines '')"
+
+# 5. implementation comments and the public matrix list only emitted values.
+STALE=$(grep -Ehc 'submodule_unpushed|"warn"|session_id":"abc123"|CC session id' \
+  "$DIR/../scripts/lib/metrics.sh" "$DIR/../conditions.md" | awk '{sum += $1} END {print sum}')
+assert_eq "metrics schema docs contain no stale values" "0" "$STALE"
 
 hz_test_summary

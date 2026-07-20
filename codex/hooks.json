@@ -12,7 +12,7 @@
     ],
     "SessionStart": [
       {
-        "matcher": "startup|resume",
+        "matcher": "startup",
         "hooks": [
           { "type": "command", "command": "bash ${PLUGIN_ROOT}/codex/scripts/session-context.sh" }
         ]

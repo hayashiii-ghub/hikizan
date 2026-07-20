@@ -81,8 +81,8 @@ fail=$((fail || cursor_meta))
 
 # 9. Hook wiring parity: the CC and Codex hook configs must wire the same set
 #    of pre-* floor scripts, and each harness config must wire its own session
-#    context / adapter entry point. Cursor wires a single adapter
-#    (before-shell.sh) whose floor set is covered by hooks/tests instead.
+#    context / adapter entry point. Cursor and OpenCode wire adapters whose
+#    floor sets are covered by hooks/tests instead.
 cc_floors="$(grep -o 'pre-[a-z-]*\.sh' "$ROOT/hooks/hooks.json" | sort -u)"
 cx_floors="$(grep -o 'pre-[a-z-]*\.sh' "$ROOT/codex/hooks.json" | sort -u)"
 wiring=0
@@ -95,8 +95,11 @@ fi
 grep -q 'session-context\.sh' "$ROOT/hooks/hooks.json" || { echo "✘ hooks/hooks.json does not wire session-context.sh"; wiring=1; }
 grep -q 'codex/scripts/session-context\.sh' "$ROOT/codex/hooks.json" || { echo "✘ codex/hooks.json does not wire codex/scripts/session-context.sh"; wiring=1; }
 grep -q 'before-shell\.sh' "$ROOT/cursor/hooks.json" || { echo "✘ cursor/hooks.json does not wire before-shell.sh"; wiring=1; }
+for script in pre-push.sh pre-pr-create.sh pre-destructive.sh; do
+  grep -qF "$script" "$ROOT/opencode/hikizan.ts" || { echo "✘ opencode/hikizan.ts does not reuse $script"; wiring=1; }
+done
 fail=$((fail || wiring))
-[ "$wiring" -eq 0 ] && echo "✔ hook wiring parity (CC/Codex floor set, per-harness entry points)"
+[ "$wiring" -eq 0 ] && echo "✔ hook wiring parity (CC/Codex floor set, Cursor/OpenCode adapters)"
 
 # 10. hooks/conditions.md is the prose matrix AGENTS.md declares as SoT
 #     alongside hooks/hooks.json. Presence only: every distinct `if` condition
@@ -122,7 +125,18 @@ done
 fail=$((fail || wt_missing))
 [ "$wt_missing" -eq 0 ] && echo "✔ report templates carry the worktree line"
 
-# 12. Codex distribution must stay on the current plugin contract. The CLI
+# 12. Commit guidance must not require an email-bearing attribution trailer.
+# The shared contract forbids email in commit messages; contribution history
+# belongs to the PR / hosting platform instead.
+commit_footer=0
+if grep -R -qF 'Co-Authored-By:' \
+  "$ROOT/skills/jikkou/references" "$ROOT/skills/teishutsu/references"; then
+  echo "✘ commit guidance requires a Co-Authored-By email trailer"; commit_footer=1
+fi
+fail=$((fail || commit_footer))
+[ "$commit_footer" -eq 0 ] && echo "✔ commit guidance does not require email attribution trailers"
+
+# 13. Codex distribution must stay on the current plugin contract. The CLI
 #     command, marketplace metadata, published-manifest metadata, and the
 #     Codex-specific destructive deny mode are one installable surface.
 codex_dist=0
@@ -148,5 +162,117 @@ jq -e '
 grep -q 'pre-destructive\.sh deny' "$ROOT/codex/hooks.json" || { echo "✘ Codex destructive hook is not wired in deny mode"; codex_dist=1; }
 fail=$((fail || codex_dist))
 [ "$codex_dist" -eq 0 ] && echo "✔ Codex distribution command, metadata, and hook mode are current"
+
+# 14. Skills are distributed as one pack. Runtime skill content must refer to
+#     another skill by its logical name, not by a repository-relative path
+#     that becomes invalid or misleading when an installer relocates the pack.
+pack_boundary=0
+awk '
+  $0 == "<!-- hikizan:pack-only -->" {
+    if ((getline line) > 0 && line ~ /pack 単位/ && line ~ /部分 install/ && line ~ /サポートしない/) found=1
+  }
+  END { exit found ? 0 : 1 }
+' "$ROOT/README.md" || {
+  echo "✘ README.md does not state the pack-only installation boundary"; pack_boundary=1;
+}
+skill_alt="$(jq -r '[.core[], .utility[]] | join("|")' "$ROOT/scripts/skills.json")"
+if grep -R -nE \
+  "skills/($skill_alt)/|(\.\./)+($skill_alt)/|($skill_alt)/references/" \
+  "$ROOT/skills"; then
+  echo "✘ runtime skill content contains repository-relative cross-skill references"
+  pack_boundary=1
+fi
+fail=$((fail || pack_boundary))
+[ "$pack_boundary" -eq 0 ] && echo "✔ pack-only install boundary and logical cross-skill references"
+
+# 15. Version-pin examples must survive a release without a docs-only bump.
+#     vX.Y.Z is shell-safe; angle-bracket placeholders would be parsed as
+#     redirection if copied as-is.
+version_pin=0
+if grep -nE -- '(--ref[[:space:]]+|--ref=)v[0-9]+\.[0-9]+\.[0-9]+' \
+  "$ROOT/README.md" "$ROOT/codex/README.md"; then
+  echo "✘ release-specific Codex --ref example remains in install docs"
+  version_pin=1
+fi
+for file in "$ROOT/README.md" "$ROOT/codex/README.md"; do
+  grep -qF -- '--ref vX.Y.Z' "$file" || {
+    echo "✘ ${file#$ROOT/} is missing the release-independent --ref vX.Y.Z example"
+    version_pin=1
+  }
+done
+fail=$((fail || version_pin))
+[ "$version_pin" -eq 0 ] && echo "✔ Codex version-pin examples are release-independent"
+
+# 16. The documented token scan is executable guidance, so pin representative
+#     fake formats here. Extract the regex from the recipe to keep one SoT.
+secret_scan=0
+token_line="$(awk '/^# hikizan:token-pattern$/ { getline; print; exit }' \
+  "$ROOT/skills/teishutsu/references/pr-template.md")"
+token_pattern="$(printf '%s' "$token_line" | sed "s/^grep -E '//; s/' <draft>$//")"
+if [ -z "$token_pattern" ] || [ "$token_pattern" = "$token_line" ]; then
+  echo "✘ token scan pattern is missing from the PR recipe"
+  secret_scan=1
+else
+  for fake in \
+    'sk-1234567890abcdef' \
+    'sk-proj-1234567890abcdef' \
+    'ghp_1234567890abcdef' \
+    'github_pat_1234567890abcdef' \
+    'xoxb-1234567890abcdef'; do
+    printf '%s\n' "$fake" | grep -Eq "$token_pattern" || {
+      echo "✘ token scan pattern misses fake format: ${fake%%[0-9]*}..."
+      secret_scan=1
+    }
+  done
+  if printf '%s\n' 'sk-short' | grep -Eq "$token_pattern"; then
+    echo "✘ token scan pattern matches an implausibly short token"
+    secret_scan=1
+  fi
+fi
+fail=$((fail || secret_scan))
+[ "$secret_scan" -eq 0 ] && echo "✔ documented token scan covers representative current formats"
+
+# 17. Distribution maintenance docs must point at hand-edited sources, keep
+#     the pack-only boundary, and avoid hard-coded skill counts.
+distribution_docs=0
+skill_change_line="$(grep -F '**skill を足す / 減らすときは連動編集を全部通す**' "$ROOT/AGENTS.md" || true)"
+printf '%s' "$skill_change_line" | grep -qF '`plugin.src.json`' || {
+  echo "✘ AGENTS.md skill-change workflow does not point at plugin.src.json"
+  distribution_docs=1
+}
+if printf '%s' "$skill_change_line" | grep -qF '`.claude-plugin/plugin.json`'; then
+  echo "✘ AGENTS.md skill-change workflow tells editors to change a generated manifest"
+  distribution_docs=1
+fi
+if grep -qF 'per-skill distribution channels' "$ROOT/scripts/gen-agents.sh"; then
+  echo "✘ gen-agents.sh still describes unsupported per-skill distribution"
+  distribution_docs=1
+fi
+if grep -qE 'skills [0-9]+ 個' "$ROOT/codex/README.md"; then
+  echo "✘ codex/README.md hard-codes a stale skill count"
+  distribution_docs=1
+fi
+fail=$((fail || distribution_docs))
+[ "$distribution_docs" -eq 0 ] && echo "✔ distribution maintenance docs follow source and pack boundaries"
+
+# 18. OpenCode currently ships as a local TypeScript adapter plus the shared
+# skill-pack channel. Keep that experimental boundary explicit until a
+# separately versioned npm package is designed and published.
+opencode_dist=0
+[ -f "$ROOT/opencode/hikizan.ts" ] || { echo "✘ OpenCode adapter is missing"; opencode_dist=1; }
+for file in "$ROOT/README.md" "$ROOT/opencode/README.md"; do
+  grep -qF 'HIKIZAN_ROOT' "$file" || { echo "✘ ${file#$ROOT/} is missing HIKIZAN_ROOT setup"; opencode_dist=1; }
+  grep -qF 'npx skills add github:hayashiii-ghub/hikizan -g' "$file" || {
+    echo "✘ ${file#$ROOT/} is missing the OpenCode skill-pack install command"; opencode_dist=1;
+  }
+done
+grep -qF 'experimental.chat.system.transform' "$ROOT/opencode/hikizan.ts" || {
+  echo "✘ OpenCode adapter does not inject session context"; opencode_dist=1;
+}
+grep -qF 'npm packageは未公開' "$ROOT/opencode/README.md" || {
+  echo "✘ opencode/README.md does not state the npm distribution boundary"; opencode_dist=1;
+}
+fail=$((fail || opencode_dist))
+[ "$opencode_dist" -eq 0 ] && echo "✔ OpenCode local adapter and experimental distribution boundary"
 
 exit "$fail"

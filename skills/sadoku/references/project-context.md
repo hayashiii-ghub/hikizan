@@ -25,7 +25,7 @@ grep -rn "import.*$SYMBOL\|from.*$SYMBOL" --include='*.ts' --include='*.tsx' .
 対象に対応する `*.test.{ts,tsx}` の有無と命名規則。
 
 - ある → 同じ命名・配置・書き方で追加されているか
-- ない → そもそも test を書く層か (`skills/jikkou/references/tdd.md` の層分け表で判定)
+- ない → そもそも test を書く層か (`jikkou` の TDD reference にある層分け表で判定)
 
 ### 3. 近隣の類似実装
 
@@ -68,7 +68,7 @@ diff モードは `git diff --name-only | wc -l` で touch ファイル数を把
 
 出どころは次の優先順で 1 つに決める:
 
-1. **CONTEXT.md** (`tansaku` が保守するドメイン文脈の正本 = 用語 / 不変条件 / 制約 / 受容済みリスク。既存のドメイン doc に畳まれているならそこ。契約は `skills/tansaku/references/context-doc.md`)
+1. **CONTEXT.md** (`tansaku` が保守するドメイン文脈の正本 = 用語 / 不変条件 / 制約 / 受容済みリスク。既存のドメイン doc に畳まれているならそこ。契約は `tansaku` の context-doc reference)
 2. 無ければ **PR / issue の intent** (本文・DoD・リンクされた ADR)
 3. それも無ければ **user に 1 行で聞く** (「このコードは何を守る前提?」)。憶測で脅威モデルを作らない
 

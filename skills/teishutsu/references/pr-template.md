@@ -115,7 +115,7 @@ Workflow 節は「過程の trace」。読む人がここだけ見れば、ど�
 
 ## Writing Checks
 
-PR 本文の日本語は `../../shippitsu/references/writing-style.md` の規範に従う。以下はその要点。
+PR 本文の日本語は `shippitsu` の writing-style reference に従う。以下はその要点。
 
 1. **結論先出し**：1 文目で「何が変わったか」が分かる
 2. **1 段落 1 主張**：読み手に並列処理させない
@@ -144,7 +144,8 @@ PR 本文の日本語は `../../shippitsu/references/writing-style.md` の規範
 # email
 grep -E '[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}' <draft>
 # token-like
-grep -E '(sk-|ghp_|ghs_|xox[bao]p)-?[A-Za-z0-9_]{16,}' <draft>
+# hikizan:token-pattern
+grep -E '(sk-(proj-)?|gh[pousr]_|github_pat_|xox[baprs]-)[A-Za-z0-9_-]{16,}' <draft>
 # 個人名 (チーム外の実名)
 # → 人手確認、機械では完全には判定できない
 ```

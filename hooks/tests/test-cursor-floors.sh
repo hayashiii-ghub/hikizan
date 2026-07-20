@@ -27,8 +27,59 @@ assert_eq "rm -rf -> ask" "ask" "$(perm_of "$HZ_OUT")"
 run_cursor "git reset --hard HEAD~1" "/tmp"
 assert_eq "reset --hard -> ask" "ask" "$(perm_of "$HZ_OUT")"
 
+run_cursor "git reset --hard&&echo ok" "/tmp"
+assert_eq "adjacent reset --hard -> ask" "ask" "$(perm_of "$HZ_OUT")"
+
 run_cursor "git push --force origin HEAD:main" "$REPO_MAIN"
 assert_eq "force HEAD:main -> deny" "deny" "$(perm_of "$HZ_OUT")"
+
+run_cursor 'echo "$(git push --force origin main)"' "$REPO_MAIN"
+assert_eq "nested force push to main -> deny" "deny" "$(perm_of "$HZ_OUT")"
+
+run_cursor 'git -C /tmp/a -C ../b push --force origin main' "$REPO_MAIN"
+assert_eq "unresolved git context force push -> deny" "deny" "$(perm_of "$HZ_OUT")"
+
+run_cursor 'echo "$(rm -rf /tmp/x)"' "/tmp"
+assert_eq "nested rm -rf -> ask" "ask" "$(perm_of "$HZ_OUT")"
+
+run_cursor 'env FOO=x git push --force origin main' "$REPO_MAIN"
+assert_eq "env wrapped force push -> deny" "deny" "$(perm_of "$HZ_OUT")"
+
+run_cursor 'if true; then rm -rf /tmp/x; fi' "/tmp"
+assert_eq "reserved-word wrapped rm -rf -> ask" "ask" "$(perm_of "$HZ_OUT")"
+
+run_cursor 'case x in x) git push --force origin main ;; esac' "$REPO_MAIN"
+assert_eq "case arm force push -> deny" "deny" "$(perm_of "$HZ_OUT")"
+
+run_cursor 'env -S "rm -rf /tmp/x"' "/tmp"
+assert_eq "env split-string rm -rf -> ask" "ask" "$(perm_of "$HZ_OUT")"
+
+run_cursor 'env -P /bin rm -rf /tmp/x' "/tmp"
+assert_eq "env utility-path rm -rf -> ask" "ask" "$(perm_of "$HZ_OUT")"
+
+run_cursor "env -S '\${HIKIZAN_TEST_UNDEFINED} harmless'" "/tmp"
+assert_eq "unresolved env split-string -> deny" "deny" "$(perm_of "$HZ_OUT")"
+
+run_cursor "cd '$REPO_MAIN' && git push --force origin" "$REPO_FEAT"
+assert_eq "force push after cd -> deny" "deny" "$(perm_of "$HZ_OUT")"
+
+run_cursor "echo \"\$(cd '$REPO_MAIN' && git push --force origin)\"" "$REPO_FEAT"
+assert_eq "nested force push after cd -> deny" "deny" "$(perm_of "$HZ_OUT")"
+
+run_cursor "cd '$REPO_MAIN' && echo \"\$(git push --force origin)\"" "$REPO_FEAT"
+assert_eq "nested force push inherits outer cd -> deny" "deny" "$(perm_of "$HZ_OUT")"
+
+run_cursor 'rm -rf /tmp/x; git push --force origin main' "$REPO_MAIN"
+assert_eq "force deny takes precedence over destructive ask" "deny" "$(perm_of "$HZ_OUT")"
+
+run_cursor 'rm -rf /tmp/x; gh pr create --title x' "/tmp"
+assert_eq "PR deny takes precedence over destructive ask" "deny" "$(perm_of "$HZ_OUT")"
+
+run_cursor "rm -rf /tmp/x; env -S '\${HIKIZAN_TEST_UNDEFINED} harmless'" "/tmp"
+assert_eq "unresolved deny takes precedence over destructive ask" "deny" "$(perm_of "$HZ_OUT")"
+
+run_cursor "git push \$'--fo\\x72ce' origin main" "$REPO_MAIN"
+assert_eq "ANSI-C escaped force main -> deny" "deny" "$(perm_of "$HZ_OUT")"
 
 run_cursor "git push --force origin" "$REPO_MAIN"
 assert_eq "force omitted-ref on main -> deny" "deny" "$(perm_of "$HZ_OUT")"
@@ -44,6 +95,9 @@ assert_eq "--delete origin main -> deny" "deny" "$(perm_of "$HZ_OUT")"
 
 run_cursor "git push --force --all origin" "$REPO_FEAT"
 assert_eq "--force --all from feature -> deny" "deny" "$(perm_of "$HZ_OUT")"
+
+run_cursor "git push --force origin main&&echo ok" "$REPO_FEAT"
+assert_eq "adjacent protected push -> deny" "deny" "$(perm_of "$HZ_OUT")"
 
 run_cursor "git push --all origin" "$REPO_FEAT"
 assert_eq "plain --all from feature -> allow" "allow" "$(perm_of "$HZ_OUT")"
@@ -69,6 +123,10 @@ assert_eq "git stash push -> allow" "allow" "$(perm_of "$HZ_OUT")"
 # 3. non-draft PR without reviewer -> deny (parity with CC pre-pr-create)
 run_cursor 'gh pr create --title x' "/tmp"
 assert_eq "gh pr create bare -> deny" "deny" "$(perm_of "$HZ_OUT")"
+run_cursor 'echo "$(gh pr create --title x)"' "/tmp"
+assert_eq "nested gh pr create bare -> deny" "deny" "$(perm_of "$HZ_OUT")"
+assert_contains "PR deny gives reachable manual recovery" "manually outside" \
+  "$(printf '%s' "$HZ_OUT" | jq -r '.agent_message // ""')"
 
 run_cursor 'gh pr create --draft --title x' "/tmp"
 assert_eq "gh pr create --draft -> allow" "allow" "$(perm_of "$HZ_OUT")"
@@ -78,6 +136,12 @@ assert_eq "gh pr create --reviewer bob -> allow" "allow" "$(perm_of "$HZ_OUT")"
 
 run_cursor 'gh pr create --title "add --draft"' "/tmp"
 assert_eq "gh pr create quoted --draft in title -> deny" "deny" "$(perm_of "$HZ_OUT")"
+
+run_cursor 'gh pr create --title x&&echo --draft' "/tmp"
+assert_eq "later segment --draft does not approve PR -> deny" "deny" "$(perm_of "$HZ_OUT")"
+
+run_cursor 'gh pr create --title x # --draft' "/tmp"
+assert_eq "commented --draft does not approve PR -> deny" "deny" "$(perm_of "$HZ_OUT")"
 
 rm -rf "$REPO_MAIN" "$REPO_FEAT"
 hz_test_summary

@@ -26,51 +26,117 @@ SESSION_ID=$(printf '%s' "$JSON" | jq -r '.session_id // ""')
 
 [ -n "$CWD" ] && cd "$CWD" 2>/dev/null || true
 
-# Defensive: only a real `git push` (head=git, subcommand=push). Anchoring on
-# the subcommand keeps `git -C <dir> push` / `command git push` in scope while
-# quoted strings (`git commit -m "force push"`) and `git stash push` stay out.
-[ "$(hz_git_subcommand "$COMMAND")" = "push" ] || exit 0
+# Check one executable command. The top-level command and every extracted
+# command-substitution body pass through the same classifier.
+HZ_PUSH_DIR=""
+hz_git_in_push_dir() {
+  if [ -n "$HZ_PUSH_DIR" ]; then
+    git -C "$HZ_PUSH_DIR" "$@"
+  else
+    git "$@"
+  fi
+}
 
-# Resolve the repo the push targets (-C <dir> wins over cwd).
-PUSHDIR=$(hz_push_dir "$COMMAND")
-[ -n "$PUSHDIR" ] && [ ! -d "$PUSHDIR" ] && PUSHDIR=""
-hz_git() { if [ -n "$PUSHDIR" ]; then git -C "$PUSHDIR" "$@"; else git "$@"; fi; }
-
-BRANCH=$(hz_git branch --show-current 2>/dev/null || true)
-
-# (b) force-equivalent push to a protected branch — cheap, no network, checked first.
-if hikizan_push_is_forceful "$COMMAND"; then
-  HIT=$(hikizan_push_protected_hit "$COMMAND" "$BRANCH") || HIT=""
-  if [ -n "$HIT" ]; then
+hz_check_push_command() {
+  local command="$1" branch hit remote upstream behind remote_shell branch_shell
+  if [ "$(hz_cmd_head "$command")" = "__hikizan_unresolved_env_split__" ]; then
     hikizan_metrics_log hook_fired pre-push force_protected block "$SESSION_ID"
-    hz_decision deny "force-equivalent push (force / +refspec / delete / mirror / all) targeting protected branch '$HIT'.
+    hz_decision deny "env -S command contains an unresolved variable expansion, so the hook cannot identify the command safely.
+
+policy: fail closed. abort and ask the user to run an explicit command without
+indirect env -S expansion."
+    exit 0
+  fi
+  [ "$(hz_git_subcommand "$command")" = "push" ] || return 0
+
+  if [ "${HZ_PRIOR_CONTEXT_CHANGE:-0}" = 1 ] && hikizan_push_is_forceful "$command"; then
+    hikizan_metrics_log hook_fired pre-push force_protected block "$SESSION_ID"
+    hz_decision deny "force-equivalent push follows cd/pushd in the same shell command, so the hook cannot reproduce repository context exactly.
+
+policy: fail closed because the current branch may be protected. abort and ask
+the user to run the directory change and push as separate commands."
+    exit 0
+  fi
+
+  if hikizan_push_is_forceful "$command" && ! hz_push_context_supported "$command"; then
+    hikizan_metrics_log hook_fired pre-push force_protected block "$SESSION_ID"
+    hz_decision deny "force-equivalent push uses options for which the hook cannot resolve git repository context exactly (multiple -C, --git-dir, --work-tree, --namespace, --bare, or GIT_DIR/GIT_WORK_TREE/GIT_NAMESPACE).
+
+policy: fail closed because the current branch may be protected. abort and ask
+the user. if confirmed, the user must run the command manually outside the
+guarded agent; do not rewrite or retry it to bypass this floor."
+    exit 0
+  fi
+
+  # Resolve the repo the push targets (one -C <dir> is supported).
+  HZ_PUSH_DIR=$(hz_push_dir "$command")
+  [ -n "$HZ_PUSH_DIR" ] && [ ! -d "$HZ_PUSH_DIR" ] && HZ_PUSH_DIR=""
+
+  branch=$(hz_git_in_push_dir branch --show-current 2>/dev/null || true)
+
+  # Force-equivalent push to a protected branch — cheap, no network, first.
+  if hikizan_push_is_forceful "$command"; then
+    hit=$(hikizan_push_protected_hit "$command" "$branch") || hit=""
+    if [ -n "$hit" ]; then
+      hikizan_metrics_log hook_fired pre-push force_protected block "$SESSION_ID"
+      hz_decision deny "force-equivalent push (force / +refspec / delete / mirror / all) targeting protected branch '$hit'.
 
 protected branches: main / master / develop. policy: require explicit user
-confirmation. abort and ask the user before re-running."
-    exit 0
+confirmation. this deny has no agent-side override: abort and ask the user.
+if confirmed, the user must run the command manually outside the guarded agent."
+      exit 0
+    fi
   fi
-fi
 
-# (a) non-fast-forward check — needs an upstream, so do it after the cheap path.
-[ -z "$BRANCH" ] && { hikizan_metrics_log hook_fired pre-push none allow "$SESSION_ID"; exit 0; }
-# Resolve the remote the push actually targets: explicit remote on the
-# command line, then the branch's configured remote, then origin.
-REMOTE=$(hikizan_push_remote "$COMMAND")
-[ -z "$REMOTE" ] && REMOTE=$(hz_git config "branch.$BRANCH.remote" 2>/dev/null || true)
-[ -z "$REMOTE" ] && REMOTE=origin
-hz_git fetch --quiet "$REMOTE" 2>/dev/null || true
-UPSTREAM="$REMOTE/$BRANCH"
-if hz_git rev-parse --verify "$UPSTREAM" >/dev/null 2>&1; then
-  BEHIND=$(hz_git rev-list --count "HEAD..$UPSTREAM" 2>/dev/null || printf '0')
-  if [ "$BEHIND" -gt 0 ] 2>/dev/null; then
-    hikizan_metrics_log hook_fired pre-push nff block "$SESSION_ID"
-    hz_decision deny "non-fast-forward push on branch '$BRANCH': local is $BEHIND commit(s) behind $UPSTREAM.
+  # Non-fast-forward needs an upstream, so it follows the cheap force path.
+  [ -z "$branch" ] && return 0
+  remote=$(hikizan_push_remote "$command")
+  [ -z "$remote" ] && remote=$(hz_git_in_push_dir config "branch.$branch.remote" 2>/dev/null || true)
+  [ -z "$remote" ] && remote=origin
+  hz_git_in_push_dir fetch --quiet "$remote" 2>/dev/null || true
+  upstream="$remote/$branch"
+  if hz_git_in_push_dir rev-parse --verify "$upstream" >/dev/null 2>&1; then
+    behind=$(hz_git_in_push_dir rev-list --count "HEAD..$upstream" 2>/dev/null || printf '0')
+    if [ "$behind" -gt 0 ] 2>/dev/null; then
+      printf -v remote_shell '%q' "$remote"
+      printf -v branch_shell '%q' "$branch"
+      hikizan_metrics_log hook_fired pre-push nff block "$SESSION_ID"
+      hz_decision deny "non-fast-forward push on branch '$branch': local is $behind commit(s) behind $upstream.
 
-options: 1) git pull --rebase $REMOTE $BRANCH then push  2) push to a new branch  3) abort.
+options: 1) git pull --rebase $remote_shell $branch_shell then push  2) push to a new branch  3) abort.
 hook will not auto-decide; confirm explicitly in your next message."
-    exit 0
+      exit 0
+    fi
   fi
-fi
+}
+
+hz_collect_command_segments "$COMMAND"
+HZ_PRIOR_CONTEXT_CHANGE=0
+COMMAND_SEGMENT_INDEX=0
+while [ "$COMMAND_SEGMENT_INDEX" -lt "$HZ_COMMAND_SEGMENT_COUNT" ]; do
+  COMMAND_SEGMENT="${HZ_COMMAND_SEGMENTS[$COMMAND_SEGMENT_INDEX]}"
+  hz_check_push_command "$COMMAND_SEGMENT"
+  case "$(hz_cmd_head "$COMMAND_SEGMENT")" in cd|pushd) HZ_PRIOR_CONTEXT_CHANGE=1 ;; esac
+  COMMAND_SEGMENT_INDEX=$((COMMAND_SEGMENT_INDEX + 1))
+done
+HZ_TOP_CONTEXT_CHANGE="$HZ_PRIOR_CONTEXT_CHANGE"
+
+hz_collect_nested_commands "$COMMAND"
+NESTED_COMMAND_COUNT="$HZ_NESTED_COUNT"
+NESTED_COMMAND_INDEX=0
+while [ "$NESTED_COMMAND_INDEX" -lt "$NESTED_COMMAND_COUNT" ]; do
+  NESTED_COMMAND="${HZ_NESTED_COMMANDS[$NESTED_COMMAND_INDEX]}"
+  hz_collect_command_segments "$NESTED_COMMAND"
+  HZ_PRIOR_CONTEXT_CHANGE="$HZ_TOP_CONTEXT_CHANGE"
+  COMMAND_SEGMENT_INDEX=0
+  while [ "$COMMAND_SEGMENT_INDEX" -lt "$HZ_COMMAND_SEGMENT_COUNT" ]; do
+    COMMAND_SEGMENT="${HZ_COMMAND_SEGMENTS[$COMMAND_SEGMENT_INDEX]}"
+    hz_check_push_command "$COMMAND_SEGMENT"
+    case "$(hz_cmd_head "$COMMAND_SEGMENT")" in cd|pushd) HZ_PRIOR_CONTEXT_CHANGE=1 ;; esac
+    COMMAND_SEGMENT_INDEX=$((COMMAND_SEGMENT_INDEX + 1))
+  done
+  NESTED_COMMAND_INDEX=$((NESTED_COMMAND_INDEX + 1))
+done
 
 hikizan_metrics_log hook_fired pre-push none allow "$SESSION_ID"
 exit 0

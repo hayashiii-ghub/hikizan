@@ -29,37 +29,96 @@ CMD=$(printf '%s' "$JSON" | jq -r '.command // ""')
 CWD=$(printf '%s' "$JSON" | jq -r '.cwd // ""')
 [ -n "$CWD" ] && cd "$CWD" 2>/dev/null || true
 
-# 1. irreversible op -> ask for confirmation
+# Fail-closed classifications must run before any ask: Cursor accepts one
+# decision, so an early ask would otherwise mask a later deny in the command.
+if hz_command_has_unresolved_env_split "$CMD"; then
+  hz_cursor_decision deny "env -S command contains an unresolved variable expansion, so the hook cannot identify which floor applies safely.
+
+policy: fail closed. use an explicit command without indirect env -S expansion."
+  exit 0
+fi
+
+# 1. force-equivalent push to a protected branch -> deny. Check the top-level
+# command and executable command substitutions with the same classifier.
+hz_cursor_check_push() {
+  local command="$1" pushdir branch hit
+  [ "$(hz_git_subcommand "$command")" = "push" ] || return 0
+  hikizan_push_is_forceful "$command" || return 0
+
+  if [ "${HZ_PRIOR_CONTEXT_CHANGE:-0}" = 1 ]; then
+    hz_cursor_decision deny "force-equivalent push follows cd/pushd in the same shell command, so the hook cannot reproduce repository context exactly.
+
+policy: fail closed because the current branch may be protected. run the
+directory change and push as separate commands."
+    exit 0
+  fi
+
+  if ! hz_push_context_supported "$command"; then
+    hz_cursor_decision deny "force-equivalent push uses options that prevent the hook from resolving the git repository context exactly.
+
+policy: fail closed because the current branch may be protected. abort and ask
+the user. if confirmed, run the command manually outside the guarded agent."
+    exit 0
+  fi
+
+  pushdir=$(hz_push_dir "$command")
+  [ -n "$pushdir" ] && [ ! -d "$pushdir" ] && pushdir=""
+  if [ -n "$pushdir" ]; then branch=$(git -C "$pushdir" branch --show-current 2>/dev/null || true)
+  else branch=$(git branch --show-current 2>/dev/null || true); fi
+  hit=$(hikizan_push_protected_hit "$command" "$branch") || hit=""
+  if [ -n "$hit" ]; then
+    hz_cursor_decision deny "force-equivalent push (force / +refspec / delete / mirror / all) targeting protected branch '$hit'.
+
+protected: main / master / develop. this deny has no agent-side override.
+if confirmed, the user must run the command manually outside the guarded agent."
+    exit 0
+  fi
+}
+
+hz_collect_command_segments "$CMD"
+HZ_PRIOR_CONTEXT_CHANGE=0
+COMMAND_SEGMENT_INDEX=0
+while [ "$COMMAND_SEGMENT_INDEX" -lt "$HZ_COMMAND_SEGMENT_COUNT" ]; do
+  COMMAND_SEGMENT="${HZ_COMMAND_SEGMENTS[$COMMAND_SEGMENT_INDEX]}"
+  hz_cursor_check_push "$COMMAND_SEGMENT"
+  case "$(hz_cmd_head "$COMMAND_SEGMENT")" in cd|pushd) HZ_PRIOR_CONTEXT_CHANGE=1 ;; esac
+  COMMAND_SEGMENT_INDEX=$((COMMAND_SEGMENT_INDEX + 1))
+done
+HZ_TOP_CONTEXT_CHANGE="$HZ_PRIOR_CONTEXT_CHANGE"
+
+hz_collect_nested_commands "$CMD"
+NESTED_COMMAND_COUNT="$HZ_NESTED_COUNT"
+NESTED_COMMAND_INDEX=0
+while [ "$NESTED_COMMAND_INDEX" -lt "$NESTED_COMMAND_COUNT" ]; do
+  NESTED_COMMAND="${HZ_NESTED_COMMANDS[$NESTED_COMMAND_INDEX]}"
+  hz_collect_command_segments "$NESTED_COMMAND"
+  HZ_PRIOR_CONTEXT_CHANGE="$HZ_TOP_CONTEXT_CHANGE"
+  COMMAND_SEGMENT_INDEX=0
+  while [ "$COMMAND_SEGMENT_INDEX" -lt "$HZ_COMMAND_SEGMENT_COUNT" ]; do
+    COMMAND_SEGMENT="${HZ_COMMAND_SEGMENTS[$COMMAND_SEGMENT_INDEX]}"
+    hz_cursor_check_push "$COMMAND_SEGMENT"
+    case "$(hz_cmd_head "$COMMAND_SEGMENT")" in cd|pushd) HZ_PRIOR_CONTEXT_CHANGE=1 ;; esac
+    COMMAND_SEGMENT_INDEX=$((COMMAND_SEGMENT_INDEX + 1))
+  done
+  NESTED_COMMAND_INDEX=$((NESTED_COMMAND_INDEX + 1))
+done
+
+# 2. non-draft PR without reviewer -> deny (workflow floor, CC の pre-pr-create と同条件)
+if hz_prcreate_needs_review "$CMD"; then
+  hz_cursor_decision deny "gh pr create called without --draft and without a reviewer.
+
+policy: a non-draft PR should name at least one reviewer.
+options: add --draft or --reviewer @user. otherwise the user must run the
+command manually outside the guarded agent."
+  exit 0
+fi
+
+# 3. deny floors are clear, so an irreversible op may now ask for confirmation.
 LABEL=$(hz_destructive_label "$CMD")
 if [ -n "$LABEL" ]; then
   hz_cursor_decision ask "destructive operation detected: $LABEL
 
 this is irreversible. confirm it is intended before running."
-  exit 0
-fi
-
-# 2. force-equivalent push to a protected branch -> deny (anchored on the git
-# subcommand so quoted strings and `git stash push` never trigger)
-if [ "$(hz_git_subcommand "$CMD")" = "push" ] && hikizan_push_is_forceful "$CMD"; then
-  PUSHDIR=$(hz_push_dir "$CMD")
-  [ -n "$PUSHDIR" ] && [ ! -d "$PUSHDIR" ] && PUSHDIR=""
-  if [ -n "$PUSHDIR" ]; then BRANCH=$(git -C "$PUSHDIR" branch --show-current 2>/dev/null || true)
-  else BRANCH=$(git branch --show-current 2>/dev/null || true); fi
-  HIT=$(hikizan_push_protected_hit "$CMD" "$BRANCH") || HIT=""
-  if [ -n "$HIT" ]; then
-    hz_cursor_decision deny "force-equivalent push (force / +refspec / delete / mirror / all) targeting protected branch '$HIT'.
-
-protected: main / master / develop. confirm explicitly before re-running."
-    exit 0
-  fi
-fi
-
-# 3. non-draft PR without reviewer -> deny (workflow floor, CC の pre-pr-create と同条件)
-if hz_is_pr_create "$CMD" && hz_prcreate_needs_review "$CMD"; then
-  hz_cursor_decision deny "gh pr create called without --draft and without a reviewer.
-
-policy: a non-draft PR should name at least one reviewer.
-options: add --draft, or --reviewer @user, or confirm intentional and re-run."
   exit 0
 fi
 

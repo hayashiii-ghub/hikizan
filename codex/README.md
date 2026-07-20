@@ -8,7 +8,7 @@ envelope に限定する。Codex の PreToolUse は `ask` を扱えないため�
 ## install (plugin、推奨)
 
 repo に marketplace catalog (`.agents/plugins/marketplace.json`) と plugin manifest
-(`.codex-plugin/plugin.json`) が同梱されているので、2 コマンドで入る。skills 6 個 + floors hooks +
+(`.codex-plugin/plugin.json`) が同梱されているので、2 コマンドで入る。core skills + init utility + floors hooks +
 前文 (SessionStart) が一括で入り、`npx skills add -a codex` も `~/.codex/hooks.json` への絶対パス
 手書きも不要:
 
@@ -17,7 +17,7 @@ codex plugin marketplace add hayashiii-ghub/hikizan
 codex plugin add hikizan@hikizan
 ```
 
-- 特定 version に固定するなら `codex plugin marketplace add hayashiii-ghub/hikizan --ref v0.10.3`
+- 特定 version に固定するなら `codex plugin marketplace add hayashiii-ghub/hikizan --ref vX.Y.Z` (`X.Y.Z` は実在する release tag の version に置き換える)
 - TUI 派は 1 行目のあと `/plugins` で marketplace `hikizan` から選んでもよい
 - `jq` が必要 (CC / Cursor と同じ)
 - install 後は表示された hooks の内容を確認して信頼し、新しい task を開始する
@@ -52,7 +52,7 @@ plugin が使えない環境向けの fallback。
        ],
        "SessionStart": [
          {
-           "matcher": "startup|resume",
+           "matcher": "startup",
            "hooks": [
              { "type": "command", "command": "/abs/path/to/hikizan/codex/scripts/session-context.sh" }
            ]
@@ -84,6 +84,7 @@ matcher は tool 名の regex (CC の `if` prefix のような per-hook 条件�
 (`{"hookSpecificOutput":{"hookEventName":"SessionStart","additionalContext":"..."}}`) にしたもの。
 `HIKIZAN_TIER=standard` (既定) では routing/ルールに加えて opt-out 前文が additionalContext に入る。
 `HIKIZAN_TIER=guided` では前文は入らない。
+発火は新規 session の `startup` だけで、resume 時に同じ前文を重ねて注入しない。
 
 ## 既知の限界
 

@@ -22,7 +22,6 @@
             "type": "command",
             "command": "bash",
             "args": ["${CLAUDE_PLUGIN_ROOT}/hooks/scripts/pre-push.sh"],
-            "if": "Bash(git push*)",
             "timeout": 30,
             "statusMessage": "checking push preconditions..."
           },
@@ -30,7 +29,6 @@
             "type": "command",
             "command": "bash",
             "args": ["${CLAUDE_PLUGIN_ROOT}/hooks/scripts/pre-pr-create.sh"],
-            "if": "Bash(gh pr create*)",
             "timeout": 15,
             "statusMessage": "checking PR create preconditions..."
           },
@@ -38,31 +36,6 @@
             "type": "command",
             "command": "bash",
             "args": ["${CLAUDE_PLUGIN_ROOT}/hooks/scripts/pre-destructive.sh"],
-            "if": "Bash(rm -*)",
-            "timeout": 10,
-            "statusMessage": "checking destructive op..."
-          },
-          {
-            "type": "command",
-            "command": "bash",
-            "args": ["${CLAUDE_PLUGIN_ROOT}/hooks/scripts/pre-destructive.sh"],
-            "if": "Bash(git reset*)",
-            "timeout": 10,
-            "statusMessage": "checking destructive op..."
-          },
-          {
-            "type": "command",
-            "command": "bash",
-            "args": ["${CLAUDE_PLUGIN_ROOT}/hooks/scripts/pre-destructive.sh"],
-            "if": "Bash(git clean*)",
-            "timeout": 10,
-            "statusMessage": "checking destructive op..."
-          },
-          {
-            "type": "command",
-            "command": "bash",
-            "args": ["${CLAUDE_PLUGIN_ROOT}/hooks/scripts/pre-destructive.sh"],
-            "if": "Bash(git checkout*)",
             "timeout": 10,
             "statusMessage": "checking destructive op..."
           }
@@ -77,42 +50,21 @@
             "type": "command",
             "command": "bash",
             "args": ["${CLAUDE_PLUGIN_ROOT}/hooks/scripts/post-command.sh"],
-            "if": "Bash(git push*)",
+            "if": "Bash(git*)",
             "timeout": 10
           },
           {
             "type": "command",
             "command": "bash",
             "args": ["${CLAUDE_PLUGIN_ROOT}/hooks/scripts/post-command.sh"],
-            "if": "Bash(gh pr create*)",
+            "if": "Bash(gh*)",
             "timeout": 10
           },
           {
             "type": "command",
             "command": "bash",
             "args": ["${CLAUDE_PLUGIN_ROOT}/hooks/scripts/post-command.sh"],
-            "if": "Bash(rm -*)",
-            "timeout": 10
-          },
-          {
-            "type": "command",
-            "command": "bash",
-            "args": ["${CLAUDE_PLUGIN_ROOT}/hooks/scripts/post-command.sh"],
-            "if": "Bash(git reset*)",
-            "timeout": 10
-          },
-          {
-            "type": "command",
-            "command": "bash",
-            "args": ["${CLAUDE_PLUGIN_ROOT}/hooks/scripts/post-command.sh"],
-            "if": "Bash(git clean*)",
-            "timeout": 10
-          },
-          {
-            "type": "command",
-            "command": "bash",
-            "args": ["${CLAUDE_PLUGIN_ROOT}/hooks/scripts/post-command.sh"],
-            "if": "Bash(git checkout*)",
+            "if": "Bash(rm*)",
             "timeout": 10
           }
         ]

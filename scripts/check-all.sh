@@ -9,6 +9,7 @@ bash "$ROOT/hooks/tests/run.sh" || rc=1
 bash "$ROOT/scripts/check-consistency.sh" || rc=1
 bash "$ROOT/scripts/gen-trigger-docs.sh" --check || rc=1
 bash "$ROOT/scripts/gen-cursor-rule.sh" --check || rc=1
+bash "$ROOT/scripts/gen-init-reference.sh" --check || rc=1
 bash "$ROOT/scripts/gen-manifests.sh" --check || rc=1
 bash "$ROOT/scripts/gen-contract.sh" --check || rc=1
 bash "$ROOT/scripts/gen-agents.sh" --check || rc=1

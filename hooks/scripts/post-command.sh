@@ -7,11 +7,15 @@
 # (b) whether a class the floors mean to deny ever executes anyway (bypass
 # evidence). PostToolUse cannot change the outcome (the tool already ran) so
 # this hook never emits a decision and always exits 0 — observation only.
+# The optional first argument selects the destructive floor policy recorded in
+# metrics (`ask` by default, `block` for deny-only harnesses).
 # If jq is absent, this degrades to a no-op (same policy as
 # session-context.sh): an observability gap must never break a tool call.
 
 set -uo pipefail
 HERE="$(dirname "$0")"
+DESTRUCTIVE_DECISION="${1:-ask}"
+case "$DESTRUCTIVE_DECISION" in ask|block) ;; *) DESTRUCTIVE_DECISION="ask" ;; esac
 
 # shellcheck source=lib/metrics.sh
 source "$HERE/lib/metrics.sh" 2>/dev/null || hikizan_metrics_log() { :; }
@@ -36,7 +40,7 @@ CWD=$(printf '%s' "$JSON" | jq -r '.cwd // ""') || CWD=""
 # 1. irreversible op executed -> would have been an `ask`
 LABEL=$(hz_destructive_label "$COMMAND")
 if [ -n "$LABEL" ]; then
-  hikizan_metrics_log command_executed post-command destructive ask "$SESSION_ID"
+  hikizan_metrics_log command_executed post-command destructive "$DESTRUCTIVE_DECISION" "$SESSION_ID"
   exit 0
 fi
 
@@ -55,7 +59,7 @@ if [ "$(hz_git_subcommand "$COMMAND")" = "push" ] && hikizan_push_is_forceful "$
 fi
 
 # 3. non-draft PR without reviewer executed -> would have been a `block`.
-if hz_is_pr_create "$COMMAND" && hz_prcreate_needs_review "$COMMAND"; then
+if hz_prcreate_needs_review "$COMMAND"; then
   hikizan_metrics_log command_executed post-command no_draft_no_reviewer block "$SESSION_ID"
   exit 0
 fi
