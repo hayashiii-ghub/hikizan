@@ -31,7 +31,7 @@ hikizan は Claude Code plugin / Agent Skills 対応の skill pack。動詞単�
 
 ## install
 
-対応ハーネスは Claude Code / Codex / Cursor の 3 つ。**1 つのハーネスには 1 つのチャネルだけ**で入れる。skill を 2 経路で入れると二重定義になり、古い側に誤 route する (実際に過去発生した障害)。
+対応ハーネスは Claude Code / Codex / Cursor / OpenCode の4つ。**1つのハーネスには1つのチャネルだけ**で入れる。skillを2経路で入れると二重定義になり、古い側に誤routeする (実際に過去発生した障害)。
 
 <!-- hikizan:pack-only -->
 hikizan の skill は相互に handoff と共通契約を参照するため pack 単位で導入し、個別 skill だけの部分 install はサポートしない。
@@ -41,9 +41,10 @@ hikizan の skill は相互に handoff と共通契約を参照するため pack
 | Claude Code | skills + floors + 前文 | `/plugin` 2 コマンド (下記) | 検証済み (開発時に常用) |
 | Codex | skills + floors + 前文 | `codex plugin` 2 コマンド (下記) | install 検証済み / hooks 発火は未 live 検証 |
 | Cursor | skills + subagents + floors + 前文 rule | Plugins 画面で GitHub repo を追加 (下記) | 検証済み (実機確認 2026-07-03) |
+| OpenCode | skills + floors + 前文 | skill pack + local TypeScript plugin (下記) | 実験的 (OpenCode 1.18.0でplugin load確認 / tool発火は結合テスト) |
 | その他の harness | skills のみ (tier は `guided` 既定) | `npx skills add` (下記) | best-effort (harness 依存) |
 
-検証状態の 3 分類: **検証済み** = 実環境で plugin load と floors の発火を確認済み。**実験的** = 決定論ロジックの回帰テストは通るが、実環境での plugin load が未確認。**best-effort** = skills の配置のみで floors が無い (対象 harness の挙動に依存する)。
+検証状態の 3 分類: **検証済み** = 実環境で plugin load と floors の発火を確認済み。**実験的** = adapter の一部を実環境で未確認 (未 load または実 tool call で未発火)。**best-effort** = skills の配置のみで floors が無い (対象 harness の挙動に依存する)。
 
 ### Claude Code
 
@@ -69,6 +70,21 @@ skills + floors (force push deny / 破壊的操作 deny / 非 draft PR deny) + S
 Cursor の Plugins 画面で GitHub repo `hayashiii-ghub/hikizan` を plugin として追加する。manifest の floors (`beforeShellExecution` hook) + 前文 rule (`cursor/rules/hikizan.mdc`) に加えて `skills/` と `agents/` も auto-discover されるため、skills + subagents までまとめて入る (実 Cursor で load と floors の発火を確認済み)。standard tier の前文は rule として届くので、guided で使いたい場合は rule を project の rules から外す (`HIKIZAN_TIER` 環境変数は Cursor では効かない)。
 
 追加時の commit に固定されるので、更新は Plugins 画面から行う。古い版が残ると旧 skill が routing を奪うため、更新後は重複 install が無いか確認する。詳細は `cursor/README.md`。`npx skills add -a cursor` は併用しない。
+
+### OpenCode
+
+OpenCodeは`~/.agents/skills/`のskill packをnativeの`skill` toolで読み、`.opencode/plugins/`または`~/.config/opencode/plugins/`のTypeScript pluginを起動する。現時点ではnpm packageを公開していないため、repoをcloneしたlocal adapter方式のみサポートする。
+
+```bash
+git clone https://github.com/hayashiii-ghub/hikizan.git
+cd hikizan
+npx skills add github:hayashiii-ghub/hikizan -g
+mkdir -p ~/.config/opencode/plugins
+ln -sfn "$(pwd)/opencode/hikizan.ts" ~/.config/opencode/plugins/hikizan.ts
+HIKIZAN_ROOT="$(pwd)" opencode
+```
+
+floors (force push deny / 破壊的操作deny / 非draft PR deny)、実行後metrics、system transform経由の前文が入る。`experimental.chat.system.transform`をSessionStart相当として使うため、OpenCodeのAPI変更時は追従が必要。詳細は`opencode/README.md`。skill packを別経路でも入れない。
 
 ### その他の harness (skill pack)
 
@@ -105,7 +121,7 @@ tier は「環境構築時にどこまで仕組みを用意したか」を表す
 | `pre-pr-create` | PreToolUse `gh pr create` | draft / reviewer 未指定を `deny` |
 | `post-command` | PostToolUse `git push` / `gh pr create` ほか `rm` | floor 対象クラスのコマンド実行を記録 (介入なし。ask 承認率と bypass 検出の材料) |
 
-この表は Claude Code 用。Cursor も破壊的操作を `ask` にするが、Codex は PreToolUse の `ask` を扱えないため同じ分類結果を `deny` にする。決定は各 harness の公式形式で返す。発火条件マトリクスと既知の限界は `hooks/conditions.md` (SoT)。決定論ロジックは `hooks/tests/` で回帰検査する (`bash hooks/tests/run.sh`)。発火イベントは `~/.hikizan/metrics.jsonl` に記録 (`HIKIZAN_METRICS_DIR` で変更可)。
+この表は Claude Code 用。Cursorも破壊的操作を`ask`にするが、Codex / OpenCodeはhookから対話的な`ask`を返せないため同じ分類結果を`deny`にする。決定は各harnessの公式形式で返す。発火条件マトリクスと既知の限界は`hooks/conditions.md` (SoT)。決定論ロジックは`hooks/tests/`で回帰検査する (`bash hooks/tests/run.sh`)。発火イベントは`~/.hikizan/metrics.jsonl`に記録 (`HIKIZAN_METRICS_DIR`で変更可)。
 
 ## trigger 早見表
 
@@ -151,6 +167,7 @@ hikizan/
 ├── .claude-plugin/        ← plugin.json (生成物) / marketplace.json
 ├── agents/                ← first-class subagent 定義 (生成物、正本は skills/sadoku/references/agents/)
 ├── cursor/                ← Cursor 用 floors adapter (before-shell.sh / hooks.json テンプレ)
+├── opencode/              ← OpenCode 用TypeScript adapter / local install手順
 ├── hooks/
 │   ├── hooks.json / conditions.md
 │   ├── scripts/           ← session-context / pre-push / pre-destructive / pre-pr-create

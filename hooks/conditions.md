@@ -9,7 +9,7 @@ Claude Code plugin の hooks で監視する条件 / 挙動 / 決定の一覧。
 | SessionStart | matcher `startup` | セッション開始 (startup) | `context/routing.md` の routing / ルールと active tier を stdout に出力し context 注入。tier=standard なら `context/standard-preamble.md` (opt-out 前文) も注入。host repo は書き換えない | stdout (context) |
 | PreToolUse | matcher `Bash` | local が push 先 remote から N コミット遅れている (non-fast-forward)。remote はコマンドの明示 remote → branch.<name>.remote → origin の順に解決 | `permissionDecision: "deny"` + 選択肢 (pull --rebase / 別 branch / abort) | JSON reason |
 | PreToolUse | matcher `Bash` | force 相当 (`--force` / `--force-with-lease` / `-f` / `-fv` に加え `+refspec` / `:branch` (削除) / `--delete`・`-d` / `--mirror` / `--prune`) が main / master / develop を対象にする。または複数 `-C` / `--git-dir` 等により force push の repo context を一意に解決できない | `permissionDecision: "deny"` + 確認要求 | JSON reason |
-| PreToolUse | matcher `Bash` | 不可逆操作 (`rm -rf` / `git reset --hard` / `git clean -f` / `git checkout` discard) | CC / Cursor: `ask`、Codex: `deny` (`ask` 非対応のため) | JSON reason |
+| PreToolUse | matcher `Bash` | 不可逆操作 (`rm -rf` / `git reset --hard` / `git clean -f` / `git checkout` discard) | CC / Cursor: `ask`、Codex / OpenCode: `deny` (hookから`ask`を返せないため) | JSON reason |
 | PreToolUse | matcher `Bash` | `--draft` / `-d` も `--reviewer` / `-r` も無い (flag 判定は quote-aware tokenizer によるセグメント内のトークン一致。引用文字列内・comment・別コマンドの `-d` 等では発火・解除しない) | `permissionDecision: "deny"` + 選択肢 | JSON reason |
 | PostToolUse (Bash) | `Bash(git*)` / `Bash(gh*)` / `Bash(rm*)` | floor 対象クラスの実行を記録、介入なし・決定なし | なし (metrics のみ) | metrics.jsonl |
 
@@ -20,7 +20,7 @@ Claude Code plugin の hooks で監視する条件 / 挙動 / 決定の一覧。
   を出して exit 0 する (公式推奨形、`scripts/lib/decision.sh` の `hz_decision`)。reason は Claude 本体 / ユーザに relay される。
   - `deny`: 操作を止め、reason を Claude に返す (non-ff / 保護 branch への force)。
   - `ask`: ユーザに確認ダイアログを出す (不可逆操作)。N 択の文言は reason に書く。
-  - Codex は PreToolUse の `ask` を扱えないため、`codex/hooks.json` が `pre-destructive.sh deny` として呼び、同じ分類結果を `deny` にする。Claude Code は引数なしで `ask`、Cursor は adapter から `ask` を返す。
+  - CodexはPreToolUseの`ask`を扱えないため、`codex/hooks.json`が`pre-destructive.sh deny`として呼ぶ。OpenCodeもtool hookから対話的な`ask`を返せないため、adapterが`pre-destructive.sh deny OpenCode`として呼ぶ。Claude Codeは引数なしで`ask`、Cursorはadapterから`ask`を返す。
   - jq 不在は各 hook の entry で `scripts/lib/guard.sh` の `hz_require_jq` が stderr + exit 2 の fail-closed にする (PreToolUse 3 hook + Cursor adapter)。`hz_decision` / `hz_cursor_decision` 内の degrade は defense-in-depth として残るが、entry で先に止まるため通常到達しない。
 - **hook は PreToolUse の deny/ask のみ**。
 - **判定は local 情報優先**。`git fetch --quiet` は実行するが、失敗時はローカル状態で判定を継続する。
@@ -58,12 +58,12 @@ force push の対象 branch は `scripts/lib/push-parse.sh` の `hikizan_push_ta
 - **実行ファイルの別表記**: direct-exec wrapper は skip して分類するが、絶対パス `/bin/rm` / `/usr/bin/git`、alias、function / `eval` / `xargs` 等の間接実行は拾わない。
 - **non-fast-forward 検査の範囲**: 比較対象は「解決した remote の current branch」(`<remote>/<branch>`)。URL 直指定の push (`git push https://... main`) は remote-tracking ref が無いため検査対象外。refspec で current branch 以外に push する形 (`HEAD:other`) の non-ff は見ない (force 相当の検査は別途効く)。
 - **destructive 分類**: `rm -rf` / `reset --hard` / `clean -f` / `checkout` discard の 4 系統に限定。`git restore` 等は対象外。
-- **Codex の shell tool coverage**: `codex/hooks.json` は `matcher: "Bash"` に配線する。Codex の shell execution 経路や tool 名が増えた場合に全経路を捕捉できる保証はなく、hook 単独を完全な security boundary として扱わない。
+- **Codex / OpenCode の shell tool coverage**: Codexは`matcher: "Bash"`、OpenCodeは`tool === "bash"`に配線する。各harnessのshell execution経路やtool名が増えた場合に全経路を捕捉できる保証はなく、hook単独を完全なsecurity boundaryとして扱わない。
 
 ## メトリクス記録
 
 書き込み先: `~/.hikizan/metrics.jsonl` (環境変数 `HIKIZAN_METRICS_DIR` で上書き可、append only)。
-実装: `scripts/lib/metrics.sh` の `hikizan_metrics_log` 関数を各 hook が source して呼ぶ。silent on failure (jq 不在 / dir 書き込み不可 等で hook 本体は壊さない)。session_id が非空かつ UUID 形 (`^[0-9a-f]{8}-`) でないもの (手動テストの合成 id) は書き込み時に skip する。よって集計側で合成 id を除外する前置きフィルタは不要 (write 時に同一 regex で強制)。
+実装: `scripts/lib/metrics.sh` の `hikizan_metrics_log` 関数を各 hook が source して呼ぶ。silent on failure (jq 不在 / dir 書き込み不可 等で hook 本体は壊さない)。session_id が非空かつ UUID 形 (`^[0-9a-f]{8}-`) または OpenCode の長い `ses_` 形のどちらでもない場合、手動テストの合成 id として書き込み時に skip する。よって集計側で合成 id を除外する前置きフィルタは不要 (write 時に同じ条件で強制)。
 
 ### スキーマ (1 行 1 JSON event)
 
@@ -125,6 +125,7 @@ bash hooks/tests/run.sh push-parse # 特定テストのみ
 | `test-pre-pr-create.sh` | pre-pr-create 統合 (-d / -r / deny) |
 | `test-cursor-floors.sh` | cursor floors 統合 (force push deny / 破壊的操作 ask / 非 draft PR deny を Cursor I/O 経由で検査) |
 | `test-codex-floors.sh` | Codex floors 統合 (force push deny / 破壊的操作 deny / 非 draft PR deny と SessionStart を Codex I/O 経由で検査) |
+| `test-opencode-adapter.sh` | OpenCode adapter統合 (before deny / after metrics / system context / fail-open・fail-closed境界) |
 | `test-tokenize.sh` | quote-aware tokenizer (`hz_tokenize`) の単体 |
 | `test-jq-absent.sh` | jq 不在時の fail-closed (PreToolUse 3 hook + Cursor adapter は exit 2、session-context は noop) / post-command.sh は noop |
 | `test-post-command.sh` | post-command 統合 (floor 対象クラスの実行だけ記録、それ以外は 0 行) |

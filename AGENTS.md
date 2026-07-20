@@ -2,11 +2,11 @@
 
 ## Overview
 
-この repo は **hikizan** plugin / skill pack 本体。shell + markdown のみで package manager / build step は無い。ランタイム本体は `hooks/scripts/` の bash hook 群と `skills/` の SKILL.md 群。作業時はこのファイルを入口にし、詳細は [Routing](#routing) の SoT に従う。
+この repo は **hikizan** plugin / skill pack 本体。ランタイム本体は `hooks/scripts/` の bash hook 群、`skills/` の SKILL.md 群、OpenCode用の薄い TypeScript adapter。package manager / build step は無い。作業時はこのファイルを入口にし、詳細は [Routing](#routing) の SoT に従う。
 
 ## Setup
 
-依存は `bash` / `jq` / `git` / `gh` / `awk` のみ (Cursor Cloud 等の VM base image に既にある。update script でインストールするものは無い)。静的解析は `shellcheck` (任意依存。無ければ `check-all.sh` が該当 suite を skip し、CI では必ず走る)。開発中の plugin は `claude --plugin-dir <repo root>` で Claude Code に直接読み込める。
+core の依存は `bash` / `jq` / `git` / `gh` / `awk` のみ (Cursor Cloud 等の VM base image に既にある。update script でインストールするものは無い)。OpenCode adapter の結合テストには `bun` が必要 (無ければローカルではskip、CIでは必ず用意する)。静的解析は `shellcheck` (任意依存。無ければ `check-all.sh` が該当 suite を skipし、CIでは必ず走る)。開発中のpluginは `claude --plugin-dir <repo root>` でClaude Codeに直接読み込める。
 
 ## Test
 
@@ -16,7 +16,7 @@ hook を単体で動かすときの gotcha:
 
 - PreToolUse hook は JSON payload を stdin に流す (例 `printf '{"tool_input":{"command":"git push --force origin main"},"cwd":"/workspace"}' | bash hooks/scripts/pre-push.sh`)。発火条件の正本は `hooks/conditions.md`。
 - `session-context.sh` は `CLAUDE_PLUGIN_ROOT` が未設定だと template を読めず no-op になる。単体実行時は `CLAUDE_PLUGIN_ROOT=<repo root>` を渡す。
-- hook は発火を `~/.hikizan/metrics.jsonl` に追記する。`hikizan_metrics_log` は session_id が非空かつ UUID 形 (`^[0-9a-f]{8}-`) でない手打ちの合成 id を書き込み時に落とすので、素の payload を直接流す手動テストは実データを汚さない (guard 導入前に混入した合成 id 36 件は 2026-07-06 に purge 済み)。保険として `HIKIZAN_METRICS_DIR` を temp dir に向けるのは引き続き推奨。また floor 対象文字列を含む素の payload テストは、その session の実 hook に deny されうるため、単発の手動実行より `hooks/tests/run.sh` 経由を優先する。
+- hook は発火を `~/.hikizan/metrics.jsonl` に追記する。`hikizan_metrics_log` は session_id が非空かつ UUID 形でも長い OpenCode `ses_` 形でもない手打ちの合成 id を書き込み時に落とすので、素の payload を直接流す手動テストは実データを汚さない (guard 導入前に混入した合成 id 36 件は 2026-07-06 に purge 済み)。保険として `HIKIZAN_METRICS_DIR` を temp dir に向けるのは引き続き推奨。また floor 対象文字列を含む素の payload テストは、その session の実 hook に deny されうるため、単発の手動実行より `hooks/tests/run.sh` 経由を優先する。
 - `hooks/tests/e2e/bench.sh` は `claude` CLI 必須の user-run ベンチで `run.sh` / CI には含まれない。
 - 決定論ロジック (hook scripts) を変えたら `hooks/tests/` を RED → GREEN で更新する。
 
@@ -24,7 +24,7 @@ hook を単体で動かすときの gotcha:
 
 - skill 本体 (`skills/`) はハーネス agnostic に書く。Claude Code / Cursor / Codex 等の固有 API 名は、必要な注釈以外では本文に出さない。
 - 配布単位は hikizan skill pack 全体。skill 本文から別 skill を参照するときは論理名で書き、`skills/<name>/...` や `../../<name>/...` の repo-relative path を使わない。
-- floors は CC / Cursor / Codex の 3 harness で同一の pure-logic lib (`hooks/scripts/lib/`, `hooks/scripts/pre-*.sh`) を共有する。force push と非 draft PR は全 harness で deny。破壊的操作は CC / Cursor では ask、`ask` 非対応の Codex では同じ分類結果を deny にする。harness ごとの差分は adapter / entry-point 引数の I/O・決定 policy に限定する。
+- floors は CC / Cursor / Codex / OpenCode の4 harnessで同一のpure-logic lib (`hooks/scripts/lib/`, `hooks/scripts/pre-*.sh`) を共有する。force pushと非draft PRは全harnessでdeny。破壊的操作はCC / Cursorではask、`ask`をhookから返せないCodex / OpenCodeでは同じ分類結果をdenyにする。harnessごとの差分はadapter / entry-point引数のI/O・決定policyに限定する。
 - `when_to_use` は CC 公式 frontmatter フィールド (`description` と合算で文字数上限に載るため短く保つ)。発動条件の正本は `description`。
 - **trigger 早見表は手動転記しない**。`README.md` の `<!-- hikizan:triggers -->` 区間は `scripts/gen-trigger-docs.sh` が frontmatter から生成する (`docs/workflow.md` は README の表を参照する)。`description` / `when_to_use` を変えたら `bash scripts/gen-trigger-docs.sh` を再実行し、`bash scripts/check-all.sh` で検証する。
 - `AGENTS.md` / `context/routing.md` に skill の手順、出力形式、hook 条件を再掲しない。
@@ -58,6 +58,7 @@ hook を単体で動かすときの gotcha:
 | PR 本文ドラフト / PR 提出フローを変える | `skills/teishutsu/SKILL.md` |
 | commit の意味 / 粒度 / commit 前点検を変える | `skills/jikkou/references/commit.md` |
 | hook の block / warning 条件を変える | `hooks/conditions.md` と `hooks/hooks.json` (ロジックは `hooks/scripts/lib/`、検査は `hooks/tests/`) |
+| OpenCode adapter のI/O・決定policyを変える | `opencode/hikizan.ts` (利用・配布境界は `opencode/README.md`) |
 | 利用先 project に注入する routing / ルール文を変える | `context/routing.md` (注入 `session-context.sh` と `/hikizan:init` 用生成 reference の単一ソース) |
 | standard tier への opt-out 前文 (手順自由・出口固定) を変える | `context/standard-preamble.md` (`session-context.sh` が tier=standard のときだけ注入) |
 | 識別子 (branch / commit / PR / issue) の命名規範を変える | `skills/teishutsu/references/naming.md` |

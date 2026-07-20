@@ -81,8 +81,8 @@ fail=$((fail || cursor_meta))
 
 # 9. Hook wiring parity: the CC and Codex hook configs must wire the same set
 #    of pre-* floor scripts, and each harness config must wire its own session
-#    context / adapter entry point. Cursor wires a single adapter
-#    (before-shell.sh) whose floor set is covered by hooks/tests instead.
+#    context / adapter entry point. Cursor and OpenCode wire adapters whose
+#    floor sets are covered by hooks/tests instead.
 cc_floors="$(grep -o 'pre-[a-z-]*\.sh' "$ROOT/hooks/hooks.json" | sort -u)"
 cx_floors="$(grep -o 'pre-[a-z-]*\.sh' "$ROOT/codex/hooks.json" | sort -u)"
 wiring=0
@@ -95,8 +95,11 @@ fi
 grep -q 'session-context\.sh' "$ROOT/hooks/hooks.json" || { echo "✘ hooks/hooks.json does not wire session-context.sh"; wiring=1; }
 grep -q 'codex/scripts/session-context\.sh' "$ROOT/codex/hooks.json" || { echo "✘ codex/hooks.json does not wire codex/scripts/session-context.sh"; wiring=1; }
 grep -q 'before-shell\.sh' "$ROOT/cursor/hooks.json" || { echo "✘ cursor/hooks.json does not wire before-shell.sh"; wiring=1; }
+for script in pre-push.sh pre-pr-create.sh pre-destructive.sh; do
+  grep -qF "$script" "$ROOT/opencode/hikizan.ts" || { echo "✘ opencode/hikizan.ts does not reuse $script"; wiring=1; }
+done
 fail=$((fail || wiring))
-[ "$wiring" -eq 0 ] && echo "✔ hook wiring parity (CC/Codex floor set, per-harness entry points)"
+[ "$wiring" -eq 0 ] && echo "✔ hook wiring parity (CC/Codex floor set, Cursor/OpenCode adapters)"
 
 # 10. hooks/conditions.md is the prose matrix AGENTS.md declares as SoT
 #     alongside hooks/hooks.json. Presence only: every distinct `if` condition
@@ -251,5 +254,25 @@ if grep -qE 'skills [0-9]+ 個' "$ROOT/codex/README.md"; then
 fi
 fail=$((fail || distribution_docs))
 [ "$distribution_docs" -eq 0 ] && echo "✔ distribution maintenance docs follow source and pack boundaries"
+
+# 18. OpenCode currently ships as a local TypeScript adapter plus the shared
+# skill-pack channel. Keep that experimental boundary explicit until a
+# separately versioned npm package is designed and published.
+opencode_dist=0
+[ -f "$ROOT/opencode/hikizan.ts" ] || { echo "✘ OpenCode adapter is missing"; opencode_dist=1; }
+for file in "$ROOT/README.md" "$ROOT/opencode/README.md"; do
+  grep -qF 'HIKIZAN_ROOT' "$file" || { echo "✘ ${file#$ROOT/} is missing HIKIZAN_ROOT setup"; opencode_dist=1; }
+  grep -qF 'npx skills add github:hayashiii-ghub/hikizan -g' "$file" || {
+    echo "✘ ${file#$ROOT/} is missing the OpenCode skill-pack install command"; opencode_dist=1;
+  }
+done
+grep -qF 'experimental.chat.system.transform' "$ROOT/opencode/hikizan.ts" || {
+  echo "✘ OpenCode adapter does not inject session context"; opencode_dist=1;
+}
+grep -qF 'npm packageは未公開' "$ROOT/opencode/README.md" || {
+  echo "✘ opencode/README.md does not state the npm distribution boundary"; opencode_dist=1;
+}
+fail=$((fail || opencode_dist))
+[ "$opencode_dist" -eq 0 ] && echo "✔ OpenCode local adapter and experimental distribution boundary"
 
 exit "$fail"
