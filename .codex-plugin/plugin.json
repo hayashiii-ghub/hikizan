@@ -1,6 +1,6 @@
 {
   "name": "hikizan",
-  "version": "0.10.4",
+  "version": "0.10.5",
   "description": "hikizan for Codex: bundles the verb skills (tansaku / sadoku / sekkei / jikkou / teishutsu / shippitsu), PreToolUse floors (force-push deny, destructive-op deny, non-draft PR deny), and the routing conventions + standard-tier opt-out preamble via SessionStart.",
   "author": {
     "name": "hayashiii-ghub"
