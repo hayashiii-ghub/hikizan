@@ -138,16 +138,23 @@ PR 本文の日本語は `shippitsu` の writing-style reference に従う。以
 
 ## PII / Secrets scan
 
-`teishutsu` と `sadoku` が共通で参照する recipe。出力前に最低限以下を grep:
+`teishutsu`と`sadoku`が共通で参照するrecipe。repo既存のsecret scannerは、対象repoがuser-trustedで、scanner本体・設定・依存がreview rangeに含まれず、network / hook / pluginを実行しないと内容を読んで確認できた場合だけ使う。外部PR、出所不明、またはscanner関連fileが変更対象なら実行せず、下のbuilt-in grepへ落とす。
+
+mode 700の一時directoryを作った直後に、directory pathを空にして二重実行を無害化する`cleanup`を`EXIT`へ登録する。`HUP / INT / TERM`は各trapを解除し、cleanup後に129 / 130 / 143で明示終了するhandlerへ分け、interrupt後の処理を続行しない。次をmode 600の別fileとして用意する。各fileを出力前に同じpatternでgrepし、保存前に既知のsecret値をredactする。
+
+- PR body / review report
+- 固定したrangeのcommit message
+- release notes変更
+- 本文へ転載するdiff・検証ログ
 
 ```bash
 # email
 grep -E '[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}' <draft>
 # token-like
 # hikizan:token-pattern
-grep -E '(sk-(proj-)?|gh[pousr]_|github_pat_|xox[baprs]-)[A-Za-z0-9_-]{16,}' <draft>
+grep -E '(sk-(proj-)?[A-Za-z0-9_-]{16,}|gh[pousr]_[A-Za-z0-9]{16,}|github_pat_[A-Za-z0-9_]{16,}|xox[baprs]-[A-Za-z0-9-]{16,}|A(SI|KI)A[0-9A-Z]{16}|eyJ[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_-]{10,}|Authorization:[[:space:]]*(Basic|Bearer)[[:space:]]+[A-Za-z0-9._~+/-]{8,}|-----BEGIN ([A-Z0-9]+ )?PRIVATE KEY-----)' <draft>
 # 個人名 (チーム外の実名)
 # → 人手確認、機械では完全には判定できない
 ```
 
-0 件でも報告に `PII scan: clean (0 matches)` と grep 出力を記載する。
+genericな`secret` / `password` assignmentとチーム外の実名は人手確認する。成功・失敗・interruptの全経路で一時directoryを削除する。0件でも報告に、scanした入力種別と`PII scan: clean (0 matches)`、grep出力を記載する。

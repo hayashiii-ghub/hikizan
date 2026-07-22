@@ -31,7 +31,7 @@ core skill (init を除く全 skill) 共通。正本は `scripts/contract.md` �
 
 | モード | きっかけ | 出すもの |
 | --- | --- | --- |
-| 軽量検討 | 「どうやって直す」「やり方どっち」/ 対象が 3 ファイル未満 | 推奨案 1 つ |
+| 軽量検討 | 「どうやって直す」「やり方どっち」/ 対象が 3 ファイル未満 | 承認可能な 1-step plan |
 | 通常検討 | 「設計どうする」「方針決めたい」/ 新機能の着手前 | 計画 |
 | 評価 | 「やる価値ある?」「採用すべき?」「やめる?」 | Kill / Keep / Pivot |
 
@@ -39,16 +39,17 @@ core skill (init を除く全 skill) 共通。正本は `scripts/contract.md` �
 
 ## 手順 (軽量検討)
 
-1. 推奨案を 1 つ書く: file:line で場所を示し、推奨度 N/10 と根拠 1 行を付ける
-2. 雑にやる案 (brute) があれば 1 行で併記する (なければ省略)
-3. 採用したときの最大の懸念を 1 つ書く
-4. 3 案以上は出さない。明確なら推奨 1 案だけでよい
+1. 推奨案を1つ書く: file:lineで場所を示し、推奨度N/10と根拠1行を付ける
+2. 1-step planとして `change` (observable behavior) / `file` / `verification command` / `owner skill` を埋める
+3. 雑にやる案 (brute) があれば1行で併記する (なければ省略)
+4. 採用したときの最大の懸念を1つ書く
+5. 「1. 実行する (`jikkou`へ) / 2. planを直す / 3. 中止する」で承認を待つ。承認前は`jikkou`へ渡さない
 
 ## 手順 (通常検討)
 
 1. 解決すること / しないこと (out-of-scope) を分けて書く
 2. 推奨案を 1 つ決める。迷う近さの代替案があるときだけ併記する (全部で 3 案まで)
-3. この設計が前提とする事実 (不変条件 / 制約 / 受容済みリスク) を 3-5 個列挙する。CONTEXT.md があればそこから引き、各々を file:line で確認する。確認できないものには ⚠ を付ける。設計の**決定** (なぜこの案を選んだか) は CONTEXT.md でなく ADR に置き、CONTEXT.md にリンクする
+3. この設計が前提とする事実 (不変条件 / 制約 / 受容済みリスク) を3-5個列挙する。CONTEXT.mdがあればそこから引き、各々をfile:lineで確認する。確認できないものには⚠を付ける。設計の**決定**はADR候補としてplanに置く。`sekkei`は候補のpath・decision・理由を決めるだけでfileを書かず、userが承認したADR作成stepを`jikkou`が実行する。CONTEXT.mdから完成ADRへlinkを足すなら、そのCONTEXT pathとlink-only変更も同じplan stepのfile / scopeへ明記する
 4. 事実で決まらない分岐が残るなら、案を確定する前に一問ずつ user に確認する。対象: 対象範囲が複数に解釈できる / 後から変えるコストが高い設計分岐 / DoD が無い / 影響範囲が広いのに成功条件が曖昧 / ADR に残すべき重い判断。質問には推奨案と理由 (evidence があれば file:line) を 1 つ添える。事実で決まる分岐は自分で file:line を確認して埋める。用語そのもののズレは `tansaku` に戻す
 5. 6 ヶ月後に問題になりうるシナリオを 1 つ書く
 6. 計画 step に分解する。各 step に担当 skill / 触る file / 検証コマンドを書く
@@ -81,7 +82,7 @@ core skill (init を除く全 skill) 共通。正本は `scripts/contract.md` �
 - 前提: [設計が前提とする事実 (file:line)。未確認は ⚠] (通常検討のみ)
 - open question: [事実で決まらず user に確認した分岐 / なし]
 - scope: [解決すること / out-of-scope]
-- next: [jikkou (計画承認後) / sadoku / なし]
+- next: [jikkou (1-step plan / 通常計画の承認後) / sadoku / なし]
 
 worktree 内 (`git rev-parse --git-dir` と `--git-common-dir` の正規化結果が異なる) なら `worktree: [branch]` を 1 行足す。
 

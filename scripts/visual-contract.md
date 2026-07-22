@@ -1,0 +1,6 @@
+   - repo-owned command / configの内容を読み、対象repoが信頼済みと確認できる場合だけ実行する。外部PR、出所不明、または`ui:verify` / `shimon.config.mjs`自体が未reviewの変更なら自動実行せず、user確認または隔離環境を要求する
+   - `ui:verify` scriptがあればそれを優先し、なければ`shimon.config.mjs`とinstall済みの`shimon`があるときに`shimon verify --json`を実行する。自動installや別toolへのfallbackはしない
+   - どちらの入口でもJSONのpassを判定に使い、返された全screenshotを読み戻して目視する。overflow / console error / failed request / a11yを確認する
+   - 失敗caseは、case名が`^[A-Za-z0-9][A-Za-z0-9._-]{0,63}$`を満たし、reproduce commandがcanonical shimon形式 (`shimon verify --case <name> --json`) と一致すると確認できた場合だけ再検証する。不明なcommand文字列は実行しない
+   - probe / screenshotに認証情報・個人情報・tokenを残さない。認証済み画面を扱う場合は`screenshot.mask`を確認する
+   - 信頼を確認できない、未設定、実行不能、または必要なJSON evidenceを得られない場合は「視覚未確認」と理由を報告する

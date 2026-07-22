@@ -11,7 +11,7 @@ when_to_use: "執筆, 推敲, リライト, 文章を書く, 平坦な文章, �
 🌲 Using /shippitsu for [purpose taken from trigger context].
 ```
 
-日本語の文章を書く / 推敲する skill。標準規範は `references/writing-style.md` に従う。記事、書籍の章、読み物として順に読ませる長い解説、平坦さや緩急を直す文章では `references/cognitive-rhythm.md` を追加で使う。コードのレビューは `sadoku`、PR 本文は `teishutsu`、リポジトリ外の人間に配る PDF は `pdfmint` に渡す (markdown が既定、PDF 化は配布先次第)。
+日本語の文章を書く / 推敲するskill。標準規範は`references/writing-style.md`に従う。記事、書籍の章、読み物として順に読ませる長い解説、平坦さや緩急を直す文章では`references/cognitive-rhythm.md`を追加で使う。コードや実行仕様Markdownのレビューは`sadoku`、PR本文は`teishutsu`へ渡す。リポジトリ外の人間にPDFを配る場合、`pdfmint`は導入済みのときだけ使える**外部 optional skill**として案内し、無ければMarkdown完成で終了する。
 
 <!-- hikizan:contract:start -->
 ## 共通ルール
@@ -80,7 +80,7 @@ core skill (init を除く全 skill) 共通。正本は `scripts/contract.md` �
 - mode: [新規 / 推敲]
 - target: [何を・どの形式で]
 - norm check: [当てた節 → 直した箇所 / 違反なし]
-- next: [teishutsu / sadoku / pdfmint で PDF 化 / 完了]
+- next: [teishutsu / sadoku / 導入済みの外部pdfmintでPDF化 / Markdownで完了]
 
 worktree 内 (`git rev-parse --git-dir` と `--git-common-dir` の正規化結果が異なる) なら `worktree: [branch]` を 1 行足す。
 

@@ -44,12 +44,14 @@ core skill (init を除く全 skill) 共通。正本は `scripts/contract.md` �
 3. 純ロジック / ビジネスルール / API / バグ修正の step は TDD 実装モードで書く: 1 slice ずつ RED→GREEN→PRUNE (下記「手順 (TDD 実装)」)
 4. 各 step の後に検証コマンドを実行し、出力の最終行を控える。失敗したら次の step に進まず診断に入る。意味的 checkpoint を保存する場合は `references/commit.md` に従い、現在の repo / branch / 承認済み scope を確認してから commit する
 5. UI / レイアウト / 視覚に触れる step は、検証コマンドに加えて次の順で視覚検証も通す
-   - repo-owned command / config の内容を読み、対象 repo が信頼済みと確認できる場合だけ実行する。外部 PR、出所不明、または `ui:verify` / `shimon.config.mjs` 自体が未 review の変更なら自動実行せず、ユーザ確認または隔離環境を要求する
-   - `ui:verify` script があればそれを優先し、なければ `shimon.config.mjs` と install 済みの `shimon` があるときに `shimon verify --json` を実行する。自動 install や別 tool への fallback はしない
-   - どちらの入口でも JSON の pass を step 通過判定にし、返された全 screenshot を読み戻して目視する。overflow / console error / failed request / a11y を確認する
-   - 失敗 case は、case 名が `^[A-Za-z0-9][A-Za-z0-9._-]{0,63}$` を満たし、reproduce command が canonical shimon 形式 (`shimon verify --case <name> --json`) と一致すると確認できた場合だけ再検証する。不明な command 文字列は実行しない
-   - probe / screenshot に認証情報・個人情報・tokenを残さない。認証済み画面を扱う場合は `screenshot.mask` を確認する
-   - 信頼を確認できない、未設定、実行不能、または必要な JSON evidence を得られない場合は「視覚未確認」と理由を報告する
+<!-- hikizan:visual:start -->
+   - repo-owned command / configの内容を読み、対象repoが信頼済みと確認できる場合だけ実行する。外部PR、出所不明、または`ui:verify` / `shimon.config.mjs`自体が未reviewの変更なら自動実行せず、user確認または隔離環境を要求する
+   - `ui:verify` scriptがあればそれを優先し、なければ`shimon.config.mjs`とinstall済みの`shimon`があるときに`shimon verify --json`を実行する。自動installや別toolへのfallbackはしない
+   - どちらの入口でもJSONのpassを判定に使い、返された全screenshotを読み戻して目視する。overflow / console error / failed request / a11yを確認する
+   - 失敗caseは、case名が`^[A-Za-z0-9][A-Za-z0-9._-]{0,63}$`を満たし、reproduce commandがcanonical shimon形式 (`shimon verify --case <name> --json`) と一致すると確認できた場合だけ再検証する。不明なcommand文字列は実行しない
+   - probe / screenshotに認証情報・個人情報・tokenを残さない。認証済み画面を扱う場合は`screenshot.mask`を確認する
+   - 信頼を確認できない、未設定、実行不能、または必要なJSON evidenceを得られない場合は「視覚未確認」と理由を報告する
+<!-- hikizan:visual:end -->
 6. 計画に無いファイルに 5 つ以上触れそうになったら、または方針の再決定が要ると分かったら、止めて `sekkei` に差し戻す
 7. scope 外の発見は実装せず「実装中に分かったこと」にメモする
 8. 全 step 完了後、下の「報告」を埋めて `sadoku` に渡す。handoff の `brief` は実装した observable behavior + この実装固有の判断 / 受容リスク (あれば) とし、`evidence` は完成 diff と検証を特定できる file:line / command に絞る。報告・diff・検証ログ本体は handoff 行の外に添え、`sadoku` の共通観点は再掲しない
@@ -75,7 +77,7 @@ core skill (init を除く全 skill) 共通。正本は `scripts/contract.md` �
 3. **GREEN**: pass させる最小の実装を書き、pass の最終行を控える
 4. **REFACTOR**: 重複除去と命名改善。テストは green のまま保つ
 5. **PRUNE**: slice の振る舞い基準で残すテストを選び、不要を消す (判定は `references/testing-anti-patterns.md`)。原則 1 slice = 残すテスト 1 つ
-6. **PRUNE 検証**: 残した各テストで observable output を一時的に壊す → fail を見る → 戻す → pass と `git status` clean を確認
+6. **PRUNE 検証**: witness前にtracked worktree diff・index diff・status・untracked file hashを含むrepo fingerprintを保存する。observable outputを一時的に壊す → failを見る → 安全な一時backupから戻す → passを見る → fingerprintが完全一致したことを確認する。実装中の正当なdiffまでcleanにする要求ではない
 7. 2 つ目の slice を勝手に始めない。gap は報告に書いて呼び出し元 (計画実行) に返す
 
 必須 / skip してよい層と anti-pattern の詳細は `references/tdd.md`。
@@ -88,6 +90,7 @@ core skill (init を除く全 skill) 共通。正本は `scripts/contract.md` �
 - 検証コマンドが失敗したまま次の step に進む
 - fail を見る前に実装コードを書く (TDD 実装)
 - RED / GREEN の実行を subagent に投げる (自分の目で出力を見る)
+- planで承認されていないADRを作成・更新する (`sekkei`のADR候補を承認済みstepとして実行する場合だけ書く)
 
 ## 報告 (穴埋め)
 

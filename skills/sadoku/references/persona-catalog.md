@@ -1,6 +1,6 @@
 # 専門家レビュー persona の起動条件
 
-`sadoku` の通常レビューモードで使う 4 persona。**全対象に起動するのではなく、起動条件にヒットした persona のみ**。対象は diff でも指定範囲のコードでもよい。
+`sadoku` の通常レビューモードで使う 4 persona。**全対象に起動するのではなく、起動条件にヒットした persona のみ**。対象は diff、指定範囲のコード、実行仕様 Markdown のいずれでもよい。
 
 ## 目次
 
@@ -24,9 +24,10 @@
 
 **起動条件 (いずれか 1 つでも該当)**
 
-- Standard / Deep の対象に production code が含まれる
+- Standard / Deep の対象に production artifact (code / 実行仕様 Markdown) が含まれる
 - user が「既存コードに合うか」「書き方がおかしくないか」「もっとシンプルにできないか」と明示する (Quick でも起動)
 - 新しい制御フロー / error handling / helper / wrapper / interface を導入している
+- 実行仕様 Markdownのmode / stop / handoff / command / SoTを変更している
 
 **観点**
 
@@ -36,6 +37,7 @@
 | simplicity | 同じ振る舞いと制約を、より少ない分岐・層・概念で表せないか |
 | readability | 処理の主経路と副作用が追えるか、間接参照が意図を隠していないか |
 | duplication / dead code | 対象変更が重複や未使用要素を増やしていないか |
+| executable spec | 手順が一意に実行できるか、mode / stop / handoff が到達可能か、SoT と生成物が分離されているか |
 
 通常レビューでは対象変更とその理解に必要な近隣だけを見る。対象外の production code まで整理候補を探すのは simplify モードの責務。
 
@@ -108,5 +110,5 @@ prompt 詳細: `references/agents/reviewer-architecture.md`
 
 - 5+ ファイル touch なら **architecture** は必ず起動
 - 入力経路に触れたら **security** は必ず起動
-- Standard 以上の production code なら **code-quality** は必ず起動
+- Standard 以上の production artifactなら **code-quality** は必ず起動
 - どれも該当しないが対象が大きい (diff 200 行超 / 範囲が 1 module 超) なら adversarial だけ inline で実行

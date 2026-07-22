@@ -28,7 +28,7 @@ flowchart TB
     JD["診る<br/>診断 / root cause"]
   end
   subgraph REVIEW["sadoku（査読）"]
-    R["見る<br/>code review / simplify"]
+    R["見る<br/>code / executable spec review / simplify"]
   end
   subgraph SUBMIT["teishutsu（提出）"]
     M["出す<br/>PR 本文 / committed scope / normal push / cwd-aware gh"]
@@ -41,7 +41,8 @@ flowchart TB
   J -.->|"scope 逸脱 / 方針の再決定"| K
   JD -.->|"方針ごと再検討"| K
   J -->|"実装完了"| REVIEW
-  REVIEW -.->|"simplify finding<br/>(high severity)"| J
+  REVIEW -.->|"局所修正 finding"| J
+  REVIEW -.->|"設計判断 finding"| K
   REVIEW -->|"レビュー済 diff"| SUBMIT
 ```
 
@@ -82,23 +83,25 @@ trigger 表は「どう呼ばれうるか」の定義。実際の起動経路は
 | sekkei 通常検討      | tansaku 探索          | 判断前の情報不足              | 要望 / 対象 file / 既知 evidence |
 | (user)               | sekkei 通常検討        | 「設計どうする」            | issue + DoD / tansaku brief |
 | (user)               | sekkei 軽量検討        | 「どうやって直す」          | 修正対象              |
+| sekkei 軽量検討      | jikkou 計画実行        | 1-step plan承認            | change + file + verification + owner skill |
 | (user)               | sekkei 評価            | 「やる価値ある」            | 判断対象              |
 | (user)               | jikkou 診断       | 「エラー」「動かない」      | バグ症状              |
-| sekkei 通常検討      | jikkou 計画実行        | Plan 承認 / 「進めて」      | owner skill 付き Plan steps |
+| sekkei 通常検討      | jikkou 計画実行        | Plan 承認 / 「進めて」      | owner skill付きPlan steps + ADR候補 (任意) |
 | jikkou 計画実行      | sekkei 通常検討        | scope 逸脱 / 方針の再決定   | 逸脱点 + 再検討したい判断 |
 | jikkou 計画実行      | jikkou 診断       | 原因未確定 / test failure   | 症状 + evidence |
 | jikkou 診断     | jikkou 計画実行        | root cause 確定             | root cause 1 文 + fix 候補 |
-| jikkou 計画実行      | sadoku 通常レビュー    | 実装完了                    | 1 行 handoff (observable behavior + 固有判断 / risk + evidence locator) + 報告 / 完成 diff / 検証出力 |
-| (user)               | sadoku 通常レビュー    | 「レビューして」            | diff                  |
-| sadoku 通常レビュー  | subagent (reviewer-*)  | Standard 以上の production code / 専門観点該当 | 対象 + 近隣の比較対象 + repo convention の出典 + 設計前提 |
+| jikkou 計画実行      | sadoku 通常レビュー    | 実装完了                    | 1行handoff (observable behavior + 固有判断 / risk + review descriptor) + 報告 / 完成diff / 検証出力 |
+| (user)               | sadoku 通常レビュー    | 「レビューして」            | diff / code範囲 / 実行仕様Markdown |
+| sadoku 通常レビュー  | subagent (reviewer-*)  | Standard以上のproduction artifact / 専門観点該当 | 対象 + 近隣の比較対象 + repo conventionの出典 + 設計前提 |
 | subagent             | sadoku                 | 評価完了                    | findings（要裏取り）  |
 | (user)               | sadoku simplify findings | 「整理して」「simplify」(明示) | diff (範囲)        |
 | sadoku simplify findings | jikkou 計画実行    | simplify finding (high)     | 対象 finding + file:line |
+| sadoku 通常レビュー  | sekkei 通常検討        | module境界・方針変更が必要なfinding | finding + evidence + owner skill |
 | (user)               | teishutsu              | 「PR出す」「PR提出」        | 実装完了 + commit 済み diff       |
 | jikkou 計画実行      | teishutsu              | 完了報告 + 本文準備済       | commit 済み diff + files changed + body  |
 | (user)               | teishutsu              | 「PR文書いて」              | change intent + files + verification |
 
-`jikkou` は必要な意味的 checkpoint を commit として保存する。`teishutsu` は commit を作らず、commit 済み scope の通常 push と PR 作成だけを行う。提出モードの承認範囲と停止条件の正本は `skills/teishutsu/SKILL.md` に置く。本文ドラフトモードは書き込みを行わない。
+`jikkou`は必要な意味的checkpointをcommitとして保存する。ADRは`sekkei`が候補のpath / decision / 理由をplanへ置き、userが承認したstepだけ`jikkou`がfileへ書く。`teishutsu`はcommitを作らず、commit済みscopeの通常pushとPR作成だけを行う。提出モードの承認範囲と停止条件の正本は`skills/teishutsu/SKILL.md`に置く。本文ドラフトモードは書き込みを行わない。
 
 handoff の共通形 (1 行):
 
@@ -122,7 +125,7 @@ Example goal:
 
 ## 5. 検証ログの原則
 
-各 skill が報告に残す検証ログの必須項目は、該当 `SKILL.md` の「報告 (穴埋め)」テンプレが正本 (ここで再掲しない)。共通の原則は 1 つ:
+各skillのmode / stop / handoffと、最後に添える報告envelopeは該当`SKILL.md`が正本。referenceはmode固有のprimary artifact (通常検討plan等)の詳細を定義してよいが、同じenvelopeを再定義しない。共通の原則は1つ:
 
 **不可:** self-report だけ（「pass しました」「直りました」等）。機械的に検証できる項目は command 実行結果をそのまま引用する (設計原則「評価は環境変化で見る」、どの tier でも省略しない)。
 

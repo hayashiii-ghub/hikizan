@@ -8,7 +8,7 @@ hikizan plugin の使い方。手順の詳細は各 skill に書いてある。�
 - 何かを調べる / 全体像を掴む / 影響範囲を知る → `tansaku`
 - 設計を決める / 計画を立てる / やる価値を評価する → `sekkei`
 - 計画を実行する / バグの原因を探す / ロジックの実装・バグ修正 (テスト先行) → `jikkou`
-- diff をレビューする / コード整理の観点を出す → `sadoku`
+- codeまたはagentが実行するMarkdown仕様をレビューする / コード整理の観点を出す → `sadoku`
 - PR 本文を書く / PR を出す → `teishutsu`
 - 日本語の文章を書く / 推敲する → `shippitsu`
 

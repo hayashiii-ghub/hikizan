@@ -1,6 +1,6 @@
 ---
 name: sadoku
-description: "Use this skill when the user wants code reviewed or findings simplified — including the phrasings レビューして, コードレビュー, コード整理して, simplify. Activate after implementation, when reviewing a git diff before opening a PR, when reviewing an existing module or whole codebase (no diff needed), or when restructuring messy review findings — even when the user doesn't say 'review' explicitly. レビュー系の語 (レビューして / コードレビュー) は通常レビュー、整理系の語 (コード整理して / simplify) のみ simplify findings を起動する。対象はコード (diff / 指定範囲) とレビュー findings に限る。用語の整理は tansaku、文章の整理・推敲は shippitsu に渡す。"
+description: "Use this skill when the user wants code or executable project instructions reviewed, or findings simplified — including the phrasings レビューして, コードレビュー, SKILL.mdをレビュー, コード整理して, simplify. Activate after implementation, when reviewing a git diff before opening a PR, when reviewing an existing module, operational Markdown, or whole codebase (no diff needed), or when restructuring messy review findings. レビュー系の語は通常レビュー、整理系の語だけsimplify findingsを起動する。対象はproduction code、agentが実行するMarkdown仕様 (SKILL.md / references / project instructions)、review findings。一般文章の推敲はshippitsuに渡す。"
 license: MIT
 when_to_use: "PR確認, レビュー, code review, プロジェクトレビュー, コード整理, simplify"
 ---
@@ -11,7 +11,7 @@ when_to_use: "PR確認, レビュー, code review, プロジェクトレビュ�
 🌲 Using /sadoku for [purpose taken from trigger context].
 ```
 
-コード (diff または指定範囲) を見る skill。見つけた問題を直すのは `jikkou` (テスト先行の実装は `jikkou` の TDD 実装モード)、設計から見直すなら `sekkei`、提出は `teishutsu` に渡す。
+production code と実行仕様 Markdown (SKILL.md / references / project instructions) を diff または指定範囲で見る skill。見つけた問題を直すのは `jikkou` (テスト先行の実装は `jikkou` の TDD 実装モード)、設計から見直すなら `sekkei`、提出は `teishutsu` に渡す。一般文章の推敲は `shippitsu` の責務。
 
 <!-- hikizan:contract:start -->
 ## 共通ルール
@@ -34,30 +34,33 @@ core skill (init を除く全 skill) 共通。正本は `scripts/contract.md` �
 | 通常レビュー | 「レビューして」「コードレビュー」 |
 | simplify | 「コード整理して」「simplify」「スリム化したい」(明示されたときだけ。「コードレビュー」では起動しない) |
 
-通常レビューのレビュー対象は 2 種類。手順は共通で、入口と深さの起点だけ違う:
+通常レビューのレビュー対象は 3 種類。手順は共通で、入口と深さの起点だけ違う:
 
 | 対象 | いつ | 深さの起点 |
 | --- | --- | --- |
 | diff | PR / push 前の変更をレビュー | 変更行数 (手順 2) |
 | 指定範囲のコード | 既存の module / subsystem / repo 全体をレビュー | 対象範囲 × リスク (手順 2) |
+| 実行仕様 Markdown | SKILL.md / references / project instructions の手順・routing・安全条件をレビュー | 対象 file 数 × 実行時リスク (手順 2) |
 
-diff があるだけでは始めない。状態から起動するときは 1 行確認する (「diff を検出しました。レビューしますか?」)。範囲レビューは対象範囲を user と 1 行で確定してから始める (「どの範囲を見ますか?」)。
+diff があるだけでは始めない。状態から起動するときは1行確認する (「diffを検出しました。レビューしますか?」)。範囲レビューは対象範囲をuserと1行で確定してから始める。diffレビューは開始時にdescriptorを固定する。実装後のbranch全体は`REVIEW_KIND=BRANCH_SNAPSHOT`と`REVIEW_BASE=<merge-base>`でcommit済み・staged・unstaged・untrackedを合わせる。確定commitだけのPRは`COMMIT_RANGE=<base>...HEAD`、stagedだけは`INDEX`、未commit worktreeだけは`WORKTREE`。途中で別のsnapshotへ読み替えない。
 
 ## 手順 (通常レビュー)
 
-1. `references/project-context.md` の観点で対象 repo の前提 (依存関係 / テスト構造 / 近隣の類似実装 / 明文化された規約 + ドメイン文脈 / 設計意図 / 脅威モデル) を確認する。文脈の出どころ優先は ①CONTEXT.md ②PR / issue の intent ③user に 1 行
-2. 深さを決める。diff レビューは変更行数で: 50 行以内かテスト変更のみ → Quick / 50〜500 行 → Standard / 500 行超か security に触れる → Deep。範囲レビューは対象規模で: 単一 file → Quick / 1 module → Standard / subsystem 以上か security を含む → Deep
+1. `references/project-context.md` の観点で対象 repo の前提 (依存 / 検証構造 / 近隣の類似 artifact / 明文化された規約 + ドメイン文脈 / 設計意図 / 脅威モデル) を確認する。文脈の出どころ優先は ①CONTEXT.md ②PR / issue の intent ③user に 1 行
+2. 深さを決める。diff レビューは変更行数で: 50 行以内かテスト変更のみ → Quick / 50〜500 行 → Standard / 500 行超か security に触れる → Deep。範囲レビューは対象規模で: 単一 file → Quick / 1 module または 2〜10 実行仕様 file → Standard / subsystem、11 file 以上、または security を含む → Deep
 3. 実装者の説明・PR 本文・前段の報告は鵜呑みにしない。finding の根拠は強い順に採る: ①テストの pass/fail ②diff ③周辺コード ④検証ログ ⑤実装者のメモ
 4. 下の「停止条件」を上から順に対象 (diff / 範囲) に当てる。該当したら作業を止めてユーザに確認する
-5. 全 depth で、対象が近隣の類似実装から不必要に外れていないか、同じ振る舞いをより少ない分岐・層・概念で表せないかを見る。Quick は controller が inline で確認する。ただし user がこの観点を明示した場合と、新しい実装 pattern を導入する場合は Quick でも `reviewer-code-quality` を起動する。Standard 以上の production code でも同 reviewer を起動する。security / architecture は該当条件に応じて起動する (最大 3 並列、定義の正本は `references/agents/reviewer-*.md`。対応 harness では同内容が first-class agent として配布される。条件は `references/persona-catalog.md`)。**起動時に、近隣の比較対象、関連する repo convention の出典、「脅威モデル / 設計意図 (何を守り、何を受容しているか)」を渡す**。返ってきた finding は自分で対象を読み直す / テストを再実行して裏取りしてから採用する
+5. 全 depth で、対象が近隣の類似 artifact から不必要に外れていないか、同じ振る舞いをより少ない分岐・層・概念で表せないかを見る。実行仕様 Markdown は mode / 手順 / 停止条件 / handoff の到達可能性、曖昧な command、重複 SoT、dead guidance も見る。Quick は controller が inline で確認する。ただし user がこの観点を明示した場合と、新しい実装 pattern を導入する場合は Quick でも `reviewer-code-quality` を起動する。Standard 以上の production artifact (code / 実行仕様 Markdown) でも同 reviewer を起動する。security / architecture は該当条件に応じて起動する (最大 3 並列、定義の正本は `references/agents/reviewer-*.md`。対応 harness では同内容が first-class agent として配布される。条件は `references/persona-catalog.md`)。**起動時に、近隣の比較対象、関連する repo convention の出典、「脅威モデル / 設計意図 (何を守り、何を受容しているか)」を渡す**。返ってきた finding は自分で対象を読み直す / テストを再実行して裏取りしてから採用する
 6. 「merge 後 / 運用中に壊れる一番現実的なシナリオ」を 1 つ書く。Quick では省略してよいが、bugfix / 挙動変更 / business rule / API / security に触れる対象では Quick でも書く
 7. UI / style / レイアウトに触れる対象なら次の順で視覚エビデンスを取る
-   - repo-owned command / config の内容を読み、対象 repo が信頼済みと確認できる場合だけ実行する。外部 PR、出所不明、または `ui:verify` / `shimon.config.mjs` 自体が未 review の変更なら自動実行せず、ユーザ確認または隔離環境を要求する
-   - `ui:verify` script があればそれを優先し、なければ `shimon.config.mjs` と install 済みの `shimon` があるときに `shimon verify --json` を実行する。自動 install や別 tool への fallback はしない
-   - どちらの入口でも JSON の pass を判定に使い、返された全 screenshot を確認する。overflow / console error / failed request / a11y を見る
-   - 失敗 case は、case 名が `^[A-Za-z0-9][A-Za-z0-9._-]{0,63}$` を満たし、reproduce command が canonical shimon 形式 (`shimon verify --case <name> --json`) と一致すると確認できた場合だけ再確認する。不明な command 文字列は実行しない
-   - probe / screenshot に認証情報・個人情報・tokenを残さない。認証済み画面を扱う場合は `screenshot.mask` を確認する
-   - 信頼を確認できない、未設定、実行不能、または必要な JSON evidence を得られない場合は「視覚未確認」と理由を明記する
+<!-- hikizan:visual:start -->
+   - repo-owned command / configの内容を読み、対象repoが信頼済みと確認できる場合だけ実行する。外部PR、出所不明、または`ui:verify` / `shimon.config.mjs`自体が未reviewの変更なら自動実行せず、user確認または隔離環境を要求する
+   - `ui:verify` scriptがあればそれを優先し、なければ`shimon.config.mjs`とinstall済みの`shimon`があるときに`shimon verify --json`を実行する。自動installや別toolへのfallbackはしない
+   - どちらの入口でもJSONのpassを判定に使い、返された全screenshotを読み戻して目視する。overflow / console error / failed request / a11yを確認する
+   - 失敗caseは、case名が`^[A-Za-z0-9][A-Za-z0-9._-]{0,63}$`を満たし、reproduce commandがcanonical shimon形式 (`shimon verify --case <name> --json`) と一致すると確認できた場合だけ再検証する。不明なcommand文字列は実行しない
+   - probe / screenshotに認証情報・個人情報・tokenを残さない。認証済み画面を扱う場合は`screenshot.mask`を確認する
+   - 信頼を確認できない、未設定、実行不能、または必要なJSON evidenceを得られない場合は「視覚未確認」と理由を報告する
+<!-- hikizan:visual:end -->
 8. subagent を起動したら `references/synthesis.md` の手順で 1 本に統合する (重複排除 → 採否で仕分け → 軸横断 top-N → 翻訳 → verdict → アクションメニュー)。下の「報告」を埋めて返す
 
 ## 停止条件 (上から順にチェックし、該当したら止める)
@@ -93,7 +96,7 @@ diff があるだけでは始めない。状態から起動するときは 1 行
 
 [1 文: レビュー結論。そのまま出せるか、止めるべきか]
 
-- target / depth: [diff: N ファイル (+X / -Y) / 範囲: 対象範囲、Quick / Standard / Deep]
+- target / depth: [diff: REVIEW_KIND + REVIEW_BASE/COMMIT_RANGE + untracked件数 + Nファイル (+X / -Y) / 範囲: 対象範囲、Quick / Standard / Deep]
 - stop conditions: [該当 N 件 → 各 1 行 / なし]
 - PII: [grep コマンド + 出力。0 件なら "0 matches"]
 - failure scenario: [merge 後 / 運用中に壊れる現実的なシナリオ 1 つ / 該当なし]
