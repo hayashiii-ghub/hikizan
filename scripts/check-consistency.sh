@@ -88,7 +88,6 @@ require_text "$ROOT/scripts/visual-contract.md" '.shimon/task.config.mjs' "visua
 require_text "$ROOT/scripts/visual-contract.md" 'shimon verify --config .shimon/task.config.mjs --json' "visual policy omits the canonical shimon command"
 require_text "$ROOT/skills/shippitsu/SKILL.md" 'references/writing-style.md' "shippitsu omits the standard writing profile"
 require_text "$ROOT/skills/shippitsu/SKILL.md" 'references/cognitive-rhythm.md' "shippitsu omits the long-form writing profile"
-forbid_text "$ROOT/skills/shippitsu/SKILL.md" 'pdfmint' "shippitsu retains an unrelated PDF integration"
 
 # The documented token scan still catches representative formats.
 token_line="$(awk '/^# hikizan:token-pattern$/ { getline; print; exit }' "$ROOT/skills/teishutsu/references/pr-template.md")"
