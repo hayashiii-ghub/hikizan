@@ -24,6 +24,7 @@ bash scripts/check-all.sh
 - manifest metadataの正本は`plugin.src.json`。3つのplugin.jsonは`scripts/gen-manifests.sh`の生成物
 - visual verification共通規則の正本は`scripts/visual-contract.md`
 - commit / branch / PRの命名は`skills/teishutsu/references/naming.md`
+- 日本語散文は`skills/shippitsu/references/writing-style.md`
 - 非hiddenの実装rootを`skills/` / `hooks/` / `scripts/`以外に増やさない
 
 skillを足す・減らす場合:
@@ -65,6 +66,8 @@ force pushとreviewerなしの非draft PR作成は全対応ハーネスでdeny�
 | 実装・診断・commit境界 | `skills/jikkou/` |
 | review・simplify・reviewer prompts | `skills/sadoku/` |
 | PR・命名・秘密情報scan | `skills/teishutsu/` |
+| 日本語文章・長文の認知リズム | `skills/shippitsu/` |
+| UI視覚検証・Shimon利用契約 | `scripts/visual-contract.md` |
 | hook分類とadapter | `hooks/conditions.md` / `hooks/scripts/` / `hooks/adapters/` |
 | version / author / harness description | `plugin.src.json` |
 | Claude marketplaceの公開概要 | `.claude-plugin/marketplace.json` |

@@ -24,6 +24,7 @@ when_to_use: "計画実行, 実装, エラー診断, root cause, バグ修正"
 - commit する場合は `jikkou` の commit 契約に従う。独立して説明・検証・revert できる 1 つの変更を、関連検証が通った状態で保存する
 - PR / branch / step は機能名か issue 名で呼ぶ。PR-1 のような独自の連番を作らない (詳細は `teishutsu` の naming reference)
 - 別の skill に渡すときは 1 行で書く: `handoff: [skill] / brief: [1 文] / evidence: [file:line かコマンド出力]`
+- 日本語の文章は `shippitsu` の writing-style 規範に従う
 <!-- hikizan:contract:end -->
 
 ## 3 つのモード
@@ -44,12 +45,14 @@ when_to_use: "計画実行, 実装, エラー診断, root cause, バグ修正"
 4. 各 step の後に検証コマンドを実行し、出力の最終行を控える。失敗したら次の step に進まず診断に入る。意味的 checkpoint を保存する場合は `references/commit.md` に従い、現在の repo / branch / 承認済み scope を確認してから commit する
 5. UI / レイアウト / 視覚に触れる step は、検証コマンドに加えて次の順で視覚検証も通す
 <!-- hikizan:visual:start -->
-   - repo-owned command / configの内容を読み、対象repoが信頼済みと確認できる場合だけ実行する。外部PR、出所不明、または`ui:verify` / `shimon.config.mjs`自体が未reviewの変更なら自動実行せず、user確認または隔離環境を要求する
-   - `ui:verify` scriptがあればそれを優先し、なければ`shimon.config.mjs`とinstall済みの`shimon`があるときに`shimon verify --json`を実行する。自動installや別toolへのfallbackはしない
-   - どちらの入口でもJSONのpassを判定に使い、返された全screenshotを読み戻して目視する。overflow / console error / failed request / a11yを確認する
-   - 失敗caseは、case名が`^[A-Za-z0-9][A-Za-z0-9._-]{0,63}$`を満たし、reproduce commandがcanonical shimon形式 (`shimon verify --case <name> --json`) と一致すると確認できた場合だけ再検証する。不明なcommand文字列は実行しない
+   - UI / style / layout / interactionの変更では、外部toolの`shimon`を標準の視覚検証harnessとして使う。repo-owned command / configの内容を読み、対象repoが信頼済みと確認できる場合だけ実行する
+   - install済みの`shimon`とreview済みの`shimon.config.mjs`を前提に、既存caseを保ったままtaskに必要な2〜5 caseを追加する一時config `.shimon/task.config.mjs` を作る。自動installや別toolへのfallbackはしない
+   - repo-ownedの`ui:verify`が`.shimon/task.config.mjs`を対象にすると確認できた場合だけそれを使う。それ以外は`shimon verify --config .shimon/task.config.mjs --json`を実行する
+   - JSONのpassを判定に使い、返された全screenshotを読み戻して目視する。overflow / console error / failed request / a11yを確認する
+   - 失敗caseは、case名が`^[A-Za-z0-9][A-Za-z0-9._-]{0,63}$`を満たし、reproduce commandがcanonical shimon形式 (`shimon verify --config .shimon/task.config.mjs --case <name> --json`) と一致すると確認できた場合だけ再検証する。不明なcommand文字列は実行しない
+   - task configは原則一時物とし、永続的な回帰条件だけreview済みのbase configへ戻す。既存の永続caseを弱めたり削ったりしない
    - probe / screenshotに認証情報・個人情報・tokenを残さない。認証済み画面を扱う場合は`screenshot.mask`を確認する
-   - 信頼を確認できない、未設定、実行不能、または必要なJSON evidenceを得られない場合は「視覚未確認」と理由を報告する
+   - 外部PRや出所不明のrepo、config未設定、実行不能、または必要なJSON evidenceを得られない場合は自動実行せず、「視覚未確認」と理由を報告する
 <!-- hikizan:visual:end -->
 6. 計画に無いファイルに 5 つ以上触れそうになったら、または方針の再決定が要ると分かったら、止めて `sekkei` に差し戻す
 7. scope 外の発見は実装せず「実装中に分かったこと」にメモする
