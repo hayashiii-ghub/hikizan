@@ -1,41 +1,32 @@
-# 計画実行モードの手順
+# 計画実行モードの補足契約
 
-承認済み計画を実行する手順の詳細。前提: 通常検討の出力に推奨案 / Key decisions / Plan steps が含まれている。検証はコマンド出力を引用し、scope 外は記録のみ、計画に無い 5+ ファイル touch で停止、元に戻せない操作はユーザ確認。ここは省略しない。
+計画実行の順序、停止条件、handoff、診断手順は`jikkou` SKILL.mdが正本。このfileはSKILL.mdへ転記しない入力shapeと分岐固有dataだけを定義する。
 
-## 手順
+## 承認済みplanの入力shape
 
-1. 計画を再読し、不明点があれば確認を投げる
-2. step ごとに inline で実装 (subagent には委譲しない)
-3. 各 step 完了後に検証 (test / lint / type-check / 手動確認)
-4. 意味的 checkpoint を保存する場合は `commit.md` に従い、現在の repo / branch / 承認済み scope と staged diff を確認して commit する。plan step / TDD slice ごとの機械的な commit は作らない
-5. scope 外の発見は実装せず「実装中に分かったこと」に記録 (後で `teishutsu` の PR 本文で参照)
-6. 報告を出力 → `sadoku` に handoff。`brief` には実装した observable behavior と、この実装に固有の判断 / 受容リスク (あれば) だけを書く。`evidence` は完成 diff と検証を特定できる file:line / command に絞る。報告・diff・検証ログ本体は handoff 行の外に添え、`sadoku` の共通観点は再掲しない
+- change: [observable behavior]
+- owner skill: `jikkou`
+- file: [触るfile / directory]
+- verification: [test / lint / type-check / 手動確認command]
+- ADR: [任意。`sekkei`が決めたpath / decision / 理由]
 
-## TDD 実装層を踏むときの分岐
+軽量検討からはこのshapeの1 step、通常検討からは同shapeの複数stepを受ける。項目不足や未承認なら実装せず`sekkei`へ戻す。
 
-純ロジック / API / バグ修正など必須レイヤーに触れる場合は計画実行を一時停止し TDD 実装モードに切り替える (手順は SKILL.md の「手順 (TDD 実装)」、詳細は `references/tdd.md`)。実装を vertical behavior slice に分解し、次に閉じる 1 slice だけを RED→GREEN→PRUNE で閉じてから次 step に戻る。
+## TDDへ渡すvertical slice
 
-- Plan steps には候補 slice を列挙してよいが、確定扱いは次に実行する 1 slice のみ
-- slice の `coverage gap` を、受け入れる / 次 slice にする / test level を変える のどれにするか判断する
-- 後続 slice の設計や追加実装を前倒しで進めない
+TDDの実行順とPRUNE witnessは`tdd.md`が正本。計画から次に閉じる1 sliceだけ、次のshapeへ落とす。
 
-- vertical slice:
-  - entry: [user action / API call / public function]
-  - behavior: [観測したい振る舞い]
-  - observable output: [UI / response / return value / state change / persisted data]
-  - excluded layers: [この cycle で通さない層]
+- entry: [user action / API call / public function]
+- behavior: [観測したい振る舞い]
+- observable output: [UI / response / return value / state change / persisted data]
+- excluded layers: [このcycleで通さない層]
 
-TDD 実装モードの「報告 (穴埋め)」項目 (RED / GREEN / PRUNE のログ、gap、prune witness) を埋めてから計画実行の step に戻る。
+候補sliceは列挙してよいが、確定扱いは次の1件だけ。coverage gapは「受容 / 次slice / test level変更」のいずれかとして呼び出し元へ返す。
 
-## 診断分岐
+## ADR step
 
-原因未確定の不具合 / 予期しない test failure / 再現不明の挙動に当たったら実装変更を止め root cause を確定する。
+ADR作成・更新は、`sekkei`がplanへ記載しuserが承認したpath / decision / 理由だけを書く。CONTEXT.mdのdomain内容は`tansaku`が保守する。完成ADRへのlink-only変更は、planにCONTEXT pathとlink追加が明記され承認された場合だけ`jikkou`が行う。実装中に新しい判断やdomain事実を補わず、内容不足なら`sekkei`へ戻す。
 
-- root cause を 1 文で言語化できるまで実装を変更しない (`I believe the root cause is [X] because [evidence].`)
-- 症状をそのまま列挙: error message / stack trace / 再現手順 / 期待値 / 実際の値
-- hypothesis を 1 文にし、`diagnosis-techniques.md` を読んで instrument を 1 つだけ走らせる
-- confirm → fix (regression guard が要るなら TDD 実装モードで書く)。discard → hypothesis 再構築。同じ症状が修正後も残れば停止して再構築
-- 3 回失敗したら `hypothesis attempts / current best guess / remaining unknowns / recommended next step` を出して user の proceed 判断を求める
-- fix が 5+ ファイルに touch するなら scope を確認する (= 別 bug の可能性)
-- fix 後は同 input の before / after 挙動 diff を報告にそのまま引用する
-- regression guard が必要なら TDD 実装モードで書く (root cause と再現条件を固定してから RED→GREEN→PRUNE に入る)
+## sadokuへ渡すevidence
+
+handoffの`evidence`には、実装後の通常経路なら`BRANCH_SNAPSHOT + REVIEW_BASE=<merge-base>`、確定commitだけなら`COMMIT_RANGE=<base>...HEAD`、限定reviewなら`INDEX`または`WORKTREE`を含める。`BRANCH_SNAPSHOT`はcommit済み・staged・unstaged・untrackedの和集合として`sadoku`へ渡す。検証command、報告、diff、log本体はhandoff行の外に添える。

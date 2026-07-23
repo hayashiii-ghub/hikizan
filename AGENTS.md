@@ -45,6 +45,7 @@ hook を単体で動かすときの gotcha:
 | skill の trigger / mode / 出力形式 / 停止条件を変える | `skills/<name>/SKILL.md` |
 | skill discovery の条件を変える | 各 `skills/<name>/SKILL.md` の frontmatter `description` |
 | core skill 共通のルール (不可逆操作の確認 / 検証ログ引用 / 秘密情報 / 命名 / handoff 形式) を変える | `scripts/contract.md` (正本。`scripts/gen-contract.sh` が各 SKILL.md の contract 区間に stamp する) |
+| jikkou / sadoku 共通の視覚検証policyを変える | `scripts/visual-contract.md` (正本。`scripts/gen-visual-contract.sh` が両SKILL.mdのvisual区間にstampする) |
 | core skill の集合・表示順を変える | `scripts/skills.json` (`check-consistency.sh` と `gen-trigger-docs.sh` の単一ソース) |
 | plugin の version / author / description を変える | `plugin.src.json` (`scripts/gen-manifests.sh` が 3 manifest を生成) |
 | Claude marketplace catalog の公開概要を変える | `.claude-plugin/marketplace.json` の top-level `description` (plugin manifest の harness description とは別の短い catalog 文言) |

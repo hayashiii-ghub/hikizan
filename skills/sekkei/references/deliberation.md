@@ -1,6 +1,6 @@
 # 通常検討モードの手順
 
-`sekkei` SKILL.md「手順 (通常検討)」の詳細。出力の全項目はこのファイルが正本。
+`sekkei` SKILL.md「手順 (通常検討)」で作るplan artifactの詳細。mode / stop / handoff / 最後の報告envelopeはSKILL.mdが正本で、このfileは通常検討artifactの項目だけを定義する。
 
 ## 判断前に tansaku へ渡すか
 
@@ -41,7 +41,7 @@
 - Approach: [選んだ案、推奨度 N/10 + 1 行根拠]
 - Alternatives: [近接時のみ、各案に推奨度 N/10 + 1 行根拠。明確なら 1 案でよい]
 - Structure: [任意] 構造変更 (module 境界 / 依存 / data flow) を伴う時だけ before/after を mermaid 1 枚。線形手順は箇条書きで足りる
-- Key decisions: 3-5 項目 (各「ほかの選択肢を採らなかった理由」を 1 行)。重い決定は ADR 候補として残し、前提とする事実は CONTEXT.md にリンクする (決定は ADR、事実は CONTEXT.md、混ぜない)
+- Key decisions: 3-5項目 (各「ほかの選択肢を採らなかった理由」を1行)。重い決定はADR候補のpath / decision / 理由と、`jikkou`が書く承認対象stepを残す。前提とする事実はCONTEXT.mdにリンクする (決定はADR、事実はCONTEXT.md、混ぜない)
 - Interface sketch: [任意] 最も load-bearing な interface 1 点を signature / data 形で (実在 symbol を file:line 付きで参照、~5-8 行、logic 本体なし)
 - Premises: 依存している事実 3-5 個 (不変条件 / 制約 / 受容済みリスク。CONTEXT.md があればそこから、各 ✓ file:line で確認済 / ⚠ 未検証)
 - Worst case: 6 ヶ月後に問題化しうるシナリオ

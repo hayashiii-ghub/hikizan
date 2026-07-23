@@ -40,7 +40,7 @@ core skill (init を除く全 skill) 共通。正本は `scripts/contract.md` �
    grep -rn "TODO\|FIXME" <関連 dir> | head -20
    ```
 7. 用語のズレ (ユーザ用語 vs コード用語 / 同じ概念を複数名で呼ぶ / 重要用語の定義が無い) を見つけたら、事実で解消できるものは Terminology に確定する。事実で決まらない用語だけ一問ずつ user に確認する (推奨案を 1 行添える)。ただし単なる日本語/英語の表記違いは確認しない
-8. 確定した 用語 / 不変条件 / 制約 / 受容済みリスク は、報告に載せるだけでなく CONTEXT.md への **diff 提案**として出す (提案 by default、適用は user 承認、silent に書き換えない)。既存のドメイン doc (`CLAUDE.md` / `AGENTS.md` / `docs/`) があればそこへ追記、無ければ root に `CONTEXT.md` を作る (1 repo 1 正本)。設計の決定 (なぜ選んだか) は書かない (それは ADR / `sekkei`)。詳細は `references/context-doc.md`
+8. 確定した 用語 / 不変条件 / 制約 / 受容済みリスク は、報告に載せるだけでなく CONTEXT.md への **diff 提案**として出す (提案 by default、適用は user 承認、silent に書き換えない)。既存のドメイン doc (`CLAUDE.md` / `AGENTS.md` / `docs/`) があればそこへ追記、無ければ root に `CONTEXT.md` を作る (1 repo 1 正本)。設計の決定 (なぜ選んだか) は書かない。ADR候補の判断は`sekkei`、承認されたADR fileの作成は`jikkou`。詳細は `references/context-doc.md`
 9. 下の「報告」を埋めて返す。確認できた事実には file:line かコマンド出力を付ける。確認できないことは推測で埋めず Unknowns に書く。構造がグラフ的 (依存 / 制御フロー / やり取り / データモデル) なら、文章でなく mermaid を 1 枚添える (`references/mermaid-views.md`)
 10. 実装前に決めるべき設計分岐 / DoD / 受容条件の曖昧さは、自分で詰めず `sekkei` に渡す (tansaku は設計判断をしない)。小さな不明点は Unknowns に残して止まらない
 
@@ -48,7 +48,7 @@ core skill (init を除く全 skill) 共通。正本は `scripts/contract.md` �
 
 - 実装コードを書く / 設計案を確定する / PR 本文を書く
 - 設計分岐・DoD・受容条件を自分で詰める (`sekkei` に渡す)
-- CONTEXT.md に設計の決定・理由を書く (それは ADR / `sekkei`) / user 承認なしに CONTEXT.md を書き換える
+- CONTEXT.mdに設計の決定・理由を書く (ADR候補は`sekkei`、file作成は承認後の`jikkou`) / user承認なしにCONTEXT.mdを書き換える
 - 事実と推測を混ぜる (evidence の無い行は Unknowns へ)
 - 質問を一度に複数並べる
 - 探索 subagent に用語確定 / CONTEXT.md 書き込み / 設計判断 / handoff を任せる (controller 所有、詳細は `references/fanout.md`)

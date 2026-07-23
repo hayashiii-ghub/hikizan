@@ -224,6 +224,16 @@ else
       secret_scan=1
     }
   done
+  for fake in \
+    'AKIA'"ABCDEFGHIJKLMNOP" \
+    'eyJabcdefghij.'"eyJklmnopqrst.uvwxyzABCD" \
+    'Authorization: Bearer '"abcdefghijklmnop" \
+    '-----BEGIN '"PRIVATE KEY-----"; do
+    printf '%s\n' "$fake" | grep -Eq "$token_pattern" || {
+      echo "✘ token scan pattern misses fake format: ${fake%%[0-9]*}..."
+      secret_scan=1
+    }
+  done
   if printf '%s\n' 'sk-short' | grep -Eq "$token_pattern"; then
     echo "✘ token scan pattern matches an implausibly short token"
     secret_scan=1
@@ -274,5 +284,90 @@ grep -qF 'npm packageは未公開' "$ROOT/opencode/README.md" || {
 }
 fail=$((fail || opencode_dist))
 [ "$opencode_dist" -eq 0 ] && echo "✔ OpenCode local adapter and experimental distribution boundary"
+
+# 19. Skill Markdown is executable guidance. Keep the reviewed safety and
+#     routing invariants pinned so a prose-only edit cannot silently restore a
+#     broken command path.
+skill_guidance=0
+require_text() { # <file> <literal> <message>
+  local file="$1" literal="$2" message="$3"
+  grep -qF -- "$literal" "$file" || { echo "✘ $message"; skill_guidance=1; }
+}
+forbid_text() { # <file> <literal> <message>
+  local file="$1" literal="$2" message="$3"
+  if grep -qF -- "$literal" "$file"; then echo "✘ $message"; skill_guidance=1; fi
+}
+
+require_text "$ROOT/skills/sadoku/SKILL.md" '実行仕様 Markdown' \
+  'sadoku does not treat executable Markdown as a review target'
+require_text "$ROOT/skills/sadoku/references/project-context.md" 'BRANCH_SNAPSHOT' \
+  'sadoku does not define a composite branch review descriptor'
+require_text "$ROOT/skills/sadoku/references/project-context.md" 'git ls-files --others --exclude-standard -z' \
+  'sadoku branch review omits untracked files'
+if grep -qE 'git diff --name-only([[:space:]]*\||[[:space:]]*$)' \
+  "$ROOT/skills/sadoku/references/project-context.md"; then
+  echo '✘ sadoku still uses an unqualified git diff'
+  skill_guidance=1
+fi
+
+require_text "$ROOT/skills/teishutsu/SKILL.md" '--body-file' \
+  'teishutsu does not pass PR bodies through a file'
+require_text "$ROOT/skills/teishutsu/SKILL.md" 'push URL' \
+  'teishutsu does not include the push destination in its target check'
+require_text "$ROOT/skills/teishutsu/SKILL.md" 'PR_REPO / PR_BASE / PR_HEAD' \
+  'teishutsu does not bind the approved push to a PR target'
+require_text "$ROOT/skills/teishutsu/SKILL.md" 'feature branchのupstreamをPR baseに使わない' \
+  'teishutsu may reuse the feature upstream as its PR base'
+forbid_text "$ROOT/skills/teishutsu/SKILL.md" 'git fetch --all' \
+  'teishutsu still fetches every remote'
+forbid_text "$ROOT/skills/teishutsu/SKILL.md" '**push**：`git push`' \
+  'teishutsu still documents an implicit push destination'
+
+forbid_text "$ROOT/skills/jikkou/SKILL.md" '`git status` clean' \
+  'jikkou still requires a globally clean tree for PRUNE'
+forbid_text "$ROOT/skills/jikkou/references/tdd.md" '/tmp/hikizan-prune.impl' \
+  'TDD guidance still uses a fixed temporary path'
+forbid_text "$ROOT/skills/jikkou/references/diagnosis-techniques.md" 'env | sort > local.env' \
+  'diagnosis guidance still writes the full environment before redaction'
+forbid_text "$ROOT/skills/jikkou/references/diagnosis-techniques.md" '/tmp/snapshot.log' \
+  'diagnosis guidance still uses a fixed temporary path'
+require_text "$ROOT/skills/jikkou/references/tdd.md" 'git diff --cached --binary' \
+  'TDD witness fingerprint omits the index'
+require_text "$ROOT/skills/jikkou/references/tdd.md" 'git ls-files --others --exclude-standard -z' \
+  'TDD witness fingerprint omits untracked file content'
+forbid_text "$ROOT/skills/jikkou/references/diagnosis-techniques.md" 'openat,connect,read,write' \
+  'diagnosis trace still captures read/write buffers by default'
+
+require_text "$ROOT/skills/init/SKILL.md" 'symlink' \
+  'init does not define its symlink boundary'
+require_text "$ROOT/skills/sadoku/references/synthesis.md" 'owner skill' \
+  'sadoku synthesis does not route findings by owner skill'
+require_text "$ROOT/skills/shippitsu/SKILL.md" '外部 optional skill' \
+  'shippitsu does not qualify its external PDF handoff'
+require_text "$ROOT/skills/teishutsu/references/pr-template.md" 'scanner関連fileが変更対象なら実行せず' \
+  'secret scan may execute an unreviewed repo-owned scanner'
+require_text "$ROOT/context/routing.md" 'Markdown仕様をレビューする' \
+  'injected routing does not expose executable Markdown review'
+require_text "$ROOT/scripts/visual-contract.md" '自動installや別toolへのfallbackはしない' \
+  'visual policy no longer forbids automatic tool installation or fallback'
+require_text "$ROOT/scripts/visual-contract.md" 'screenshot.mask' \
+  'visual policy no longer requires screenshot secret masking'
+require_text "$ROOT/scripts/visual-contract.md" '未reviewの変更なら自動実行せず' \
+  'visual policy no longer blocks unreviewed verification configuration'
+require_text "$ROOT/scripts/visual-contract.md" 'case名が`^[A-Za-z0-9][A-Za-z0-9._-]{0,63}$`' \
+  'visual policy no longer validates the verification case name'
+require_text "$ROOT/scripts/visual-contract.md" 'canonical shimon形式 (`shimon verify --case <name> --json`) と一致' \
+  'visual policy no longer requires the canonical reproduce command'
+require_text "$ROOT/skills/teishutsu/SKILL.md" 'remoteは空文字と先頭`-`を拒否' \
+  'submission remote validation accepts option-shaped values'
+require_text "$ROOT/skills/teishutsu/SKILL.md" 'interrupt後は提出を続行しない' \
+  'submission signal handling may continue after interruption'
+require_text "$ROOT/skills/teishutsu/SKILL.md" 'PR_REMOTE / PR_URL / PR_REPO / PR_BASE / PR_BASE_REF' \
+  'submission tuple omits the remote-qualified PR base'
+require_text "$ROOT/skills/teishutsu/SKILL.md" 'push / PR作成への1行承認を得る' \
+  'state-triggered submission does not re-confirm the resolved scope'
+
+fail=$((fail || skill_guidance))
+[ "$skill_guidance" -eq 0 ] && echo "✔ executable skill guidance keeps reviewed safety and routing invariants"
 
 exit "$fail"

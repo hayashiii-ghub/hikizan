@@ -4,7 +4,7 @@
 
 ## 何を書くか (記述的に限定)
 
-「何が真か・何を意図し受容しているか」だけを書く。設計の**決定** (なぜこの案を選んだか) は書かない。それは ADR (`sekkei` 所有) に置く。
+「何が真か・何を意図し受容しているか」だけを書く。設計の**決定** (なぜこの案を選んだか) は書かない。ADR候補の判断は`sekkei`、userが承認したADR fileの作成・更新は`jikkou`が所有する。
 
 | 区分 | 内容 | 例 |
 |---|---|---|
@@ -34,5 +34,6 @@ silent mutation はしない。`sadoku` がレビュー前提として読むた�
 
 ## 読む側
 
-- `sekkei`: 通常検討「この設計が前提とする事実」(Premises) を CONTEXT.md から引く。決定は ADR に置き CONTEXT.md にリンクする
+- `sekkei`: 通常検討「この設計が前提とする事実」(Premises)をCONTEXT.mdから引き、ADR候補のpath / decision / 理由をplanへ置く
+- `jikkou`: userが承認したplan stepだけでADRを作成・更新する。CONTEXT.mdはplanに対象pathと完成ADRへのlink-only変更が明記された場合だけ触る。domain内容の追加・変更は`tansaku`へ戻す
 - `sadoku`: レビュー前に「ドメイン / 設計意図 / 脅威モデル」を CONTEXT.md から抽出し、reviewer subagent の必須 input に渡す (`sadoku` の project-context reference)

@@ -18,8 +18,9 @@ Claude Code / Codex / Cursor の plugin 経路では context 注入や rule で�
 1. 本 skill と一緒に配布される `references/routing.md` を読む。このファイルは repo の `context/routing.md` から生成された参照コピー。
 2. ユーザが指定した **利用先 project** と **書き込み先 instruction Markdown** を確認する。未指定なら書き込まずに両方を聞く。
    - `pwd` と、Git repo なら `git rev-parse --show-toplevel` で現在地を確認する。
-   - 利用先 repo root と書き込み先の正規化済み絶対 path をユーザに明示する。
-   - 書き込み先が利用先 repo root 自身または配下であることを確認する。
+   - 利用先repo rootをphysical path (`pwd -P` / `realpath`相当)へcanonicalizeする。既存の書き込み先はsymlinkを解決したtarget、新規fileは既存parentをcanonicalizeしてからbasenameを足し、canonicalized絶対pathをuserに明示する。
+   - canonicalized書き込み先がcanonicalized repo root自身または配下であることをpath component単位で確認する。文字列prefixだけで判定しない。
+   - 既存targetがsymlinkでrepo外を指す、parent symlinkの解決後にrepo外へ出る、regular file以外、またはcanonicalizeできない場合は停止する。
    - 現在地・repo・書き込み先がユーザの指定と一致しない、または書き込み先が repo 外なら停止する。active harness からファイル名を推測しない。
 3. 指定された instruction Markdown を確認する。
    - 無ければ template の内容で新規作成する。
@@ -34,4 +35,5 @@ Claude Code / Codex / Cursor の plugin 経路では context 注入や rule で�
 - 既存 instruction Markdown の hikizan 以外の内容を書き換えない。
 - 書き換えてよいのは hikizan の marker 区間 (旧形式では `## hikizan Conventions` 節) だけ。それ以外の既存内容に触れない。
 - 書き込み先 path を user に明示してから書く (破壊的でないが利用先 repo を変更するため)。
+- symlinkを辿った実体pathがrepo外なら、userが指定した名前でも書かない。
 - template を本 skill 本文に転記しない。repo の単一ソースは `context/routing.md`、配布時の参照先は生成物 `references/routing.md`。

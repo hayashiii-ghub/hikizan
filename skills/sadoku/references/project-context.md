@@ -1,40 +1,53 @@
 # レビュー前の文脈抽出方針
 
-`sadoku` の通常レビューモードで finding を判定する前に、プロジェクト文脈を確認する手順。**対象単体を読んで判断するのではなく**、それが置かれる場所のルールに沿っているかを見る。対象ファイル集合は、diff モードなら `git diff --name-only`、範囲モードなら user と確定した範囲 (`git ls-files <path>` 等) で得る。以下これを「対象ファイル」と呼ぶ。
+`sadoku` の通常レビューモードで finding を判定する前に、プロジェクト文脈を確認する手順。**対象単体を読んで判断するのではなく**、それが置かれる場所のルールに沿っているかを見る。
+
+diffモードは開始時にdescriptorを1つ固定し、対象一覧・行数・本文・PII scanを同じmappingから得る。実装後の通常handoffはmixed stateを落とさない`BRANCH_SNAPSHOT`を既定にする。
+
+| REVIEW_KIND | 固定値 | tracked対象 | untracked対象 |
+| --- | --- | --- | --- |
+| `BRANCH_SNAPSHOT` | `REVIEW_BASE=<merge-base>` | `git diff --name-only -z "$REVIEW_BASE" --` (commit済み + staged + unstaged) | `git ls-files --others --exclude-standard -z` |
+| `COMMIT_RANGE` | `COMMIT_RANGE=<base>...HEAD` | `git diff --name-only -z "$COMMIT_RANGE" --` | 含めない (PRに入らないため) |
+| `INDEX` | `INDEX` | `git diff --cached --name-only -z --` | 含めない |
+| `WORKTREE` | `WORKTREE` | `git diff --name-only -z --` | `git ls-files --others --exclude-standard -z` |
+
+untracked fileはdiffが無いため全内容をadditionとして読み、行数・PII・依存確認へ加える。`BRANCH_SNAPSHOT`では4状態のどれかが空でも同じdescriptorを保つ。範囲モードはuserと確定したpathを`git ls-files <path>`等で得る。以下これを「対象ファイル」と呼ぶ。
 
 ## 6 つの確認軸
 
 ### 1. ファイル単位の依存関係
 
-対象ファイルの import / export を grep で把握する。
+code は対象ファイルの import / export、実行仕様 Markdown は参照先・生成元・生成先・handoff先を把握する。
 
 ```bash
-# 対象ファイルが export するシンボル
-# (diff モードは git diff --name-only、範囲モードは git ls-files <path> に置き換える)
-git diff --name-only | xargs grep -E '^export ' 2>/dev/null
+# COMMIT_RANGEがexportするsymbol。NUL区切りでfilenameをdataとして扱う
+while IFS= read -r -d '' file; do
+  grep -E '^export ' -- "$file"
+done < <(git diff --name-only -z "$COMMIT_RANGE" --)
 
 # それらのシンボルが他のどこから import されているか
 SYMBOL=foo
 grep -rn "import.*$SYMBOL\|from.*$SYMBOL" --include='*.ts' --include='*.tsx' .
 ```
 
-未把握の caller がいないか、変更が破壊的でないかを判定する材料。範囲モードでは「その範囲が外へ公開している API と、外から呼ばれている数」を掴む。
+未把握の caller / consumer がいないか、変更が破壊的でないかを判定する材料。実行仕様 Markdown では marker の生成script、同じ規則を転記した文書、存在しない handoff を grep する。範囲モードでは「その範囲が外へ公開している API / instruction と、外から参照される数」を掴む。
 
 ### 2. 既存のテスト構造
 
-対象に対応する `*.test.{ts,tsx}` の有無と命名規則。
+code は対応するtest、実行仕様 Markdown は生成鮮度check・consistency lint・recipeの回帰fixtureを確認する。
 
 - ある → 同じ命名・配置・書き方で追加されているか
 - ない → そもそも test を書く層か (`jikkou` の TDD reference にある層分け表で判定)
 
 ### 3. 近隣の類似実装
 
-対象と同じ役割を持つ実装を、同 directory / module から最大 3 件選ぶ。
+対象と同じ役割を持つ実装 / instruction artifact を、同 directory / module から最大 3 件選ぶ。
 
 - 制御フロー: early return / guard / error handling の置き方
 - データ変換: helper / pipeline / loop の使い分け
 - 抽象化: wrapper / interface / type を切る粒度
 - framework の使い方: repo 内ですでに採用されている API / pattern
+- 実行仕様: mode / 手順 / stop / handoff / report の順序と粒度、SoTと生成blockの分離
 
 比較対象は file:line で控え、`reviewer-code-quality` に渡す。
 類似実装が無い場合は「比較対象なし」とし、一般的な好みを既存 convention として扱わない。
@@ -52,7 +65,7 @@ AGENTS.md / project docs / lint config から、対象に関係する規約を f
 
 ### 5. 影響範囲の見立て
 
-diff モードは `git diff --name-only | wc -l` で touch ファイル数を把握。
+diffモードは上表のtracked対象とuntracked対象をNUL区切りのまま和集合にし、重複を除いてtouchファイル数を把握する。
 
 | touch ファイル数 | 扱い |
 |---|---|
@@ -64,7 +77,7 @@ diff モードは `git diff --name-only | wc -l` で touch ファイル数を把
 
 ### 6. ドメイン文脈 / 設計意図 / 脅威モデルの抽出
 
-対象コードが「何を守り、何を意図し、何を受容しているか」を、コードを読む前に 1 か所から掴む。これが reviewer subagent の必須 input (脅威モデル / 設計意図) の出どころで、無いと採否判定が匙加減になり、懸念の羅列に落ちる。
+対象artifactが「何を守り、何を意図し、何を受容しているか」を、対象を読む前に1か所から掴む。これが reviewer subagent の必須 input (脅威モデル / 設計意図) の出どころで、無いと採否判定が匙加減になり、懸念の羅列に落ちる。
 
 出どころは次の優先順で 1 つに決める:
 
