@@ -7,8 +7,6 @@
 set -uo pipefail
 HERE="$(dirname "$0")"
 
-# shellcheck source=lib/metrics.sh
-source "$HERE/lib/metrics.sh" 2>/dev/null || hikizan_metrics_log() { :; }
 # shellcheck source=lib/push-parse.sh
 source "$HERE/lib/push-parse.sh"
 # shellcheck source=lib/destructive.sh
@@ -22,7 +20,6 @@ hz_require_jq
 JSON=$(cat)
 COMMAND=$(printf '%s' "$JSON" | jq -r '.tool_input.command // ""')
 CWD=$(printf '%s' "$JSON" | jq -r '.cwd // ""')
-SESSION_ID=$(printf '%s' "$JSON" | jq -r '.session_id // ""')
 
 [ -n "$CWD" ] && cd "$CWD" 2>/dev/null || true
 
@@ -40,7 +37,6 @@ hz_git_in_push_dir() {
 hz_check_push_command() {
   local command="$1" branch hit remote upstream behind remote_shell branch_shell
   if [ "$(hz_cmd_head "$command")" = "__hikizan_unresolved_env_split__" ]; then
-    hikizan_metrics_log hook_fired pre-push force_protected block "$SESSION_ID"
     hz_decision deny "env -S command contains an unresolved variable expansion, so the hook cannot identify the command safely.
 
 policy: fail closed. abort and ask the user to run an explicit command without
@@ -50,7 +46,6 @@ indirect env -S expansion."
   [ "$(hz_git_subcommand "$command")" = "push" ] || return 0
 
   if [ "${HZ_PRIOR_CONTEXT_CHANGE:-0}" = 1 ] && hikizan_push_is_forceful "$command"; then
-    hikizan_metrics_log hook_fired pre-push force_protected block "$SESSION_ID"
     hz_decision deny "force-equivalent push follows cd/pushd in the same shell command, so the hook cannot reproduce repository context exactly.
 
 policy: fail closed because the current branch may be protected. abort and ask
@@ -59,7 +54,6 @@ the user to run the directory change and push as separate commands."
   fi
 
   if hikizan_push_is_forceful "$command" && ! hz_push_context_supported "$command"; then
-    hikizan_metrics_log hook_fired pre-push force_protected block "$SESSION_ID"
     hz_decision deny "force-equivalent push uses options for which the hook cannot resolve git repository context exactly (multiple -C, --git-dir, --work-tree, --namespace, --bare, or GIT_DIR/GIT_WORK_TREE/GIT_NAMESPACE).
 
 policy: fail closed because the current branch may be protected. abort and ask
@@ -78,7 +72,6 @@ guarded agent; do not rewrite or retry it to bypass this floor."
   if hikizan_push_is_forceful "$command"; then
     hit=$(hikizan_push_protected_hit "$command" "$branch") || hit=""
     if [ -n "$hit" ]; then
-      hikizan_metrics_log hook_fired pre-push force_protected block "$SESSION_ID"
       hz_decision deny "force-equivalent push (force / +refspec / delete / mirror / all) targeting protected branch '$hit'.
 
 protected branches: main / master / develop. policy: require explicit user
@@ -100,7 +93,6 @@ if confirmed, the user must run the command manually outside the guarded agent."
     if [ "$behind" -gt 0 ] 2>/dev/null; then
       printf -v remote_shell '%q' "$remote"
       printf -v branch_shell '%q' "$branch"
-      hikizan_metrics_log hook_fired pre-push nff block "$SESSION_ID"
       hz_decision deny "non-fast-forward push on branch '$branch': local is $behind commit(s) behind $upstream.
 
 options: 1) git pull --rebase $remote_shell $branch_shell then push  2) push to a new branch  3) abort.
@@ -138,5 +130,4 @@ while [ "$NESTED_COMMAND_INDEX" -lt "$NESTED_COMMAND_COUNT" ]; do
   NESTED_COMMAND_INDEX=$((NESTED_COMMAND_INDEX + 1))
 done
 
-hikizan_metrics_log hook_fired pre-push none allow "$SESSION_ID"
 exit 0

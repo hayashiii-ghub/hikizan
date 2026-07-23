@@ -4,7 +4,7 @@
   "owner": {
     "name": "hayashiii-ghub"
   },
-  "description": "動詞単位の skill を「弱いモデル基準のレール + 賢いモデルへの opt-out (手順自由・出口固定) + hooks floors」で構成する Claude Code plugin / Agent Skills skill pack。",
+  "description": "調査・設計・実装・レビュー・提出のskillと、任意のsafety floorsをまとめたAgent Skills pack。",
   "plugins": [
     {
       "name": "hikizan",

@@ -4,8 +4,7 @@
 # in, hookSpecificOutput.permissionDecision out). Codex does not support the
 # PreToolUse "ask" decision, so the shared destructive classifier is invoked
 # in deny mode while the other floor scripts are reused unchanged. This file
-# exercises them through a Codex-shaped payload and pins the SessionStart
-# preamble adapter.
+# exercises them through a Codex-shaped payload.
 
 DIR="$(cd "$(dirname "$0")" && pwd)"
 . "$DIR/lib/harness.sh"
@@ -13,11 +12,6 @@ ROOT="$DIR/../.."
 PRE_PUSH="$ROOT/hooks/scripts/pre-push.sh"
 PRE_DESTRUCTIVE="$ROOT/hooks/scripts/pre-destructive.sh"
 PRE_PR_CREATE="$ROOT/hooks/scripts/pre-pr-create.sh"
-SESSION_CONTEXT="$ROOT/codex/scripts/session-context.sh"
-CODEX_HOOKS="$ROOT/codex/hooks.json"
-
-assert_eq "codex SessionStart is startup-only" "startup" \
-  "$(jq -r '.hooks.SessionStart[0].matcher' "$CODEX_HOOKS")"
 
 hz_mkrepo() { local b="$1" d; d="$(mktemp -d)"; git -C "$d" init -q
   git -C "$d" config user.email t@example.com; git -C "$d" config user.name t
@@ -28,8 +22,6 @@ hz_mkrepo() { local b="$1" d; d="$(mktemp -d)"; git -C "$d" init -q
 run_codex_pretooluse() {
   local hook="$1" cmd="$2" cwd="$3" payload
   shift 3
-  : "${HIKIZAN_METRICS_DIR:=$(mktemp -d 2>/dev/null || echo /tmp/hz-metrics.$$)}"
-  export HIKIZAN_METRICS_DIR
   payload=$(jq -nc --arg c "$cmd" --arg w "$cwd" \
     '{session_id:"s", tool_name:"Bash", tool_input:{command:$c}, cwd:$w, hook_event_name:"PreToolUse", permission_mode:"default"}')
   HZ_OUT=$(printf '%s' "$payload" | bash "$hook" "$@" 2>/dev/null)
@@ -85,11 +77,6 @@ assert_contains "pre-destructive: deny reason explains the Codex path" "blocked"
 assert_contains "pre-destructive: deny reason forbids agent bypass" "do not retry" \
   "$(printf '%s' "$HZ_OUT" | jq -r '.hookSpecificOutput.permissionDecisionReason // ""')"
 
-CODEX_METRICS_DIR="$(mktemp -d)"
-printf '%s' "$(jq -nc '{session_id:"deadbeef-0000-0000-0000-000000000000",tool_input:{command:"rm -rf /tmp/x"}}')" | \
-  HIKIZAN_METRICS_DIR="$CODEX_METRICS_DIR" bash "$PRE_DESTRUCTIVE" deny >/dev/null 2>&1
-assert_eq "pre-destructive: Codex deny is recorded as metrics block" "block" \
-  "$(jq -r '.decision' "$CODEX_METRICS_DIR/metrics.jsonl")"
 
 run_codex_pretooluse "$PRE_DESTRUCTIVE" "ls -la" "/tmp"
 assert_eq "pre-destructive: ls -la -> allow" "allow" "$(decision_of "$HZ_OUT")"
@@ -121,37 +108,5 @@ assert_eq "pre-pr-create: later --draft does not approve -> deny" "deny" "$(deci
 
 run_codex_pretooluse "$PRE_PR_CREATE" "gh pr create --title x # --draft" "/tmp"
 assert_eq "pre-pr-create: commented --draft does not approve -> deny" "deny" "$(decision_of "$HZ_OUT")"
-
-# --- codex/scripts/session-context.sh (SessionStart) ---
-run_codex_sessionstart() { # <cwd> -> sets HZ_OUT
-  local cwd="$1" payload
-  payload=$(jq -nc --arg w "$cwd" \
-    '{session_id:"s", cwd:$w, hook_event_name:"SessionStart", source:"startup"}')
-  HZ_OUT=$(printf '%s' "$payload" | bash "$SESSION_CONTEXT" 2>/dev/null)
-}
-
-run_codex_sessionstart "/tmp"
-EVENT="$(printf '%s' "$HZ_OUT" | jq -r '.hookSpecificOutput.hookEventName // ""' 2>/dev/null)"
-assert_eq "session-context: hookEventName == SessionStart" "SessionStart" "$EVENT"
-CTX="$(printf '%s' "$HZ_OUT" | jq -r '.hookSpecificOutput.additionalContext // ""' 2>/dev/null)"
-if [ -n "$CTX" ]; then HZ_PASS=$((HZ_PASS + 1)); else HZ_FAIL=$((HZ_FAIL + 1)); printf '  FAIL: session-context: additionalContext must be non-empty\n'; fi
-assert_contains "session-context: additionalContext mentions hikizan" "hikizan" "$CTX"
-
-CTX_STD="$(HIKIZAN_TIER=standard bash -c "printf '%s' \"\$1\" | bash \"\$2\"" _ \
-  "$(jq -nc '{session_id:"s", cwd:"/tmp", hook_event_name:"SessionStart", source:"startup"}')" \
-  "$SESSION_CONTEXT" 2>/dev/null | jq -r '.hookSpecificOutput.additionalContext // ""' 2>/dev/null)"
-PREAMBLE_LINE1="$(head -1 "$ROOT/context/standard-preamble.md")"
-assert_contains "session-context: standard tier includes preamble" "$PREAMBLE_LINE1" "$CTX_STD"
-
-CTX_GUIDED="$(HIKIZAN_TIER=guided bash -c "printf '%s' \"\$1\" | bash \"\$2\"" _ \
-  "$(jq -nc '{session_id:"s", cwd:"/tmp", hook_event_name:"SessionStart", source:"startup"}')" \
-  "$SESSION_CONTEXT" 2>/dev/null | jq -r '.hookSpecificOutput.additionalContext // ""' 2>/dev/null)"
-case "$CTX_GUIDED" in
-  *"$PREAMBLE_LINE1"*)
-    HZ_FAIL=$((HZ_FAIL + 1))
-    printf '  FAIL: session-context: guided tier must NOT include preamble\n'
-    ;;
-  *) HZ_PASS=$((HZ_PASS + 1)) ;;
-esac
 
 hz_test_summary

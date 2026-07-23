@@ -1,7 +1,7 @@
 {
   "name": "hikizan",
   "version": "0.10.5",
-  "description": "hikizan for Cursor: bundles the verb skills (tansaku / sadoku / sekkei / jikkou / teishutsu / shippitsu), agents, beforeShellExecution floors (force-push deny, destructive-op ask, non-draft PR deny), and an always-apply rule for routing conventions + standard-tier opt-out preamble.",
+  "description": "hikizan for Cursor: verb skills (tansaku / sekkei / jikkou / sadoku / teishutsu) with optional beforeShellExecution safety floors for force push, destructive operations, and unreviewed non-draft PR creation.",
   "author": {
     "name": "hayashiii-ghub"
   },
@@ -16,6 +16,5 @@
     "workflow",
     "japanese"
   ],
-  "rules": "cursor/rules/",
-  "hooks": "cursor/hooks.json"
+  "hooks": "hooks/adapters/cursor/hooks.json"
 }

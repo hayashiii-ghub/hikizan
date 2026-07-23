@@ -41,7 +41,7 @@
 
 通常レビューでは対象変更とその理解に必要な近隣だけを見る。対象外の production code まで整理候補を探すのは simplify モードの責務。
 
-prompt 詳細: `references/agents/reviewer-code-quality.md`
+prompt 詳細: `agents/reviewer-code-quality.md`
 
 ### security
 
@@ -64,7 +64,7 @@ prompt 詳細: `references/agents/reviewer-code-quality.md`
 | Secret | log への混入 / commit message / response body |
 | SSRF | 内部 IP / metadata endpoint に到達可能か |
 
-prompt 詳細: `references/agents/reviewer-security.md`
+prompt 詳細: `agents/reviewer-security.md`
 
 ### architecture
 
@@ -86,7 +86,7 @@ prompt 詳細: `references/agents/reviewer-security.md`
 | module 境界 | public / private の境界と配置が既存構造に合うか |
 | 変更容易性 | 依存先の変更が不要な箇所へ波及しないか |
 
-prompt 詳細: `references/agents/reviewer-architecture.md`
+prompt 詳細: `agents/reviewer-architecture.md`
 
 ### adversarial
 

@@ -1,7 +1,7 @@
 {
   "name": "hikizan",
   "version": "0.10.5",
-  "description": "hikizan for Codex: bundles the verb skills (tansaku / sadoku / sekkei / jikkou / teishutsu / shippitsu), PreToolUse floors (force-push deny, destructive-op deny, non-draft PR deny), and the routing conventions + standard-tier opt-out preamble via SessionStart.",
+  "description": "hikizan for Codex: verb skills (tansaku / sekkei / jikkou / sadoku / teishutsu) with optional PreToolUse safety floors for force push, destructive operations, and unreviewed non-draft PR creation.",
   "author": {
     "name": "hayashiii-ghub"
   },
@@ -11,7 +11,7 @@
   "interface": {
     "displayName": "hikizan",
     "shortDescription": "Japanese workflow skills and safety floors for Codex",
-    "longDescription": "Verb-oriented Japanese workflow skills, routing conventions, and deterministic Codex hook guardrails for push, pull request, and destructive shell operations.",
+    "longDescription": "Verb-oriented Japanese workflow skills with optional deterministic guardrails for push, pull request, and destructive shell operations.",
     "developerName": "hayashiii-ghub",
     "category": "Productivity",
     "capabilities": [
@@ -28,5 +28,5 @@
     "japanese"
   ],
   "skills": "./skills/",
-  "hooks": "./codex/hooks.json"
+  "hooks": "./hooks/adapters/codex/hooks.json"
 }

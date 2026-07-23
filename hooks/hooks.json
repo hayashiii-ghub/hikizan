@@ -1,19 +1,6 @@
 {
-  "description": "hikizan: condition-driven stops for git push, gh pr create, destructive Bash ops, and routing/tier context injected at session start.",
+  "description": "hikizan: deterministic safety floors for push, PR creation, and destructive shell operations.",
   "hooks": {
-    "SessionStart": [
-      {
-        "matcher": "startup",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "bash",
-            "args": ["${CLAUDE_PLUGIN_ROOT}/hooks/scripts/session-context.sh"],
-            "timeout": 10
-          }
-        ]
-      }
-    ],
     "PreToolUse": [
       {
         "matcher": "Bash",
@@ -38,34 +25,6 @@
             "args": ["${CLAUDE_PLUGIN_ROOT}/hooks/scripts/pre-destructive.sh"],
             "timeout": 10,
             "statusMessage": "checking destructive op..."
-          }
-        ]
-      }
-    ],
-    "PostToolUse": [
-      {
-        "matcher": "Bash",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "bash",
-            "args": ["${CLAUDE_PLUGIN_ROOT}/hooks/scripts/post-command.sh"],
-            "if": "Bash(git*)",
-            "timeout": 10
-          },
-          {
-            "type": "command",
-            "command": "bash",
-            "args": ["${CLAUDE_PLUGIN_ROOT}/hooks/scripts/post-command.sh"],
-            "if": "Bash(gh*)",
-            "timeout": 10
-          },
-          {
-            "type": "command",
-            "command": "bash",
-            "args": ["${CLAUDE_PLUGIN_ROOT}/hooks/scripts/post-command.sh"],
-            "if": "Bash(rm*)",
-            "timeout": 10
           }
         ]
       }
