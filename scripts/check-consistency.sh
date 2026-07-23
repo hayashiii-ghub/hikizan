@@ -47,7 +47,7 @@ done
 
 # Removed subsystems must not return through a generated or copied surface.
 legacy=0
-for path in agents codex context cursor docs opencode skills/init skills/shippitsu hooks/scripts/session-context.sh hooks/scripts/post-command.sh hooks/scripts/lib/metrics.sh; do
+for path in agents codex context cursor docs opencode skills/init hooks/scripts/session-context.sh hooks/scripts/post-command.sh hooks/scripts/lib/metrics.sh; do
   if [ -d "$ROOT/$path" ]; then
     [ -z "$(find "$ROOT/$path" -type f -print -quit)" ] || { printf '✘ removed surface returned: %s\n' "$path"; legacy=1; }
   else
@@ -71,6 +71,7 @@ require_text "$ROOT/README.md" '手動fallback' "README does not retain a manual
 require_text "$ROOT/README.md" 'codex plugin add hikizan@hikizan' "README is missing Codex fallback"
 require_text "$ROOT/README.md" '/plugin install hikizan@hikizan' "README is missing Claude fallback"
 require_text "$ROOT/README.md" 'npx skills add github:hayashiii-ghub/hikizan -g' "README is missing universal fallback"
+require_text "$ROOT/README.md" 'https://github.com/hayashiii-ghub/shimon' "README does not identify the standard visual harness"
 
 # Executable Markdown keeps the reviewed safety invariants from PR #148.
 require_text "$ROOT/skills/sadoku/SKILL.md" '実行仕様 Markdown' "sadoku does not review executable Markdown"
@@ -83,6 +84,11 @@ require_text "$ROOT/skills/jikkou/references/tdd.md" 'git diff --cached --binary
 require_text "$ROOT/skills/jikkou/references/tdd.md" 'git ls-files --others --exclude-standard -z' "TDD witness omits untracked content"
 require_text "$ROOT/skills/teishutsu/references/pr-template.md" 'scanner関連fileが変更対象なら実行せず' "secret scan may execute an unreviewed scanner"
 require_text "$ROOT/scripts/visual-contract.md" '自動installや別toolへのfallbackはしない' "visual policy allows implicit install/fallback"
+require_text "$ROOT/scripts/visual-contract.md" '.shimon/task.config.mjs' "visual policy omits the task-local shimon config"
+require_text "$ROOT/scripts/visual-contract.md" 'shimon verify --config .shimon/task.config.mjs --json' "visual policy omits the canonical shimon command"
+require_text "$ROOT/skills/shippitsu/SKILL.md" 'references/writing-style.md' "shippitsu omits the standard writing profile"
+require_text "$ROOT/skills/shippitsu/SKILL.md" 'references/cognitive-rhythm.md' "shippitsu omits the long-form writing profile"
+forbid_text "$ROOT/skills/shippitsu/SKILL.md" 'pdfmint' "shippitsu retains an unrelated PDF integration"
 
 # The documented token scan still catches representative formats.
 token_line="$(awk '/^# hikizan:token-pattern$/ { getline; print; exit }' "$ROOT/skills/teishutsu/references/pr-template.md")"

@@ -1,80 +1,112 @@
 # hikizan
 
-hikizanは、調査・設計・実装・レビュー・提出を動詞単位で分けたAgent Skills pack。判断と進行はskills、安全上の最低限だけを任意のhooksで補う。
+hikizanは、AIエージェントの開発作業を「調べる・決める・作る・見る・出す」に分けた、日本語の[Agent Skills](https://agentskills.io/) packです。
 
-- repository: [hayashiii-ghub/hikizan](https://github.com/hayashiii-ghub/hikizan)
-- license: MIT
-- agent向け開発ガイド: [AGENTS.md](AGENTS.md)
+エージェントへ長い指示を毎回書かなくても、次の流れを共通化できます。
 
-## Skills
+- 未知のコードを調べ、影響範囲を整理する
+- 実装前に方針を比較し、やらないことも決める
+- 承認された計画を実装して検証する
+- 既存コードとの一貫性や、もっと簡単にできないかまでレビューする
+- commit、push、PR作成を決めた形式へ揃える
+- 日本語のREADMEや説明文を、共通の文章規範で書く・推敲する
 
-| skill | 担当 |
-| --- | --- |
-| `tansaku` | code map、影響範囲、用語整理 |
-| `sekkei` | 設計判断、kill / keep評価、計画立案 |
-| `jikkou` | 承認済み計画の実行、原因診断、TDD、commit境界 |
-| `sadoku` | code・実行仕様Markdownのレビュー、simplify |
-| `teishutsu` | PR本文、push・PR提出 |
+必要なら、force push・破壊的操作・draftでもreviewer付きでもないPR作成を止めるhooksも追加できます。
+
+## 導入方法を選ぶ
+
+hikizanの導入方法は2つです。同じハーネスへ両方を入れないでください。
+
+| 欲しいもの | 導入方法 | 向いているケース |
+| --- | --- | --- |
+| skillsだけ | Agent Skills pack | まず試したい、既存の操作を変えたくない |
+| skills + safety hooks | native plugin | 危険なpushやshell操作も機械的に止めたい |
 
 <!-- hikizan:pack-only -->
-skillsはhandoffと共通契約を共有するため、pack 単位で導入する。個別skillだけの部分installはサポートしない。
-
-## Install
+skillsは相互にhandoffするため、pack 単位で導入します。個別skillだけの部分installはサポートしません。
 
 ### 推奨: エージェントに依頼
 
-利用するハーネスのエージェントに、次のように依頼する。
+利用中のClaude Code、Codex、Cursorなどで、エージェントに依頼するのが一番簡単です。
 
-> このrepoのREADMEとmanifestを確認し、hikizanを現在のハーネスに最もnativeな方法で設定してください。既存設定を先に調べ、変更内容を提示してから適用し、重複installがないこととskill discoveryを検証してください。hooksは任意なので、追加する場合は内容も説明してください。
+> hayashiii-ghub/hikizanのREADMEとmanifestを確認し、現在のハーネスへ設定してください。最初にskillsだけにするかsafety hooksも付けるか確認し、既存設定と重複しないnativeな方法を選んでください。変更内容を提示してから適用し、最後にskill discoveryを検証してください。
 
-エージェントは最初に、safety floorsを有効にするか確認する。
+エージェントは既存設定を確認し、次のどちらか一方を選びます。
 
-1. floorsが必要でnative pluginが使えるならpluginとして導入する
-2. skillsだけでよければAgent Skills packとして導入する
-3. native pluginがない環境でもAgent Skills packを使う
-4. 同じハーネスへ複数経路でskillsを入れない
+1. skillsだけならAgent Skills packとして導入する
+2. safety hooksも必要でnative pluginが使えるならpluginとして導入する
 
-hikizan側にinstallerやハーネス別の状態管理は持たせない。設定先の仕様と既存状態は、実際に利用するハーネス上のエージェントが判断する。
+hikizan自体はinstallerやハーネス別の設定状態を持ちません。実際の設定先を知っている、利用中ハーネスのエージェントへ判断を任せます。
 
 ### 手動fallback
 
-エージェントが設定を変更できない場合だけ、対応する1経路を使う。
+エージェントが設定を変更できない場合は、使うハーネスに対応する1つの方法だけを選びます。
 
-Claude Code:
+skillsだけ:
+
+```bash
+npx skills add github:hayashiii-ghub/hikizan -g
+```
+
+Claude Code plugin:
 
 ```text
 /plugin marketplace add https://github.com/hayashiii-ghub/hikizan.git
 /plugin install hikizan@hikizan
 ```
 
-Codex:
+Codex plugin:
 
 ```bash
 codex plugin marketplace add hayashiii-ghub/hikizan
 codex plugin add hikizan@hikizan
 ```
 
-CursorはPlugins画面からGitHub repository `hayashiii-ghub/hikizan`を追加する。
+Cursor pluginは、Plugins画面からGitHub repository `hayashiii-ghub/hikizan`を追加します。
 
-native pluginがないAgent Skills対応ハーネス:
+導入後は新しいtaskを開始し、旧版や別経路のskillが重複していないことを確認してください。
 
-```bash
-npx skills add github:hayashiii-ghub/hikizan -g
+## 使い方
+
+特別なcommandを覚える必要はありません。やりたいことをそのまま依頼します。
+
+```text
+この辺りの全体像と影響範囲を調べて
+この実装方針をkill / keepで評価して
+承認した計画を実装して
+既存コードと比べて、おかしくないか・簡単にできないかレビューして
+この変更をPRにして
+このREADMEを読みやすく推敲して
 ```
 
-plugin経路ではskillsと、そのハーネスが対応する任意のsafety floorsが入る。Agent Skills経路はskillsのみ。install後は新しいtaskを開始し、旧版や別経路の重複がないことを確認する。
+明示的に呼ぶ場合は、ハーネスのskill呼び出し方法で次の名前を指定します。
 
-## Safety floors
+| skill | 役割 |
+| --- | --- |
+| `tansaku`（探索） | code map、影響範囲、用語を整理する |
+| `sekkei`（設計） | 方針比較、kill / keep評価、実装計画を作る |
+| `jikkou`（実行） | 承認済み計画の実装、原因診断、TDD、commit境界を扱う |
+| `sadoku`（査読） | code・実行仕様Markdownをレビューし、簡略化の余地を見る |
+| `teishutsu`（提出） | PR本文、push、PR提出を扱う |
+| `shippitsu`（執筆） | 日本語文章の執筆・推敲、長文の認知リズムを扱う |
 
-hooksは通常の実装判断やcommitを止めない。次の機械判定だけを扱う。
+## UI検証
 
-| 対象 | 条件 | 動作 |
+UI・style・layout・interactionの変更では、[Shimon](https://github.com/hayashiii-ghub/shimon)を標準の視覚検証ハーネスとして使います。
+
+Shimon本体やプロジェクト固有の`shimon.config.mjs`はhikizanに同梱しません。対象プロジェクトで設定済みなら、エージェントが一時的な`.shimon/task.config.mjs`を作り、JSON結果と全screenshotを確認します。未導入・未設定・信頼できない設定の場合は別toolへ自動fallbackせず、視覚未確認の理由を報告します。
+
+## Safety hooks
+
+hooksは実装方法を決めたり、commitを禁止したりしません。入力から判定できる危険なshell操作だけに介入します。
+
+| 対象 | 止める条件 | 動作 |
 | --- | --- | --- |
 | push | protected branchへのforce相当push、remoteより遅れたpush | deny |
-| destructive shell | `rm -rf`、`git reset --hard`など | Claude Code / Cursorはask、Codexはdeny |
-| PR create | `gh pr create`にdraftもreviewerもない | deny |
+| destructive shell | `rm -rf`、`git reset --hard`など | Claude Code / Cursorは確認、Codexはdeny |
+| PR作成 | `gh pr create`に`--draft`も`--reviewer`もない | deny |
 
-詳細は[hooks/conditions.md](hooks/conditions.md)。hooksは補助guardrailであり、完全なsecurity boundaryではない。
+詳しい条件と限界は[hooks/conditions.md](hooks/conditions.md)を参照してください。hooksは事故を減らす補助guardrailであり、完全なsecurity boundaryではありません。
 
 ## Trigger早見表
 
@@ -88,29 +120,32 @@ hooksは通常の実装判断やcommitを止めない。次の機械判定だけ
 | `jikkou` | 計画実行, 実装, エラー診断, root cause, バグ修正 |
 | `sadoku` | PR確認, レビュー, code review, プロジェクトレビュー, コード整理, simplify |
 | `teishutsu` | PR提出, PR出す, PR ready, PR文書いて, PR description, submission, PR open |
+| `shippitsu` | 執筆, 推敲, リライト, 文章を書く, 平坦な文章, 緩急, 読ませる文章 |
 
 発動条件の正本は各 SKILL.md frontmatter `description`。
 <!-- hikizan:triggers:end -->
 
-## Repository layout
+## Repository
 
 ```text
 hikizan/
-├── skills/   # runtime guidance and references
-├── hooks/    # optional safety floors and harness I/O adapters
-├── scripts/  # generation, consistency checks, and tests
-├── .claude-plugin/ .cursor-plugin/ .codex-plugin/  # generated native entrypoints
+├── skills/   # skill本体とreferences
+├── hooks/    # optional safety hooksとharness adapter
+├── scripts/  # generator、consistency check、test
+├── .claude-plugin/ .cursor-plugin/ .codex-plugin/  # native entrypoint
 └── README.md AGENTS.md plugin.src.json LICENSE
 ```
 
-非hiddenの実装rootは`skills`、`hooks`、`scripts`だけに保つ。ハーネス固有のI/Oは`hooks/adapters/`へ閉じ込め、skill本文はハーネス非依存にする。
+非hiddenの実装rootは`skills`、`hooks`、`scripts`だけです。ハーネス固有のI/Oは`hooks/adapters/`へ閉じ込め、skill本文はハーネス非依存にしています。
 
-## Development
-
-依存は`bash`、`jq`、`git`、`gh`、`awk`。提出前の単一入口:
+開発時の入口は[AGENTS.md](AGENTS.md)。提出前の検証は次の1commandです。
 
 ```bash
 bash scripts/check-all.sh
 ```
 
-versionの正本は`plugin.src.json`。変更後に`bash scripts/gen-manifests.sh`を実行し、生成された3manifestは直接編集しない。
+versionの正本は`plugin.src.json`です。3つのplugin manifestは`bash scripts/gen-manifests.sh`で生成します。
+
+## License
+
+[MIT License](LICENSE) — Copyright (c) 2026 hayashiii-ghub

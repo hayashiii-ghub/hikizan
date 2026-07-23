@@ -24,6 +24,7 @@ PR 本文を書いて PR を出す skill。レビューは `sadoku`。ここが 
 - commit する場合は `jikkou` の commit 契約に従う。独立して説明・検証・revert できる 1 つの変更を、関連検証が通った状態で保存する
 - PR / branch / step は機能名か issue 名で呼ぶ。PR-1 のような独自の連番を作らない (詳細は `teishutsu` の naming reference)
 - 別の skill に渡すときは 1 行で書く: `handoff: [skill] / brief: [1 文] / evidence: [file:line かコマンド出力]`
+- 日本語の文章は `shippitsu` の writing-style 規範に従う
 <!-- hikizan:contract:end -->
 
 ## 2 つのモード
