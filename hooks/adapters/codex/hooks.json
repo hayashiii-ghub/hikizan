@@ -9,14 +9,6 @@
           { "type": "command", "command": "bash ${PLUGIN_ROOT}/hooks/scripts/pre-pr-create.sh", "statusMessage": "checking PR create preconditions..." }
         ]
       }
-    ],
-    "SessionStart": [
-      {
-        "matcher": "startup",
-        "hooks": [
-          { "type": "command", "command": "bash ${PLUGIN_ROOT}/codex/scripts/session-context.sh" }
-        ]
-      }
     ]
   }
 }

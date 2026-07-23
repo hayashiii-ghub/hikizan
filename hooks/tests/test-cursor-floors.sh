@@ -1,11 +1,11 @@
 #!/usr/bin/env bash
-# Tests for the Cursor floors adapter (cursor/scripts/before-shell.sh). Feeds
+# Tests for the Cursor floors adapter. Feeds
 # Cursor-format input ({command, cwd}) and asserts the Cursor permission output.
 # Exercises the same pure logic as the CC hooks, through the Cursor I/O glue.
 
 DIR="$(cd "$(dirname "$0")" && pwd)"
 . "$DIR/lib/harness.sh"
-HOOK="$DIR/../../cursor/scripts/before-shell.sh"
+HOOK="$DIR/../adapters/cursor/before-shell.sh"
 
 hz_mkrepo() { local b="$1" d; d="$(mktemp -d)"; git -C "$d" init -q
   git -C "$d" config user.email t@example.com; git -C "$d" config user.name t
@@ -143,5 +143,21 @@ assert_eq "later segment --draft does not approve PR -> deny" "deny" "$(perm_of 
 run_cursor 'gh pr create --title x # --draft' "/tmp"
 assert_eq "commented --draft does not approve PR -> deny" "deny" "$(perm_of "$HZ_OUT")"
 
-rm -rf "$REPO_MAIN" "$REPO_FEAT"
+# Plain pushes to a remote-ahead branch use the same NFF floor as pre-push.sh.
+NFF_REMOTE="$(mktemp -d)"
+git init -q --bare -b feature "$NFF_REMOTE"
+git -C "$REPO_FEAT" remote add origin "$NFF_REMOTE"
+git -C "$REPO_FEAT" push -q origin feature
+NFF_CLONE="$(mktemp -d)"
+git clone -q "$NFF_REMOTE" "$NFF_CLONE"
+git -C "$NFF_CLONE" config user.email t@example.com
+git -C "$NFF_CLONE" config user.name tester
+git -C "$NFF_CLONE" commit -q --allow-empty -m ahead
+git -C "$NFF_CLONE" push -q origin feature
+run_cursor 'git push origin feature' "$REPO_FEAT"
+assert_eq "remote-ahead feature push -> deny" "deny" "$(perm_of "$HZ_OUT")"
+run_cursor "cd '$REPO_FEAT' && git push origin feature" "/tmp"
+assert_eq "remote-ahead push after cd -> deny" "deny" "$(perm_of "$HZ_OUT")"
+
+rm -rf "$REPO_MAIN" "$REPO_FEAT" "$NFF_REMOTE" "$NFF_CLONE"
 hz_test_summary

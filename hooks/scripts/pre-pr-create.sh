@@ -5,8 +5,6 @@
 set -uo pipefail
 HERE="$(dirname "$0")"
 
-# shellcheck source=lib/metrics.sh
-source "$HERE/lib/metrics.sh" 2>/dev/null || hikizan_metrics_log() { :; }
 # shellcheck source=lib/decision.sh
 source "$HERE/lib/decision.sh"
 # shellcheck source=lib/guard.sh
@@ -19,12 +17,10 @@ source "$HERE/lib/pr-create.sh"
 hz_require_jq
 JSON=$(cat)
 COMMAND=$(printf '%s' "$JSON" | jq -r '.tool_input.command // ""')
-SESSION_ID=$(printf '%s' "$JSON" | jq -r '.session_id // ""')
 
 hz_is_pr_create "$COMMAND" || exit 0
 
 if hz_prcreate_needs_review "$COMMAND"; then
-  hikizan_metrics_log hook_fired pre-pr-create no_draft_no_reviewer block "$SESSION_ID"
   hz_decision deny "gh pr create called without --draft and without a reviewer.
 
 policy: a non-draft PR should name at least one reviewer. options:
@@ -35,5 +31,4 @@ must run the command manually outside the guarded agent."
   exit 0
 fi
 
-hikizan_metrics_log hook_fired pre-pr-create none allow "$SESSION_ID"
 exit 0

@@ -1,6 +1,6 @@
 ---
 name: sadoku
-description: "Use this skill when the user wants code or executable project instructions reviewed, or findings simplified — including the phrasings レビューして, コードレビュー, SKILL.mdをレビュー, コード整理して, simplify. Activate after implementation, when reviewing a git diff before opening a PR, when reviewing an existing module, operational Markdown, or whole codebase (no diff needed), or when restructuring messy review findings. レビュー系の語は通常レビュー、整理系の語だけsimplify findingsを起動する。対象はproduction code、agentが実行するMarkdown仕様 (SKILL.md / references / project instructions)、review findings。一般文章の推敲はshippitsuに渡す。"
+description: "Use this skill when the user wants code or executable project instructions reviewed, or findings simplified — including the phrasings レビューして, コードレビュー, SKILL.mdをレビュー, コード整理して, simplify. Activate after implementation, when reviewing a git diff before opening a PR, when reviewing an existing module, operational Markdown, or whole codebase (no diff needed), or when restructuring messy review findings. レビュー系の語は通常レビュー、整理系の語だけsimplify findingsを起動する。対象はproduction code、agentが実行するMarkdown仕様 (SKILL.md / references / project instructions)、review findings。"
 license: MIT
 when_to_use: "PR確認, レビュー, code review, プロジェクトレビュー, コード整理, simplify"
 ---
@@ -11,12 +11,12 @@ when_to_use: "PR確認, レビュー, code review, プロジェクトレビュ�
 🌲 Using /sadoku for [purpose taken from trigger context].
 ```
 
-production code と実行仕様 Markdown (SKILL.md / references / project instructions) を diff または指定範囲で見る skill。見つけた問題を直すのは `jikkou` (テスト先行の実装は `jikkou` の TDD 実装モード)、設計から見直すなら `sekkei`、提出は `teishutsu` に渡す。一般文章の推敲は `shippitsu` の責務。
+production code と実行仕様 Markdown (SKILL.md / references / project instructions) を diff または指定範囲で見る skill。見つけた問題を直すのは `jikkou` (テスト先行の実装は `jikkou` の TDD 実装モード)、設計から見直すなら `sekkei`、提出は `teishutsu` に渡す。
 
 <!-- hikizan:contract:start -->
 ## 共通ルール
 
-core skill (init を除く全 skill) 共通。正本は `scripts/contract.md` で、`scripts/gen-contract.sh` が各 SKILL.md のこの区間に書き込む (手で編集しない)。
+全skill共通。正本は `scripts/contract.md` で、`scripts/gen-contract.sh` が各 SKILL.md のこの区間に書き込む (手で編集しない)。
 
 - 元に戻せない操作 (削除 / force push / reset --hard / git clean) は、実行する前にユーザに確認する
 - 「pass した」「確認した」と書くときは、コマンド出力の最終行をそのまま貼る。出力なしで完了と書かない
@@ -24,7 +24,6 @@ core skill (init を除く全 skill) 共通。正本は `scripts/contract.md` �
 - commit する場合は `jikkou` の commit 契約に従う。独立して説明・検証・revert できる 1 つの変更を、関連検証が通った状態で保存する
 - PR / branch / step は機能名か issue 名で呼ぶ。PR-1 のような独自の連番を作らない (詳細は `teishutsu` の naming reference)
 - 別の skill に渡すときは 1 行で書く: `handoff: [skill] / brief: [1 文] / evidence: [file:line かコマンド出力]`
-- 日本語の文章は `shippitsu` の writing-style 規範に従う
 <!-- hikizan:contract:end -->
 
 ## 2 つのモード
@@ -50,7 +49,7 @@ diff があるだけでは始めない。状態から起動するときは1行�
 2. 深さを決める。diff レビューは変更行数で: 50 行以内かテスト変更のみ → Quick / 50〜500 行 → Standard / 500 行超か security に触れる → Deep。範囲レビューは対象規模で: 単一 file → Quick / 1 module または 2〜10 実行仕様 file → Standard / subsystem、11 file 以上、または security を含む → Deep
 3. 実装者の説明・PR 本文・前段の報告は鵜呑みにしない。finding の根拠は強い順に採る: ①テストの pass/fail ②diff ③周辺コード ④検証ログ ⑤実装者のメモ
 4. 下の「停止条件」を上から順に対象 (diff / 範囲) に当てる。該当したら作業を止めてユーザに確認する
-5. 全 depth で、対象が近隣の類似 artifact から不必要に外れていないか、同じ振る舞いをより少ない分岐・層・概念で表せないかを見る。実行仕様 Markdown は mode / 手順 / 停止条件 / handoff の到達可能性、曖昧な command、重複 SoT、dead guidance も見る。Quick は controller が inline で確認する。ただし user がこの観点を明示した場合と、新しい実装 pattern を導入する場合は Quick でも `reviewer-code-quality` を起動する。Standard 以上の production artifact (code / 実行仕様 Markdown) でも同 reviewer を起動する。security / architecture は該当条件に応じて起動する (最大 3 並列、定義の正本は `references/agents/reviewer-*.md`。対応 harness では同内容が first-class agent として配布される。条件は `references/persona-catalog.md`)。**起動時に、近隣の比較対象、関連する repo convention の出典、「脅威モデル / 設計意図 (何を守り、何を受容しているか)」を渡す**。返ってきた finding は自分で対象を読み直す / テストを再実行して裏取りしてから採用する
+5. 全 depth で、対象が近隣の類似 artifact から不必要に外れていないか、同じ振る舞いをより少ない分岐・層・概念で表せないかを見る。実行仕様 Markdown は mode / 手順 / 停止条件 / handoff の到達可能性、曖昧な command、重複 SoT、dead guidance も見る。Quick は controller が inline で確認する。ただし user がこの観点を明示した場合と、新しい実装 pattern を導入する場合は Quick でも `reviewer-code-quality` を起動する。Standard 以上の production artifact (code / 実行仕様 Markdown) でも同 reviewer を起動する。security / architecture は該当条件に応じて起動する (最大 3 並列、promptは`references/agents/reviewer-*.md`、条件は`references/persona-catalog.md`)。**起動時に、近隣の比較対象、関連する repo convention の出典、「脅威モデル / 設計意図 (何を守り、何を受容しているか)」を渡す**。返ってきた finding は自分で対象を読み直す / テストを再実行して裏取りしてから採用する
 6. 「merge 後 / 運用中に壊れる一番現実的なシナリオ」を 1 つ書く。Quick では省略してよいが、bugfix / 挙動変更 / business rule / API / security に触れる対象では Quick でも書く
 7. UI / style / レイアウトに触れる対象なら次の順で視覚エビデンスを取る
 <!-- hikizan:visual:start -->
@@ -113,4 +112,4 @@ worktree 内 (`git rev-parse --git-dir` と `--git-common-dir` の正規化結�
 - `persona-catalog.md`：専門家レビュー (code-quality / security / architecture / adversarial) の起動条件
 - `synthesis.md`：複数 subagent 出力を 1 本に統合する出口契約 (重複排除 / top-N / verdict / アクションメニュー)
 - `simplify-checklist.md`：simplify の 5 観点判定基準
-- `agents/reviewer-code-quality.md` / `agents/reviewer-security.md` / `agents/reviewer-architecture.md`：reviewer 定義の正本 (対応 plugin の top-level `agents/` へ同一内容を生成)
+- `agents/reviewer-code-quality.md` / `agents/reviewer-security.md` / `agents/reviewer-architecture.md`：必要なsubagentへ渡すreviewer prompt

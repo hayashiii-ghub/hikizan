@@ -7,20 +7,19 @@
 # Cursor input is top-level {command, cwd, conversation_id, ...}; output is the
 # Cursor permission JSON via lib/decision-cursor.sh. Absence of output = allow.
 #
-# Install: point ~/.cursor/hooks.json (or <project>/.cursor/hooks.json) at this
-# script's absolute path. See cursor/README.md.
+# Cursor adapter for the shared safety-floor classifiers.
 
 set -uo pipefail
-LIB="$(cd "$(dirname "$0")/../../hooks/scripts/lib" && pwd)"
-# shellcheck source=../../hooks/scripts/lib/push-parse.sh
+LIB="$(cd "$(dirname "$0")/../../scripts/lib" && pwd)"
+# shellcheck source=../../scripts/lib/push-parse.sh
 source "$LIB/push-parse.sh"
-# shellcheck source=../../hooks/scripts/lib/destructive.sh
+# shellcheck source=../../scripts/lib/destructive.sh
 source "$LIB/destructive.sh"
-# shellcheck source=../../hooks/scripts/lib/pr-create.sh
+# shellcheck source=../../scripts/lib/pr-create.sh
 source "$LIB/pr-create.sh"
-# shellcheck source=../../hooks/scripts/lib/decision-cursor.sh
+# shellcheck source=../../scripts/lib/decision-cursor.sh
 source "$LIB/decision-cursor.sh"
-# shellcheck source=../../hooks/scripts/lib/guard.sh
+# shellcheck source=../../scripts/lib/guard.sh
 source "$LIB/guard.sh"
 
 hz_require_jq
@@ -41,19 +40,18 @@ fi
 # 1. force-equivalent push to a protected branch -> deny. Check the top-level
 # command and executable command substitutions with the same classifier.
 hz_cursor_check_push() {
-  local command="$1" pushdir branch hit
+  local command="$1" pushdir branch hit remote upstream behind remote_shell branch_shell
   [ "$(hz_git_subcommand "$command")" = "push" ] || return 0
-  hikizan_push_is_forceful "$command" || return 0
 
   if [ "${HZ_PRIOR_CONTEXT_CHANGE:-0}" = 1 ]; then
-    hz_cursor_decision deny "force-equivalent push follows cd/pushd in the same shell command, so the hook cannot reproduce repository context exactly.
+    hz_cursor_decision deny "push follows cd/pushd in the same shell command, so the hook cannot reproduce repository context exactly.
 
-policy: fail closed because the current branch may be protected. run the
-directory change and push as separate commands."
+policy: fail closed because protected-branch and non-fast-forward checks need
+the exact repository. run the directory change and push as separate commands."
     exit 0
   fi
 
-  if ! hz_push_context_supported "$command"; then
+  if hikizan_push_is_forceful "$command" && ! hz_push_context_supported "$command"; then
     hz_cursor_decision deny "force-equivalent push uses options that prevent the hook from resolving the git repository context exactly.
 
 policy: fail closed because the current branch may be protected. abort and ask
@@ -65,12 +63,39 @@ the user. if confirmed, run the command manually outside the guarded agent."
   [ -n "$pushdir" ] && [ ! -d "$pushdir" ] && pushdir=""
   if [ -n "$pushdir" ]; then branch=$(git -C "$pushdir" branch --show-current 2>/dev/null || true)
   else branch=$(git branch --show-current 2>/dev/null || true); fi
-  hit=$(hikizan_push_protected_hit "$command" "$branch") || hit=""
-  if [ -n "$hit" ]; then
-    hz_cursor_decision deny "force-equivalent push (force / +refspec / delete / mirror / all) targeting protected branch '$hit'.
+  if hikizan_push_is_forceful "$command"; then
+    hit=$(hikizan_push_protected_hit "$command" "$branch") || hit=""
+    if [ -n "$hit" ]; then
+      hz_cursor_decision deny "force-equivalent push (force / +refspec / delete / mirror / all) targeting protected branch '$hit'.
 
 protected: main / master / develop. this deny has no agent-side override.
 if confirmed, the user must run the command manually outside the guarded agent."
+      exit 0
+    fi
+  fi
+
+  [ -z "$branch" ] && return 0
+  remote=$(hikizan_push_remote "$command")
+  if [ -z "$remote" ]; then
+    if [ -n "$pushdir" ]; then remote=$(git -C "$pushdir" config "branch.$branch.remote" 2>/dev/null || true)
+    else remote=$(git config "branch.$branch.remote" 2>/dev/null || true); fi
+  fi
+  [ -z "$remote" ] && remote=origin
+  if [ -n "$pushdir" ]; then
+    git -C "$pushdir" fetch --quiet "$remote" 2>/dev/null || true
+    upstream="$remote/$branch"
+    behind=$(git -C "$pushdir" rev-list --count "HEAD..$upstream" 2>/dev/null || printf '0')
+  else
+    git fetch --quiet "$remote" 2>/dev/null || true
+    upstream="$remote/$branch"
+    behind=$(git rev-list --count "HEAD..$upstream" 2>/dev/null || printf '0')
+  fi
+  if [ "$behind" -gt 0 ] 2>/dev/null; then
+    printf -v remote_shell '%q' "$remote"
+    printf -v branch_shell '%q' "$branch"
+    hz_cursor_decision deny "non-fast-forward push on branch '$branch': local is $behind commit(s) behind $upstream.
+
+options: git pull --rebase $remote_shell $branch_shell, push to a new branch, or abort."
     exit 0
   fi
 }

@@ -1,13 +1,13 @@
 {
   "name": "hikizan",
   "descriptions": {
-    "claude": "動詞単位の skill ({{core_skills}}) を「弱いモデル基準のレール + 賢いモデルへの opt-out (手順自由・出口固定) + hooks floors」で構成する Claude Code plugin / Agent Skills skill pack。タスクの回し方が強くないモデルには番号付き手順を、強いモデルには余計な手順を課さず出口の形だけ揃える設計。",
-    "cursor": "hikizan for Cursor: bundles the verb skills ({{core_skills}}), agents, beforeShellExecution floors (force-push deny, destructive-op ask, non-draft PR deny), and an always-apply rule for routing conventions + standard-tier opt-out preamble.",
-    "codex": "hikizan for Codex: bundles the verb skills ({{core_skills}}), PreToolUse floors (force-push deny, destructive-op deny, non-draft PR deny), and the routing conventions + standard-tier opt-out preamble via SessionStart."
+    "claude": "動詞単位のskill ({{core_skills}}) と、push・PR・破壊的操作だけを扱う任意のsafety floorsで構成するClaude Code plugin / Agent Skills pack。",
+    "cursor": "hikizan for Cursor: verb skills ({{core_skills}}) with optional beforeShellExecution safety floors for force push, destructive operations, and unreviewed non-draft PR creation.",
+    "codex": "hikizan for Codex: verb skills ({{core_skills}}) with optional PreToolUse safety floors for force push, destructive operations, and unreviewed non-draft PR creation."
   },
   "codexInterface": {
     "shortDescription": "Japanese workflow skills and safety floors for Codex",
-    "longDescription": "Verb-oriented Japanese workflow skills, routing conventions, and deterministic Codex hook guardrails for push, pull request, and destructive shell operations.",
+    "longDescription": "Verb-oriented Japanese workflow skills with optional deterministic guardrails for push, pull request, and destructive shell operations.",
     "category": "Productivity",
     "capabilities": ["Read", "Write"]
   },

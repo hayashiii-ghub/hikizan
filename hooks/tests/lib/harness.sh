@@ -36,13 +36,10 @@ assert_contains() {
 
 # hz_run_hook <script> <command> [cwd] — run a hook script with a synthetic
 # PreToolUse payload. Sets HZ_OUT (stdout), HZ_ERR (stderr), HZ_CODE (exit).
-# Metrics are redirected to a throwaway dir so tests never touch real data.
 # shellcheck disable=SC2034  # HZ_OUT / HZ_CODE / HZ_ERR are read by the sourcing test files
 hz_run_hook() {
   local script="$1" cmd="$2" cwd="${3:-}"
   local payload errf
-  : "${HIKIZAN_METRICS_DIR:=$(mktemp -d 2>/dev/null || echo /tmp/hz-metrics.$$)}"
-  export HIKIZAN_METRICS_DIR
   payload=$(jq -nc --arg c "$cmd" --arg w "$cwd" \
     '{tool_input:{command:$c}, cwd:$w, session_id:"test"}')
   errf="$(mktemp 2>/dev/null || echo /tmp/hz_err.$$)"

@@ -1,7 +1,6 @@
 #!/usr/bin/env bash
 # Generate the trigger 早見表 from each skill's frontmatter (the SoT) and inject
-# it into the marker region of README.md — the single generated copy;
-# docs/workflow.md links to it instead of carrying a second one. This replaces
+# it into the marker region of README.md — the single generated copy. This replaces
 # the hand-maintained tables that drifted (H2): the frontmatter `when_to_use`
 # is now the single source.
 # The skill set and display order come from scripts/skills.json (shared with
@@ -41,7 +40,7 @@ gen_table() {
     wtu="$(fm_field "$f" when_to_use)"
     printf '| `%s` | %s |\n' "$s" "$wtu"
   done
-  printf '\n各 skill の mode 別トリガーと遷移は `docs/workflow.md`、発動条件の正本は各 SKILL.md frontmatter `description`。\n'
+  printf '\n発動条件の正本は各 SKILL.md frontmatter `description`。\n'
   printf '%s\n' "$END"
 }
 

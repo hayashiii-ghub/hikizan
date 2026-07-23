@@ -2,8 +2,7 @@
 # Without jq a hook cannot parse its stdin, so the PreToolUse floors would
 # silently allow everything (fail-open) unless each entry point guards for it.
 # This file runs every hook with jq removed from PATH and pins fail-closed
-# (exit 2 + stderr mentioning jq) for the guarded scripts, and the deliberate
-# exception (session-context.sh degrades instead of blocking).
+# (exit 2 + stderr mentioning jq) for the guarded scripts.
 #
 # NOTE: this file must never call jq itself (directly or via lib/harness.sh's
 # hz_run_hook), so the check holds regardless of whether the ambient
@@ -34,15 +33,9 @@ run_nojq "$DIR/../scripts/pre-pr-create.sh"
 assert_eq "pre-pr-create.sh fails closed (exit 2)" "2" "$HZ_CODE"
 assert_contains "pre-pr-create.sh stderr mentions jq" "jq" "$HZ_ERR"
 
-run_nojq "$DIR/../../cursor/scripts/before-shell.sh"
+run_nojq "$DIR/../adapters/cursor/before-shell.sh"
 assert_eq "before-shell.sh fails closed (exit 2)" "2" "$HZ_CODE"
 assert_contains "before-shell.sh stderr mentions jq" "jq" "$HZ_ERR"
-
-run_nojq "$DIR/../scripts/session-context.sh"
-assert_eq "session-context.sh is not guarded (exit 0)" "0" "$HZ_CODE"
-
-run_nojq "$DIR/../scripts/post-command.sh"
-assert_eq "post-command.sh is not guarded (exit 0, no-op)" "0" "$HZ_CODE"
 
 rm -rf "$SHIM"
 hz_test_summary
