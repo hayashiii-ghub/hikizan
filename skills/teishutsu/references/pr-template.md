@@ -1,18 +1,18 @@
 # PR本文
 
-PR本文はreviewerが変更理由、実装、検証を判断できる最小構成にする。空sectionを`なし`で埋めない。
+PR本文は、レビュー担当が変更理由、実装、検証を判断できる最小構成にする。空の節を「なし」で埋めない。
 
 ## 必要な情報
 
-- change intentまたはissue
-- baseとの差分
+- 変更意図またはIssue
+- 比較元との差分
 - 実行した検証と結果
 
-不足している事実を推測しない。diffとrepo内の情報で決まらない場合だけuserへ確認する。
+不足している事実を推測しない。差分とリポジトリ内の情報で決まらない場合だけ利用者へ確認する。
 
 ## タイトル
 
-repo規約を優先し、なければ`naming.md`に従う。変更後のobservableな結果を1行で表す。
+リポジトリ規約を優先し、なければ`naming.md`に従う。変更後に観測できる結果を1行で表す。
 
 ## 本文
 
@@ -25,24 +25,24 @@ repo規約を優先し、なければ`naming.md`に従う。変更後のobservab
 
 ## 変更内容
 
-- [review可能な単位の変更]
+- [レビュー可能な単位の変更]
 
 ## 検証
 
-- `[command]` — [result]
+- `[コマンド]`：[結果]
 ```
 
-移行、互換性、rollback、未解決risk、重要な設計判断がある場合だけ該当sectionを追加する。内部skillの順序や、実施していない工程のtraceは書かない。
+移行、互換性、取り消し、未解決のリスク、重要な設計判断がある場合だけ該当する節を追加する。内部スキルの順序や、実施していない工程の記録は書かない。
 
 ## 変更範囲
 
-1 PRを1つのreview可能な目的にする。別々に価値を持ち単独revertできるcleanupは混ぜない。複数fileや複数commitでも同じ目的に必要なら分割しない。
+1つのPRを1つのレビュー可能な目的にする。別々に価値を持ち単独で取り消せる整理は混ぜない。複数ファイルや複数コミットでも、同じ目的に必要なら分割しない。
 
 ## 個人情報と秘密情報の検査
 
-PR body、提出rangeの追加行とcommit message、release note、本文へ転載するlogをscanする。repo既存scannerは、対象repoがtrustedで、scanner本体・設定・依存を読め、networkやpluginを実行しない場合だけ使う。scanner関連fileが変更対象なら実行せず、built-in grepを使う。
+PR本文、提出範囲の追加行とコミットメッセージ、リリースノート、本文へ転載するログを検査する。リポジトリ既存の検査器は、対象リポジトリが信頼でき、検査器本体・設定・依存を読め、ネットワークやプラグインを実行しない場合だけ使う。検査器関連のファイルが変更対象なら実行せず、標準の`grep`を使う。
 
-temporary fileはmode 700のdirectory内に作り、permissionを600へ絞る。directory作成直後に冪等な`EXIT` cleanupを登録し、success・failure・interruptの全経路で削除する。既知のsecret値をlogへ出さない。
+一時ファイルは権限700のディレクトリ内に作り、ファイル権限を600へ絞る。ディレクトリ作成直後に冪等な`EXIT`後処理を登録し、成功・失敗・中断の全経路で削除する。既知の秘密情報をログへ出さない。
 
 ```bash
 # email
@@ -51,4 +51,4 @@ grep -E '[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}' <draft>
 grep -E '(sk-(proj-)?[A-Za-z0-9_-]{16,}|gh[pousr]_[A-Za-z0-9]{16,}|github_pat_[A-Za-z0-9_]{16,}|xox[baprs]-[A-Za-z0-9-]{16,}|A(SI|KI)A[0-9A-Z]{16}|eyJ[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_-]{10,}|Authorization:[[:space:]]*(Basic|Bearer)[[:space:]]+[A-Za-z0-9._~+/-]{8,}|-----BEGIN ([A-Z0-9]+ )?PRIVATE KEY-----)' <draft>
 ```
 
-genericなcredential assignmentとチーム外の実名は目視する。matchがあれば公開前に除去し、0件ならscan対象と`clean (0 matches)`を報告する。
+一般的な認証情報の代入とチーム外の実名は目視する。一致があれば公開前に除去し、0件なら検査対象と`clean (0 matches)`を報告する。

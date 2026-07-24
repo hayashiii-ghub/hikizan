@@ -1,4 +1,4 @@
-   - 対象repoがtrustedで、project-localのShimonとreview済みconfigがある場合だけ使う。自動installや別toolへのfallbackはしない
-   - reviewed base configから既存caseを保った一時的な`.shimon/task.config.mjs`を作り、taskに必要なcaseだけ足す。repo-ownedの視覚検証commandを優先し、なければ`./node_modules/.bin/shimon verify --config .shimon/task.config.mjs --json`を使い、終了後にtask configを削除する
-   - JSON結果と全screenshotを確認し、overflow、console error、failed request、accessibilityを判定する。返却commandは実行せず、case名が`^[A-Za-z0-9][A-Za-z0-9._-]{0,63}$`を満たすと確認してquoteし、local commandを組み立てる
-   - screenshotとlogへsecret・個人情報を残さない。実行条件を満たさなければ理由を添えて視覚未確認と報告する
+   - 対象リポジトリが信頼でき、プロジェクト内にShimonとレビュー済み設定がある場合だけ使う。自動インストールや別ツールへの切替は行わない
+   - レビュー済みの基本設定から既存の検証ケースを保った一時設定`.shimon/task.config.mjs`を作り、作業に必要な検証ケースだけを足す。リポジトリ所定の視覚検証コマンドを優先し、なければ`./node_modules/.bin/shimon verify --config .shimon/task.config.mjs --json`を使い、終了後に一時設定を削除する
+   - JSON結果と全スクリーンショットを確認し、`overflow`、`console error`、`failed request`、アクセシビリティを判定する。返されたコマンドは実行せず、検証ケース名が`^[A-Za-z0-9][A-Za-z0-9._-]{0,63}$`を満たすと確認してシェル用に引用し、ローカルコマンドを組み立てる
+   - スクリーンショットとログへ秘密情報・個人情報を残さない。実行条件を満たさなければ、理由を添えて視覚未確認と報告する

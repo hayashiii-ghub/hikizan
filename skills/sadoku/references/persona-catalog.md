@@ -1,11 +1,11 @@
 # 専門レビューの選び方
 
-controllerの通常reviewだけでは独立した専門性が足りない場合に限り、該当するreviewerを選ぶ。
+親エージェントの通常レビューだけでは独立した専門性が足りない場合に限り、該当するレビュー担当を選ぶ。
 
-- code-quality：新しいpattern、既存codebaseとの不整合、複雑さや重複が主要risk
-- security：認証・認可、untrusted input、secret、injection、SSRF、権限境界に触れる
-- architecture：module境界、public API、schema、migration、複数consumerへの波及が主要risk
+- コード品質：新しいパターン、既存コードベースとの不整合、複雑さや重複が主要なリスク
+- セキュリティ：認証・認可、信頼できない入力、秘密情報、インジェクション、SSRF、権限境界に触れる
+- 設計：モジュール境界、公開API、スキーマ、移行、複数の利用側への波及が主要なリスク
 
-利用中harnessにnative subagentがあれば、選んだ`agents/reviewer-*.md`の内容、対象snapshot、変更意図、repo規約、関連testをself-contained promptで渡す。custom agent fileを前提にしない。使えない場合は必要な観点だけcontrollerがinlineで見る。
+利用中ハーネスに標準サブエージェントがあれば、選んだ`agents/reviewer-*.md`の内容、対象時点、変更意図、リポジトリ規約、関連テストを自己完結した指示で渡す。専用エージェントファイルは前提にしない。使えない場合は必要な観点だけ親エージェントが確認する。
 
-独立した専門軸と利用可能なcapacityの範囲で並列化する。行数やfile数だけでは起動しない。返されたfindingはcontrollerがfile:lineとtestで裏取りし、重複を除いて優先順に並べる。
+独立した専門軸と利用可能な処理枠の範囲で並列化する。行数やファイル数だけでは起動しない。返された指摘は親エージェントが`file:line`とテストで裏取りし、重複を除いて優先順に並べる。

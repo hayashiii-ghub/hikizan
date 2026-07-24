@@ -1,64 +1,64 @@
 ---
 name: teishutsu
-description: "Use this skill when the user wants a pull request body drafted or committed work pushed and opened as a PR — including PR出す, PR提出, PR ready, PR openする, PR文書いて, PR description. Handles the external submission boundary; it does not implement or commit unfinished work."
+description: "PR本文の作成、またはコミット済み変更のプッシュとPR作成を求められた場合に使う。例: PR出す, PR提出, PR ready, PR openする, PR文書いて, PR description. 外部への提出を扱い、未完成の実装やコミットは行わない。"
 license: MIT
 when_to_use: "PR提出, PR出す, PR ready, PR文書いて, PR description, submission, PR open"
 ---
 
 # 提出（teishutsu）
 
-PR本文を作り、明確な提出先へ通常pushしてPRを作る。userの明示的な提出依頼は、一意に確定できるrepo・branch・完成scopeへの通常commit・push・PR作成を許可する。
+PR本文を作り、明確な提出先へ通常プッシュしてPRを作る。利用者の明示的な提出依頼は、一意に確定できるリポジトリ・ブランチ・完成した対象範囲への通常コミット・プッシュ・PR作成を許可する。
 
 <!-- hikizan:contract:start -->
 ## 共通ルール
 
-全skill共通。正本は `scripts/contract.md` で、`scripts/gen-contract.sh` が各 SKILL.md のこの区間に書き込む (手で編集しない)。
+全スキル共通。正本は`scripts/contract.md`で、`scripts/gen-contract.sh`が各`SKILL.md`のこの区間に書き込む（手で編集しない）。
 
-- 各skillを起動したら、作業前に1行だけ `🌲 <skill名>（日本語名）：<今回の目的>` と伝える。同じskill内の局所作業では繰り返さない
-- skillを固定順に通さない。各skillは依頼された成果と、そのために必要な可逆の局所作業を同じtask内で完了する
-- userに確認するのは、結果やscopeを大きく変える未決事項、曖昧な外部操作、元に戻せない操作だけ。明確で可逆な作業は止めない
-- 検証はriskに比例させ、実行したcommandと判定に必要な結果を残す。未検証の状態をpass・完了と書かない
-- force push、履歴破壊、削除などの不可逆操作はuserの明示確認なしに実行しない
-- PR本文・commit message・公開文にtoken、email、チーム外の実名を含めない。外へ出す直前に対象をscanする
+- 各スキルを起動したら、作業前に1行だけ`🌲 <スキル名>（日本語名）：<今回の目的>`と伝える。同じスキル内の局所作業では繰り返さない
+- スキルを固定順に通さない。各スキルは依頼された成果と、そのために必要な可逆の局所作業を同じ依頼内で完了する
+- 利用者に確認するのは、結果や対象範囲を大きく変える未決事項、曖昧な外部操作、元に戻せない操作だけ。明確で可逆な作業は止めない
+- 検証はリスクに比例させ、実行したコマンドと判定に必要な結果を残す。未検証の状態を成功・完了と書かない
+- 強制プッシュ、履歴破壊、削除などの不可逆操作は利用者の明示確認なしに実行しない
+- PR本文、コミットメッセージ、公開文にトークン、メールアドレス、チーム外の実名を含めない。外へ出す直前に対象を検査する
 <!-- hikizan:contract:end -->
 
 ## 使い分け
 
-- 本文ドラフト：「PR文書いて」なら本文だけ作る
-- 提出：「PR出して」ならtarget確認からpush・PR作成まで行う
+- 本文案：「PR文書いて」なら本文だけ作る
+- 提出：「PR出して」なら提出先の確認からプッシュ・PR作成まで行う
 
 ## 手順
 
-1. `pwd`、repo root、current branchを確認する。push remoteはbranch設定、なければ唯一のremoteから決め、fetch URLとpush URLを読む
-2. PR repoはuser指定、なければpush URLから一意に対応するGitHub repoとする。PR remoteはそのrepoに対応するlocal remote、baseはuser指定、`branch.<branch>.gh-merge-base`、PR remoteのdefault branchの順で決める。feature branchのupstreamをbaseにしない。forkではpush remoteとPR remoteを分け、headを`<push-owner>:<branch>`にする
-3. `repo / base <- head / push remote`を表示する。fork、複数候補、fetch URLとpush URLの相違、target変更がある場合だけnetwork操作前にuserへ確認する。選んだpush remoteと、異なる場合はPR remoteだけfetchし、remote先行や履歴差分を確認する。解消方針が必要なら勝手にrebase・merge・forceしない
-4. 未commit差分がある場合は、完成・検証済みで1つのreview可能な目的に閉じていると確認できるときだけ`jikkou`のcommit契約に従ってcommitする。未完成、検証不明、混在scopeなら停止する。その後worktreeがcleanでbaseとのrangeが空でないことを確認する。`.gitmodules`がある場合だけsubmoduleの未commit・未pushも確認する
-5. `references/pr-template.md`で変更規模に合う本文とtitleを作る。提出rangeの追加行、本文、commit message、release noteへ秘密情報scanを行う
-6. remoteは空・先頭`-`を拒否して`git remote`の1行と完全一致させ、branchとbaseは`git check-ref-format --branch`で検証する。初回は明示refspecでupstreamを設定し、それ以降も明示remote・refspecで通常pushする
-7. 本文はpermissionを絞ったtemporary fileへ置き、作成直後にsuccess・failure・interruptの全経路で動くcleanupを登録する。`gh pr create --repo ... --base ... --head ... --title ... --body-file ...`へ検証済み値をquoteして渡し、`--draft`か`--reviewer`を必ず付ける。ready指定でreviewerを一意に決められない場合は確認し、それ以外はdraftを既定にする
-8. PR URL、base/head、draft/reviewer状態を確認する。pushまたはPR作成に失敗したら完了扱いせず、cleanup後に停止する
+1. `pwd`、リポジトリ直下、現在のブランチを確認する。プッシュ先リモートはブランチ設定、なければ唯一のリモートから決め、取得URLとプッシュURLを読む
+2. PRのリポジトリは利用者指定、なければプッシュURLから一意に対応するGitHubリポジトリとする。PR先リモートはそのリポジトリに対応するローカルリモート、比較元は利用者指定、`branch.<branch>.gh-merge-base`、PR先リモートの既定ブランチの順で決める。機能ブランチの上流ブランチを比較元にしない。フォークではプッシュ先リモートとPR先リモートを分け、作業ブランチを`<push-owner>:<branch>`にする
+3. `リポジトリ / 比較元 <- 作業ブランチ / プッシュ先リモート`を表示する。フォーク、複数候補、取得URLとプッシュURLの相違、提出先変更がある場合だけ、ネットワーク操作前に利用者へ確認する。選んだプッシュ先リモートと、異なる場合はPR先リモートだけを`fetch`し、リモート先行や履歴差分を確認する。解消方針が必要なら勝手に`rebase`・`merge`・強制操作を行わない
+4. 未コミット差分がある場合は、完成・検証済みで1つのレビュー可能な目的に閉じていると確認できるときだけ、`jikkou`のコミット契約に従ってコミットする。未完成、検証不明、複数の対象範囲が混在している場合は停止する。その後、作業ツリーがクリーンで、比較元との差分範囲が空でないことを確認する。`.gitmodules`がある場合だけ、サブモジュールの未コミット・未プッシュも確認する
+5. `references/pr-template.md`で変更規模に合う本文とタイトルを作る。提出範囲の追加行、本文、コミットメッセージ、リリースノートを秘密情報検査の対象にする
+6. リモート名は空・先頭`-`を拒否して`git remote`の1行と完全一致させ、ブランチと比較元は`git check-ref-format --branch`で検証する。初回は明示した`refspec`で上流ブランチを設定し、それ以降もリモートと`refspec`を明示して通常プッシュする
+7. 本文は権限を絞った一時ファイルへ置き、作成直後に成功・失敗・中断の全経路で動く後処理を登録する。`gh pr create --repo ... --base ... --head ... --title ... --body-file ...`へ検証済みの値をシェル用に引用して渡し、`--draft`か`--reviewer`を必ず付ける。公開準備完了の指定でレビュー担当を一意に決められない場合は確認し、それ以外は下書きを既定にする
+8. PR URL、比較元・作業ブランチ、下書き・レビュー担当の状態を確認する。プッシュまたはPR作成に失敗したら完了扱いせず、後処理を行って停止する
 
 ## 停止する場合
 
-- targetを一意に決められない
-- ready PRのreviewerを一意に決められない
-- remoteが先行し、解消方法の判断が必要
-- 未完成・検証不明・複数目的の未commit scopeが残る
-- force push、履歴改変、または確認済みtargetと異なるrepoへの変更が必要
-- secretやPIIが公開対象に残る
+- 提出先を一意に決められない
+- 公開準備完了PRのレビュー担当を一意に決められない
+- リモートが先行し、解消方法の判断が必要
+- 未完成・検証不明・複数目的の未コミット差分が残る
+- 強制プッシュ、履歴改変、または確認済みの提出先と異なるリポジトリへの変更が必要
+- 秘密情報や個人情報が公開対象に残る
 
 ## 禁止事項
 
-- 全remoteのfetchや曖昧なupstreamへ依存する
-- userの明示依頼を、別target・force・履歴改変への承認に広げる
-- push失敗や検証不明のままPR作成へ進む
-- command文字列を`eval`する、返却commandをそのまま実行する
+- 全リモートの取得や曖昧な上流ブランチへ依存する
+- 利用者の明示依頼を、別の提出先・強制操作・履歴改変への承認に広げる
+- プッシュ失敗や検証不明のままPR作成へ進む
+- コマンド文字列を`eval`する、返されたコマンドをそのまま実行する
 
 ## 報告
 
-提出できたかを最初に書き、PR URL、base/head、push結果、検証・未解決事項だけを続ける。
+提出できたかを最初に書き、PR URL、比較元・作業ブランチ、プッシュ結果、検証・未解決事項だけを続ける。
 
 ## 関連資料
 
-- `pr-template.md`：PR本文、title、公開前scanを作るときに読む
-- `naming.md`：repo固有規約がない場合のbranch・commit・PR命名
+- `pr-template.md`：PR本文、タイトル、公開前検査を作るときに読む
+- `naming.md`：リポジトリ固有規約がない場合のブランチ・コミット・PR命名
