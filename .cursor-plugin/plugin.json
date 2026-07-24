@@ -1,6 +1,6 @@
 {
   "name": "hikizan",
-  "version": "0.10.5",
+  "version": "0.11.0",
   "description": "hikizan for Cursor: verb skills (tansaku / sekkei / jikkou / sadoku / teishutsu / shippitsu) with optional beforeShellExecution safety floors for force push, destructive operations, and unreviewed non-draft PR creation.",
   "author": {
     "name": "hayashiii-ghub"
