@@ -2,11 +2,11 @@
 
 複数 reviewer の構造化データを、user に返す 1 本のレビューへ統合する controller (sadoku 本体) の手順。**入口が diff でもプロジェクト全体でも、出口はこの形で揃える**。これがレビューの質を LLM の匙加減から契約に移す層になる。
 
-subagent は軸ごとの構造化データ (finding + 判定 + severity + ripple + 該当なし) を返すだけ。優先順位づけ・重複排除・翻訳・総評は subagent に持たせず、ここで controller が一度だけやる。
+subagent または inline persona は軸ごとの構造化データ (finding + 判定 + severity + ripple + 該当なし) を返すだけ。優先順位づけ・重複排除・翻訳・総評は persona に持たせず、ここで controller が一度だけやる。
 
 ## 入力
 
-- 各 reviewer subagent の出力 (code-quality / security / architecture / …)。inline 実行した adversarial の観察も同じ扱い
+- 各 reviewer の出力 (code-quality / security / architecture / …)。native subagent と inline fallback を同じ扱いにする
 - controller 自身が diff / コードを裏取りした結果 (subagent の finding は裏取り済みのものだけ採用)
 - 対象に渡した脅威モデル / 設計意図 (採否判定の基準として再掲するため)
 

@@ -30,7 +30,7 @@ when_to_use: "探索, 全体像把握, 影響範囲調査, 用語整理"
 ## 手順
 
 1. 入口文書を読む: `README.md` / `AGENTS.md` / `docs/` / ADR
-2. 探索の広さを見積もる。独立に読める領域 / sub-question が 3 つ以上に割れるなら、以降の深い読み (シンボル / テスト / 履歴 / 指定領域) を read-only な探索 subagent に fan out する (最大 3 並列、渡し方と裏取りは `references/fanout.md`)。1 本の線形トレースなら inline で読む。合成 (用語確定 / CONTEXT.md / 報告) は controller が持つ
+2. 探索の広さを見積もる。独立に読める領域 / sub-question が 3 つ以上に割れ、利用中 harness で native subagent が使えるなら、以降の深い読み (シンボル / テスト / 履歴 / 指定領域) を read-only な探索 subagent へ fan out する (最大 3 並列、渡し方と裏取りは `references/fanout.md`)。subagent が使えない場合と 1 本の線形トレースは inline で読む。合成 (用語確定 / CONTEXT.md / 報告) は controller が持つ
 3. ユーザが指定した file / dir / issue の語が出る場所を読む
 4. 関連シンボルの定義・参照・呼び出し元を辿る (関数や変数は LSP、TODO やコメント等の文字列は grep。LSP が無ければ全部 grep)
 5. 既存テストと検証コマンドを確認する

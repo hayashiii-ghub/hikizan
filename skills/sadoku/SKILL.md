@@ -50,7 +50,7 @@ diff があるだけでは始めない。状態から起動するときは1行�
 2. 深さを決める。diff レビューは変更行数で: 50 行以内かテスト変更のみ → Quick / 50〜500 行 → Standard / 500 行超か security に触れる → Deep。範囲レビューは対象規模で: 単一 file → Quick / 1 module または 2〜10 実行仕様 file → Standard / subsystem、11 file 以上、または security を含む → Deep
 3. 実装者の説明・PR 本文・前段の報告は鵜呑みにしない。finding の根拠は強い順に採る: ①テストの pass/fail ②diff ③周辺コード ④検証ログ ⑤実装者のメモ
 4. 下の「停止条件」を上から順に対象 (diff / 範囲) に当てる。該当したら作業を止めてユーザに確認する
-5. 全 depth で、対象が近隣の類似 artifact から不必要に外れていないか、同じ振る舞いをより少ない分岐・層・概念で表せないかを見る。実行仕様 Markdown は mode / 手順 / 停止条件 / handoff の到達可能性、曖昧な command、重複 SoT、dead guidance も見る。Quick は controller が inline で確認する。ただし user がこの観点を明示した場合と、新しい実装 pattern を導入する場合は Quick でも `reviewer-code-quality` を起動する。Standard 以上の production artifact (code / 実行仕様 Markdown) でも同 reviewer を起動する。security / architecture は該当条件に応じて起動する (最大 3 並列、promptは`references/agents/reviewer-*.md`、条件は`references/persona-catalog.md`)。**起動時に、近隣の比較対象、関連する repo convention の出典、「脅威モデル / 設計意図 (何を守り、何を受容しているか)」を渡す**。返ってきた finding は自分で対象を読み直す / テストを再実行して裏取りしてから採用する
+5. 全 depth で、対象が近隣の類似 artifact から不必要に外れていないか、同じ振る舞いをより少ない分岐・層・概念で表せないかを見る。実行仕様 Markdown は mode / 手順 / 停止条件 / handoff の到達可能性、曖昧な command、重複 SoT、dead guidance も見る。Quick は controller が inline で確認する。ただし user がこの観点を明示した場合と、新しい実装 pattern を導入する場合は Quick でも `reviewer-code-quality` を選ぶ。Standard 以上の production artifact (code / 実行仕様 Markdown) でも同 reviewer を選ぶ。security / architecture は該当条件に応じて選ぶ (条件は `references/persona-catalog.md`)。利用中 harness で native subagent が使える場合は最大 3 並列で起動し、`references/agents/reviewer-*.md` の内容、近隣の比較対象、repo convention の出典、脅威モデル / 設計意図を self-contained prompt として渡す。使えない場合は controller が同じ persona を inline で実行する。どちらも finding は自分で対象を読み直す / テストを再実行して裏取りしてから採用する
 6. 「merge 後 / 運用中に壊れる一番現実的なシナリオ」を 1 つ書く。Quick では省略してよいが、bugfix / 挙動変更 / business rule / API / security に触れる対象では Quick でも書く
 7. UI / style / レイアウトに触れる対象なら次の順で視覚エビデンスを取る
 <!-- hikizan:visual:start -->
@@ -63,7 +63,7 @@ diff があるだけでは始めない。状態から起動するときは1行�
    - probe / screenshotに認証情報・個人情報・tokenを残さない。認証済み画面を扱う場合は`screenshot.mask`を確認する
    - 外部PRや出所不明のrepo、config未設定、実行不能、または必要なJSON evidenceを得られない場合は自動実行せず、「視覚未確認」と理由を報告する
 <!-- hikizan:visual:end -->
-8. subagent を起動したら `references/synthesis.md` の手順で 1 本に統合する (重複排除 → 採否で仕分け → 軸横断 top-N → 翻訳 → verdict → アクションメニュー)。下の「報告」を埋めて返す
+8. subagent または inline persona を使ったら `references/synthesis.md` の手順で 1 本に統合する (重複排除 → 採否で仕分け → 軸横断 top-N → 翻訳 → verdict → アクションメニュー)。下の「報告」を埋めて返す
 
 ## 停止条件 (上から順にチェックし、該当したら止める)
 
@@ -105,7 +105,7 @@ diff があるだけでは始めない。状態から起動するときは1行�
 - visual: [検証入口 (`ui:verify` / `shimon`) + screenshot のパスと pass / 視覚未確認 (理由) / 該当なし]
 - verification: [コマンド] → [出力の最終行をそのまま]
 
-subagent を起動したときは、上の箇条書きの前に `references/synthesis.md` の出口フォーマット (verdict → 直す価値あり top-N → 受容妥当 → 該当なし → 次どうする) を置く。
+subagent または inline persona を使ったときは、上の箇条書きの前に `references/synthesis.md` の出口フォーマット (verdict → 直す価値あり top-N → 受容妥当 → 該当なし → 次どうする) を置く。
 
 worktree 内 (`git rev-parse --git-dir` と `--git-common-dir` の正規化結果が異なる) なら `worktree: [branch]` を 1 行足す。
 

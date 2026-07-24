@@ -8,7 +8,8 @@ subagent は領域ごとの構造化データ (Map 断片 + evidence + 用語候
 
 - 独立に読める領域 / sub-question が 3 つ以上に割れるときだけ fan out する。1 本の線形トレース (定義から呼び出し元へ辿るだけ) は inline のまま読む。
 - 並列上限は 3。領域がそれ以上あるなら、controller が重要な 3 つを選び、残りは inline で読む。
-- harness 非依存に書く。Claude Code なら read-only の探索 subagent を使う。skill 本文に特定の agent 名を焼き付けない。
+- 利用中 harness が native subagent を提供するときだけ使う。対象範囲、read-only 制約、返却形式を self-contained prompt として渡し、runtime に read-only sandbox や tool 制限があれば併用する。特定 harness の agent 名や custom agent file を前提にしない。
+- subagent が使えない場合は同じ対象を controller が inline で読む。並列度を下げても探索範囲と裏取り基準は狭めない。
 
 ## controller が渡すもの
 

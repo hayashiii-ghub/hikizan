@@ -12,11 +12,11 @@
 
 1. controller (sadoku 本体) が対象 (diff / 範囲) を読む。あわせて近隣の類似実装を軸 3、関連する repo convention を軸 4、脅威モデル / 設計意図を軸 6 で抽出する (出どころ優先 ①CONTEXT.md ②PR / issue intent ③user に 1 行)
 2. 各 persona の起動条件を照合
-3. ヒットした persona だけ subagent として起動。**起動時に、手順 1 で抽出した比較対象、repo convention の出典、脅威モデル / 設計意図 (何を守り、何を受容しているか) を渡す**。subagent の採否判定はこの前提に照らす。渡さないと勝手な基準で問題を作り、懸念の羅列になる
-4. subagent の出力を controller が**裏取り** (該当 file:line を実際に grep / Read で確認、subagent の主張を鵜呑みにしない)
+3. ヒットした persona だけ実行する。利用中 harness で native subagent が使える場合は、該当する `agents/reviewer-*.md` の内容と手順 1 の文脈を self-contained prompt として渡して起動する。custom agent file を前提にしない。subagent が使えない場合は controller が同じ prompt と文脈を使って inline で実行する
+4. subagent または inline persona の出力を controller が**裏取り** (該当 file:line を実際に grep / Read で確認し、最初の判定を鵜呑みにしない)
 5. 裏取り済の指摘を `references/synthesis.md` の手順で 1 本に統合して報告に反映
 
-並列起動上限は 3。
+native subagent の並列起動上限は 3。inline fallback でも起動条件、対象範囲、報告形式は変えない。
 
 ## persona 一覧
 

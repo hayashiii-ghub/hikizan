@@ -90,6 +90,8 @@ ln -sfn "$(pwd)/hooks/adapters/opencode/hikizan.ts" ~/.config/opencode/plugins/h
 
 そのほかのAgent Skills対応ハーネスでは、Agent Skills経路でskillsのみ利用できます。repository CIが保証するのは配布物・配線・adapterの入出力までで、各ハーネス本体の将来versionとの互換性を完全に保証するものではありません。
 
+`tansaku` の広域探索と `sadoku` の専門レビューは、Cursor / Codex を含む利用中ハーネスで native subagent が使える場合だけ委譲します。既定または汎用の subagent へ自己完結した prompt を渡すため、ハーネス別の custom agent file は同梱しません。subagent が使えない場合も同じ範囲を inline で確認します。
+
 ## 使い方
 
 特別なcommandを覚える必要はありません。やりたいことをそのまま依頼します。
