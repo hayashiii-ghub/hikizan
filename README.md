@@ -2,6 +2,8 @@
 
 hikizanは、AIエージェントの開発作業を「調べる・決める・作る・見る・出す・伝える」に分けた、日本語の[Agent Skills](https://agentskills.io/) packです。
 
+[v0.10.5からv0.11.1までの変更を見る](https://hikizan-v011-shimon.haygsiiii.chatgpt.site)
+
 エージェントへ長い指示を毎回書かなくても、次の流れを共通化できます。
 
 - 未知のコードを調べ、影響範囲を整理する

@@ -15,3 +15,9 @@
 
 # 一時テスト出力
 /tmp/
+
+# local release site prototypes (published separately with ChatGPT Sites)
+/.site/
+/release-site.css
+/release-v*.html
+/shimon.html
