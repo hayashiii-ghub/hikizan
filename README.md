@@ -149,7 +149,7 @@ hooksは実装方法を決めたり、commitを禁止したりしません。入
 | `jikkou` | 計画実行, 実装, エラー診断, root cause, バグ修正 |
 | `sadoku` | PR確認, レビュー, code review, プロジェクトレビュー, コード整理, simplify |
 | `teishutsu` | PR提出, PR出す, PR ready, PR文書いて, PR description, submission, PR open |
-| `houkoku` | 報告, 完了報告, 作業結果, 何をした, リリース報告, handoff |
+| `houkoku` | 報告, 完了報告, 作業結果, 何をした, Slack共有, リリース報告, handoff |
 
 発動条件の正本は各 SKILL.md frontmatter `description`。
 <!-- hikizan:triggers:end -->

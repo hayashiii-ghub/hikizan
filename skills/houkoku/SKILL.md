@@ -1,8 +1,8 @@
 ---
 name: houkoku
-description: "Use this skill when the user wants a completed task, review, PR, or release reported clearly — including the phrasings 何をした, 結果を教えて, 完了報告, 作業報告, リリース報告, handoff, 報告して. Activate as the sixth and final hikizan step after implementation, review, or submission to communicate the outcome, changes, verification evidence, remaining work, and next action without inventing facts."
+description: "Use this skill when the user wants a completed task, review, PR, or release reported clearly — including the phrasings 何をした, 結果を教えて, 完了報告, 作業報告, Slackで共有, リリース報告, handoff, 報告して. Activate as the sixth and final hikizan step after implementation, review, or submission. In ordinary chat, communicate the outcome and reasoning as natural prose rather than a fixed status template; preserve verification evidence, uncertainty, remaining work, and next actions without inventing facts."
 license: MIT
-when_to_use: "報告, 完了報告, 作業結果, 何をした, リリース報告, handoff"
+when_to_use: "報告, 完了報告, 作業結果, 何をした, Slack共有, リリース報告, handoff"
 ---
 
 # houkoku (報告)
@@ -31,7 +31,7 @@ hikizanの6番目にあたる最終工程。実装・レビュー・提出で得
 
 | モード | きっかけ |
 | --- | --- |
-| 作業報告 | 実装・レビュー・PRの結果を短く共有する |
+| 会話報告 | 通常のchatやSlackで、判断と結果を自然に共有する |
 | リリース報告 | version間の変更、移行時の注意、利用者への影響をまとめる |
 | handoff | 次の担当・skillへ、判断に必要な証拠と残件を渡す |
 
@@ -49,20 +49,20 @@ hikizanの6番目にあたる最終工程。実装・レビュー・提出で得
 
 1. 誰に、どの作業・version・期間を報告するかを決める
 2. diff、検証出力、PRやreleaseの状態から事実を集める
-3. 結論を1文で先に置き、変更・検証・残件・次の順に並べる
+3. 会話報告では、結論または現在の判断が早く伝わる自然な文章にする。固定の順序やfield名は使わない
 4. `references/writing-style.md`を当てる。長いリリース報告やincident reportでは`references/cognitive-rhythm.md`も当てる
-5. `passした`、`公開した`、`マージした`などの状態表現を証拠と照合する
+5. 事実・推測・未確認を分ける。`passした`、`公開した`、`マージした`などの状態表現を証拠と照合し、仮説なら言い切らない
 6. 続く作業がある場合だけ、最後に1行のhandoffを置く
 
 ## 出力
 
-最初に、いまの状態が分かる結論を1文で書く。必要な項目だけ続ける。
+`changed`、`verified`、`remaining`、`next`、`links`は含める情報の候補であり、見出しや出力順のtemplateではない。必要な情報だけを、利用者の次の判断へつながる形で出す。
 
-- changed: 何が変わったか
-- verified: 何をどう確認したか
-- remaining: 未完了、未確認、既知のリスク
-- next: 利用者の次の操作、または次の担当
-- links: PR、release、関連file
+- 通常のchatやSlackでは、周囲の会話に合う自然な散文を既定にする
+- 判断理由が重要なら、原因の見立て、変更した理由、期待する効果のつながりを説明する
+- 複数の変更や比較だけ、読みやすくなる範囲で箇条書きにする
+- releaseやhandoff、一覧性を求められた報告では見出しと箇条書きを使う
+- 検証できていない効果は、仮説・見込み・未確認として書く
 
 長さは作業量ではなく、利用者の次の判断に必要な情報量で決める。
 
@@ -71,6 +71,8 @@ hikizanの6番目にあたる最終工程。実装・レビュー・提出で得
 - 実行していない検証を`pass`と書く
 - draft、未push、未公開の状態を完了扱いする
 - 実装過程の細部を、利用者の判断に不要なのに列挙する
+- 通常の会話で`changed:`のような固定fieldを機械的に並べる
+- 例文の言い回しや段落順をtemplateとして再現する
 - 残件や未確認事項を隠す
 - 報告のためにコードレビューを始める (`sadoku`へ)
 - 報告のためにPRを作る (`teishutsu`へ)
