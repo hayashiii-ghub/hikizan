@@ -38,9 +38,11 @@ jq -e '.hooks == "./hooks/adapters/codex/hooks.json" and .skills == "./skills/"'
 # All harnesses share the same three floor classifiers.
 cc_floors="$(grep -o 'pre-[a-z-]*\.sh' "$ROOT/hooks/hooks.json" | sort -u)"
 cx_floors="$(grep -o 'pre-[a-z-]*\.sh' "$ROOT/hooks/adapters/codex/hooks.json" | sort -u)"
+oc_floors="$(grep -o 'pre-[a-z-]*\.sh' "$ROOT/hooks/adapters/opencode/hikizan.ts" | sort -u)"
 expected_floors="$(printf '%s\n' pre-destructive.sh pre-pr-create.sh pre-push.sh)"
-[ "$cc_floors" = "$expected_floors" ] && [ "$cx_floors" = "$expected_floors" ] && ok "Claude and Codex wire the shared safety floors" || bad "hook floor wiring differs"
+[ "$cc_floors" = "$expected_floors" ] && [ "$cx_floors" = "$expected_floors" ] && [ "$oc_floors" = "$expected_floors" ] && ok "Claude, Codex, and OpenCode wire the shared safety floors" || bad "hook floor wiring differs"
 require_text "$ROOT/hooks/adapters/codex/hooks.json" 'pre-destructive.sh deny' "Codex destructive floor is not deny"
+require_text "$ROOT/hooks/adapters/opencode/hikizan.ts" '["deny", "OpenCode"]' "OpenCode destructive floor is not deny"
 require_text "$ROOT/hooks/adapters/cursor/hooks.json" './hooks/adapters/cursor/before-shell.sh' "Cursor adapter path is stale"
 [ -x "$ROOT/hooks/adapters/cursor/before-shell.sh" ] || bad "Cursor adapter is not executable"
 for file in "$ROOT/hooks/hooks.json" "$ROOT/hooks/adapters/codex/hooks.json" "$ROOT/hooks/adapters/cursor/hooks.json"; do
@@ -76,6 +78,7 @@ require_text "$ROOT/README.md" 'npx skills add github:hayashiii-ghub/hikizan -g'
 require_text "$ROOT/README.md" '| Claude Code plugin | skills + safety hooks |' "README support matrix omits Claude Code"
 require_text "$ROOT/README.md" '| Codex plugin | skills + safety hooks |' "README support matrix omits Codex"
 require_text "$ROOT/README.md" '| Cursor plugin | skills + safety hooks |' "README support matrix omits Cursor"
+require_text "$ROOT/README.md" '| OpenCode + local adapter | skills + safety hooks |' "README support matrix omits OpenCode"
 require_text "$ROOT/README.md" '| Agent Skills対応ハーネス | skillsのみ |' "README support matrix omits the skills-only boundary"
 require_text "$ROOT/README.md" 'https://github.com/hayashiii-ghub/shimon' "README does not identify the standard visual harness"
 require_text "$ROOT/README.md" 'npm install --save-dev @hayashiii/shimon' "README omits the project-local Shimon install"

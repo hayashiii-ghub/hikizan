@@ -27,7 +27,7 @@ skillsは相互にhandoffするため、pack 単位で導入します。個別sk
 
 ### 推奨: エージェントに依頼
 
-利用中のClaude Code、Codex、Cursorなどで、エージェントに依頼するのが一番簡単です。
+利用中のClaude Code、Codex、Cursor、OpenCodeなどで、エージェントに依頼するのが一番簡単です。
 
 > hayashiii-ghub/hikizanのREADMEとmanifestを確認し、現在のハーネスへ設定してください。最初にskillsだけにするかsafety hooksも付けるか確認し、既存設定と重複しないnativeな方法を選んでください。変更内容を提示してから適用し、最後にskill discoveryを検証してください。
 
@@ -64,6 +64,16 @@ codex plugin add hikizan@hikizan
 
 Cursor pluginは、Plugins画面からGitHub repository `hayashiii-ghub/hikizan`を追加します。
 
+OpenCodeは、skills packを導入したうえでrepository内のlocal adapterをplugin directoryへlinkします。
+
+```bash
+git clone https://github.com/hayashiii-ghub/hikizan.git
+cd hikizan
+npx skills add github:hayashiii-ghub/hikizan -g
+mkdir -p ~/.config/opencode/plugins
+ln -sfn "$(pwd)/hooks/adapters/opencode/hikizan.ts" ~/.config/opencode/plugins/hikizan.ts
+```
+
 導入後は新しいtaskを開始し、旧版や別経路のskillが重複していないことを確認してください。
 
 ### 対応範囲
@@ -73,9 +83,10 @@ Cursor pluginは、Plugins画面からGitHub repository `hayashiii-ghub/hikizan`
 | Claude Code plugin | skills + safety hooks | 6 skillsのdiscoveryとClaude形式の3 floorsをrepository CIで検査 |
 | Codex plugin | skills + safety hooks | manifestのskills・hooks配線とCodex形式の3 floorsをrepository CIで検査 |
 | Cursor plugin | skills + safety hooks | manifestのhooks配線、skill discovery対象、Cursor形式の3 floorsをrepository CIで検査 |
+| OpenCode + local adapter | skills + safety hooks | Agent Skills discoveryと`tool.execute.before`形式の3 floorsをrepository CIで検査 |
 | Agent Skills対応ハーネス | skillsのみ | 6 skillsのfrontmatter名と共通handoff契約をrepository CIで検査 |
 
-hikizanのnative pluginを提供していないOpenCodeなどのハーネスは、Agent Skills経路でskillsのみ利用できます。hikizanのsafety hooksは提供しません。repository CIが保証するのは配布物・配線・adapterの入出力までで、各ハーネス本体の将来versionとの互換性を完全に保証するものではありません。
+そのほかのAgent Skills対応ハーネスでは、Agent Skills経路でskillsのみ利用できます。repository CIが保証するのは配布物・配線・adapterの入出力までで、各ハーネス本体の将来versionとの互換性を完全に保証するものではありません。
 
 ## 使い方
 
@@ -121,7 +132,7 @@ hooksは実装方法を決めたり、commitを禁止したりしません。入
 | 対象 | 止める条件 | 動作 |
 | --- | --- | --- |
 | push | protected branchへのforce相当push、remoteより遅れたpush | deny |
-| destructive shell | `rm -rf`、`git reset --hard`など | Claude Code / Cursorは確認、Codexはdeny |
+| destructive shell | `rm -rf`、`git reset --hard`など | Claude Code / Cursorは確認、Codex / OpenCodeはdeny |
 | PR作成 | `gh pr create`に`--draft`も`--reviewer`もない | deny |
 
 詳しい条件と限界は[hooks/conditions.md](hooks/conditions.md)を参照してください。hooksは事故を減らす補助guardrailであり、完全なsecurity boundaryではありません。
