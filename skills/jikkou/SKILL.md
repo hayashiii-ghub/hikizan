@@ -5,7 +5,7 @@ license: MIT
 when_to_use: "計画実行, 実装, エラー診断, root cause, バグ修正"
 ---
 
-# jikkou (実行)
+# 実行（jikkou）
 
 必要な範囲を理解し、変更し、riskに見合う検証まで完了する。明確な実装をplan待ちにしない。
 
@@ -14,6 +14,7 @@ when_to_use: "計画実行, 実装, エラー診断, root cause, バグ修正"
 
 全skill共通。正本は `scripts/contract.md` で、`scripts/gen-contract.sh` が各 SKILL.md のこの区間に書き込む (手で編集しない)。
 
+- 各skillを起動したら、作業前に1行だけ `🌲 <skill名>（日本語名）：<今回の目的>` と伝える。同じskill内の局所作業では繰り返さない
 - skillを固定順に通さない。各skillは依頼された成果と、そのために必要な可逆の局所作業を同じtask内で完了する
 - userに確認するのは、結果やscopeを大きく変える未決事項、曖昧な外部操作、元に戻せない操作だけ。明確で可逆な作業は止めない
 - 検証はriskに比例させ、実行したcommandと判定に必要な結果を残す。未検証の状態をpass・完了と書かない
@@ -21,7 +22,7 @@ when_to_use: "計画実行, 実装, エラー診断, root cause, バグ修正"
 - PR本文・commit message・公開文にtoken、email、チーム外の実名を含めない。外へ出す直前に対象をscanする
 <!-- hikizan:contract:end -->
 
-## モード
+## 使い分け
 
 - 実装：依頼されたobservableな変更を完成させる
 - 診断：症状を再現し、原因を絞って修正する
@@ -52,14 +53,14 @@ when_to_use: "計画実行, 実装, エラー診断, root cause, バグ修正"
 
 何が変わったかを最初に書き、実行した検証と結果、未確認・残件があれば続ける。TDDを使った場合も有用なRED / GREENだけを示し、工程のためのログを増やさない。
 
-## やってはいけないこと
+## 禁止事項
 
 - 原因不明のまま当てずっぽうの修正を重ねる
 - userの既存変更やscope外のcleanupを混ぜる
 - 検査失敗を無視して完了扱いする
 - test有効性確認のためにproduction実装を壊して戻す儀式を行う
 
-## references/
+## 関連資料
 
 - `tdd.md`：回帰価値が高く、安定して観測できる変更をtest-firstで進める場合に読む
 - `commit.md`：意味のあるcheckpointを保存する場合に読む

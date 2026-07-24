@@ -5,7 +5,7 @@ license: MIT
 when_to_use: "PR確認, レビュー, code review, プロジェクトレビュー, コード整理, simplify"
 ---
 
-# sadoku (査読)
+# 査読（sadoku）
 
 production codeとagentが実行するMarkdownを、実装者の説明から独立してreviewする。review中は対象を変更しない。
 
@@ -14,6 +14,7 @@ production codeとagentが実行するMarkdownを、実装者の説明から独�
 
 全skill共通。正本は `scripts/contract.md` で、`scripts/gen-contract.sh` が各 SKILL.md のこの区間に書き込む (手で編集しない)。
 
+- 各skillを起動したら、作業前に1行だけ `🌲 <skill名>（日本語名）：<今回の目的>` と伝える。同じskill内の局所作業では繰り返さない
 - skillを固定順に通さない。各skillは依頼された成果と、そのために必要な可逆の局所作業を同じtask内で完了する
 - userに確認するのは、結果やscopeを大きく変える未決事項、曖昧な外部操作、元に戻せない操作だけ。明確で可逆な作業は止めない
 - 検証はriskに比例させ、実行したcommandと判定に必要な結果を残す。未検証の状態をpass・完了と書かない
@@ -21,7 +22,7 @@ production codeとagentが実行するMarkdownを、実装者の説明から独�
 - PR本文・commit message・公開文にtoken、email、チーム外の実名を含めない。外へ出す直前に対象をscanする
 <!-- hikizan:contract:end -->
 
-## モード
+## 使い分け
 
 - review：bug、regression、security、既存codebaseとの不整合を探す
 - simplify：振る舞いを変えずに減らせる分岐・層・重複・dead codeを探す
@@ -42,22 +43,22 @@ production codeとagentが実行するMarkdownを、実装者の説明から独�
 <!-- hikizan:visual:end -->
 7. findingを重複排除し、利用者が判断できる順に並べる。findingがなければ余分な「該当なし」一覧を作らない
 
-## finding
+## 指摘の書き方
 
 各findingにseverity、file:line、問題になる具体的な入力または状況、影響、最小の修正案を含める。好み、根拠のない将来不安、実装者の意図を読み違えただけの指摘は出さない。
 
-## simplify
+## 簡略化
 
 `references/simplify-checklist.md`を使う。自分では直さず、修正する価値があるものと据え置きでよいものを分ける。
 
-## やってはいけないこと
+## 禁止事項
 
 - review対象や比較対象を確認せず一般論で指摘する
 - subagentのfindingを裏取りせず採用する
 - 行数・file数のthresholdだけでdeep reviewやpersonaを起動する
 - review中に対象を修正する
 
-## references/
+## 関連資料
 
 - `persona-catalog.md`：専門reviewが必要な場合だけ読む
 - `simplify-checklist.md`：明示的なsimplify依頼で読む

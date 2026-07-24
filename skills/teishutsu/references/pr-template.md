@@ -1,8 +1,8 @@
-# PR draft
+# PR本文
 
 PR本文はreviewerが変更理由、実装、検証を判断できる最小構成にする。空sectionを`なし`で埋めない。
 
-## Intake
+## 必要な情報
 
 - change intentまたはissue
 - baseとの差分
@@ -10,35 +10,35 @@ PR本文はreviewerが変更理由、実装、検証を判断できる最小構�
 
 不足している事実を推測しない。diffとrepo内の情報で決まらない場合だけuserへ確認する。
 
-## Title
+## タイトル
 
 repo規約を優先し、なければ`naming.md`に従う。変更後のobservableな結果を1行で表す。
 
-## Body
+## 本文
 
 基本は次の3項目で足りる。
 
 ```markdown
-## Why
+## 変更理由
 
 [解決する問題または変更理由]
 
-## Changes
+## 変更内容
 
 - [review可能な単位の変更]
 
-## Verification
+## 検証
 
 - `[command]` — [result]
 ```
 
 移行、互換性、rollback、未解決risk、重要な設計判断がある場合だけ該当sectionを追加する。内部skillの順序や、実施していない工程のtraceは書かない。
 
-## Scope
+## 変更範囲
 
 1 PRを1つのreview可能な目的にする。別々に価値を持ち単独revertできるcleanupは混ぜない。複数fileや複数commitでも同じ目的に必要なら分割しない。
 
-## PII / Secrets scan
+## 個人情報と秘密情報の検査
 
 PR body、提出rangeの追加行とcommit message、release note、本文へ転載するlogをscanする。repo既存scannerは、対象repoがtrustedで、scanner本体・設定・依存を読め、networkやpluginを実行しない場合だけ使う。scanner関連fileが変更対象なら実行せず、built-in grepを使う。
 

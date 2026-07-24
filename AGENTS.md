@@ -17,10 +17,12 @@ bash scripts/check-all.sh
 ## Conventions
 
 - skill本文はハーネス非依存にする。Claude Code / Cursor / Codex固有APIは必要な注釈以外で本文に出さない
+- directory・file・skill IDは英語のASCII識別子を使い、runtime Markdownの見出しは日本語話者が内容を判断できる日本語にする
 - 配布単位はpack全体だが、6 skillは固定順のworkflowでなく独立したlensとして使う。通常taskへ形式的なhandoffや承認待ちを追加しない
 - 明確で可逆な作業は同じtask内で完了し、確認・検証・reviewは不可逆性、外部作用、security、data、public interface、rollback costに比例させる
 - 別skillを参照するときは論理名を使い、repo-relative pathを使わない
 - shared contractの正本は`scripts/contract.md`。各SKILL.mdのcontract marker間を直接編集しない
+- skill起動時の`🌲`表示はshared contractで揃え、同じskill内の局所作業では繰り返さない
 - core skill集合・表示順の正本は`scripts/skills.json`
 - trigger表は`scripts/gen-trigger-docs.sh`で生成し、READMEのmarker区間を手動編集しない
 - manifest metadataの正本は`plugin.src.json`。3つのplugin.jsonは`scripts/gen-manifests.sh`の生成物

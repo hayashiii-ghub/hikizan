@@ -5,7 +5,7 @@ license: MIT
 when_to_use: "PR提出, PR出す, PR ready, PR文書いて, PR description, submission, PR open"
 ---
 
-# teishutsu (提出)
+# 提出（teishutsu）
 
 PR本文を作り、明確な提出先へ通常pushしてPRを作る。userの明示的な提出依頼は、一意に確定できるrepo・branch・完成scopeへの通常commit・push・PR作成を許可する。
 
@@ -14,6 +14,7 @@ PR本文を作り、明確な提出先へ通常pushしてPRを作る。userの�
 
 全skill共通。正本は `scripts/contract.md` で、`scripts/gen-contract.sh` が各 SKILL.md のこの区間に書き込む (手で編集しない)。
 
+- 各skillを起動したら、作業前に1行だけ `🌲 <skill名>（日本語名）：<今回の目的>` と伝える。同じskill内の局所作業では繰り返さない
 - skillを固定順に通さない。各skillは依頼された成果と、そのために必要な可逆の局所作業を同じtask内で完了する
 - userに確認するのは、結果やscopeを大きく変える未決事項、曖昧な外部操作、元に戻せない操作だけ。明確で可逆な作業は止めない
 - 検証はriskに比例させ、実行したcommandと判定に必要な結果を残す。未検証の状態をpass・完了と書かない
@@ -21,7 +22,7 @@ PR本文を作り、明確な提出先へ通常pushしてPRを作る。userの�
 - PR本文・commit message・公開文にtoken、email、チーム外の実名を含めない。外へ出す直前に対象をscanする
 <!-- hikizan:contract:end -->
 
-## モード
+## 使い分け
 
 - 本文ドラフト：「PR文書いて」なら本文だけ作る
 - 提出：「PR出して」ならtarget確認からpush・PR作成まで行う
@@ -46,7 +47,7 @@ PR本文を作り、明確な提出先へ通常pushしてPRを作る。userの�
 - force push、履歴改変、または確認済みtargetと異なるrepoへの変更が必要
 - secretやPIIが公開対象に残る
 
-## やってはいけないこと
+## 禁止事項
 
 - 全remoteのfetchや曖昧なupstreamへ依存する
 - userの明示依頼を、別target・force・履歴改変への承認に広げる
@@ -57,7 +58,7 @@ PR本文を作り、明確な提出先へ通常pushしてPRを作る。userの�
 
 提出できたかを最初に書き、PR URL、base/head、push結果、検証・未解決事項だけを続ける。
 
-## references/
+## 関連資料
 
 - `pr-template.md`：PR本文、title、公開前scanを作るときに読む
 - `naming.md`：repo固有規約がない場合のbranch・commit・PR命名

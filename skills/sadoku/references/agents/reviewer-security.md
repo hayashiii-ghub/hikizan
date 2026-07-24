@@ -3,7 +3,7 @@ name: reviewer-security
 description: "Review a supplied artifact for concrete security regressions at trust boundaries"
 ---
 
-# security reviewer
+# セキュリティレビュー担当
 
 対象snapshotと変更意図をread-onlyでreviewする。
 

@@ -3,7 +3,7 @@ name: reviewer-architecture
 description: "Review a supplied artifact for boundary, dependency, and change-propagation problems"
 ---
 
-# architecture reviewer
+# 設計レビュー担当
 
 対象snapshotと既存module境界をread-onlyでreviewする。
 

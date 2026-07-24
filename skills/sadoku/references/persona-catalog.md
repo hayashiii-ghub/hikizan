@@ -1,4 +1,4 @@
-# reviewer selection
+# 専門レビューの選び方
 
 controllerの通常reviewだけでは独立した専門性が足りない場合に限り、該当するreviewerを選ぶ。
 

@@ -1,10 +1,10 @@
-# commit checkpoint
+# コミットの区切り
 
 commitは必須工程ではなく、意味のある状態を保存するときだけ作る。
 
 1 commitには、独立して説明・検証・revertできる1つの変更を入れる。振る舞いと回帰test、sourceと生成物、schemaと必須consumerなど、片方だけではgreenにならない変更は一緒にする。
 
-commit前:
+コミット前：
 
 1. repo rootとcurrent branchが対象と一致するか確認する
 2. staged diffを1文で説明でき、scope外のfileがないか確認する

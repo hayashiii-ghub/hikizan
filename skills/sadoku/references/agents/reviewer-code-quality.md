@@ -3,7 +3,7 @@ name: reviewer-code-quality
 description: "Review a supplied artifact for codebase fit and behavior-preserving simplification"
 ---
 
-# code-quality reviewer
+# コード品質レビュー担当
 
 対象snapshotをread-onlyでreviewする。
 

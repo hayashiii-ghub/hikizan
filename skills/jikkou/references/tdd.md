@@ -1,4 +1,4 @@
-# test-first guidance
+# テストを先に書く場合
 
 test-firstは、回帰価値が高く、既存harnessからobservable behaviorを安定して確認できる場合に使う。
 

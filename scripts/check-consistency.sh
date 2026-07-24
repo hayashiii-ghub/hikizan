@@ -24,6 +24,19 @@ for name in $CORE; do
   frontmatter_name="$(awk -F': *' '/^name:/ { print $2; exit }' "$ROOT/skills/$name/SKILL.md")"
   [ "$frontmatter_name" = "$name" ] || bad "skill discovery name mismatch: directory=$name frontmatter=$frontmatter_name"
 done
+require_text "$ROOT/scripts/contract.md" '🌲 <skill名>（日本語名）：<今回の目的>' "shared contract omits the skill activation marker"
+
+# Runtime paths stay ASCII for tools; human-facing Markdown headings stay Japanese.
+heading_drift="$(find "$ROOT/skills" -type f -name '*.md' -print0 | while IFS= read -r -d '' file; do
+  awk 'BEGIN { code=0 } /^```/ { code=!code; next } !code && /^#{1,3}[[:space:]]/ && $0 !~ /[ぁ-んァ-ヶ一-龠]/ { print FNR ":" $0 }' "$file" |
+    while IFS= read -r line; do printf '%s:%s\n' "${file#$ROOT/}" "$line"; done
+done)"
+if [ -n "$heading_drift" ]; then
+  printf '%s\n' "$heading_drift"
+  bad "runtime Markdown contains a non-Japanese heading"
+else
+  ok "runtime Markdown headings are Japanese"
+fi
 
 # Generated manifests share one version and retain the native entrypoints.
 cc_ver="$(jq -r .version "$ROOT/.claude-plugin/plugin.json")"
