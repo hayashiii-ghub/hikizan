@@ -24,7 +24,7 @@ bash scripts/check-all.sh
 - manifest metadataの正本は`plugin.src.json`。3つのplugin.jsonは`scripts/gen-manifests.sh`の生成物
 - visual verification共通規則の正本は`scripts/visual-contract.md`
 - commit / branch / PRの命名は`skills/teishutsu/references/naming.md`
-- 日本語散文は`skills/shippitsu/references/writing-style.md`
+- 日本語散文は`skills/houkoku/references/writing-style.md`
 - 非hiddenの実装rootを`skills/` / `hooks/` / `scripts/`以外に増やさない
 
 skillを足す・減らす場合:
@@ -42,11 +42,11 @@ hooksはpush、PR作成、破壊的shell操作の決定論的なfloorだけを�
 
 - 発火条件: `hooks/conditions.md`
 - Claude entrypoint: `hooks/hooks.json`
-- Codex / Cursor配線: `hooks/adapters/`
+- Codex / Cursor / OpenCode配線: `hooks/adapters/`
 - 共通logic: `hooks/scripts/lib/`と`hooks/scripts/pre-*.sh`
 - 回帰検査: `hooks/tests/`
 
-force pushとreviewerなしの非draft PR作成は全対応ハーネスでdeny。破壊的操作はClaude Code / Cursorでask、askを返せないCodexではdeny。差分はadapterのI/Oとdecision policyに限定する。
+force pushとreviewerなしの非draft PR作成は全対応ハーネスでdeny。破壊的操作はClaude Code / Cursorでask、askを返せないCodex / OpenCodeではdeny。差分はadapterのI/Oとdecision policyに限定する。
 
 ## Safety
 
@@ -66,7 +66,7 @@ force pushとreviewerなしの非draft PR作成は全対応ハーネスでdeny�
 | 実装・診断・commit境界 | `skills/jikkou/` |
 | review・simplify・reviewer prompts | `skills/sadoku/` |
 | PR・命名・秘密情報scan | `skills/teishutsu/` |
-| 日本語文章・長文の認知リズム | `skills/shippitsu/` |
+| 作業・リリース・handoffの報告と日本語文章規範 | `skills/houkoku/` |
 | UI視覚検証・Shimon利用契約 | `scripts/visual-contract.md` |
 | hook分類とadapter | `hooks/conditions.md` / `hooks/scripts/` / `hooks/adapters/` |
 | version / author / harness description | `plugin.src.json` |

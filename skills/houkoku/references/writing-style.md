@@ -1,6 +1,6 @@
 # 日本語文章規範
 
-hikizan が出す日本語の正本で、`shippitsu` の基本規範。コードレビューの観点ではなく、文章の書き方を定める。
+hikizan が出す日本語の正本で、`houkoku` の基本規範。コードレビューの観点ではなく、文章の書き方を定める。
 
 出典: k16shikano gist (https://gist.github.com/k16shikano/fd287c3133457c4fd8f5601d34aa817d, ライセンス Unlicense, 取得 2026-06-22)。この hikizan 版が正本。原文の更新は手動で取り込む。
 

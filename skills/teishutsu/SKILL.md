@@ -11,7 +11,7 @@ when_to_use: "PR提出, PR出す, PR ready, PR文書いて, PR description, subm
 🌲 Using /teishutsu for [purpose taken from trigger context].
 ```
 
-PR 本文を書いて PR を出す skill。レビューは `sadoku`。ここが hikizan の**出口**: どの進め方で実装したかに関わらず、PR はこの形式に収束させる。
+PR 本文を書いて PR を出す skill。レビューは `sadoku`。ここが変更を外へ出す**提出の出口**で、提出後の結果を利用者へ伝える6番目の工程は`houkoku`。どの進め方で実装したかに関わらず、PRはこの形式に収束させる。
 
 <!-- hikizan:contract:start -->
 ## 共通ルール
@@ -24,7 +24,7 @@ PR 本文を書いて PR を出す skill。レビューは `sadoku`。ここが 
 - commit する場合は `jikkou` の commit 契約に従う。独立して説明・検証・revert できる 1 つの変更を、関連検証が通った状態で保存する
 - PR / branch / step は機能名か issue 名で呼ぶ。PR-1 のような独自の連番を作らない (詳細は `teishutsu` の naming reference)
 - 別の skill に渡すときは 1 行で書く: `handoff: [skill] / brief: [1 文] / evidence: [file:line かコマンド出力]`
-- 日本語の文章は `shippitsu` の writing-style 規範に従う
+- 日本語の文章は `houkoku` の writing-style 規範に従う
 <!-- hikizan:contract:end -->
 
 ## 2 つのモード

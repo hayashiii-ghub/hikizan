@@ -24,7 +24,7 @@ when_to_use: "計画実行, 実装, エラー診断, root cause, バグ修正"
 - commit する場合は `jikkou` の commit 契約に従う。独立して説明・検証・revert できる 1 つの変更を、関連検証が通った状態で保存する
 - PR / branch / step は機能名か issue 名で呼ぶ。PR-1 のような独自の連番を作らない (詳細は `teishutsu` の naming reference)
 - 別の skill に渡すときは 1 行で書く: `handoff: [skill] / brief: [1 文] / evidence: [file:line かコマンド出力]`
-- 日本語の文章は `shippitsu` の writing-style 規範に従う
+- 日本語の文章は `houkoku` の writing-style 規範に従う
 <!-- hikizan:contract:end -->
 
 ## 3 つのモード

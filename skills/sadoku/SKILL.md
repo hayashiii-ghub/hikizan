@@ -1,6 +1,6 @@
 ---
 name: sadoku
-description: "Use this skill when the user wants code or executable project instructions reviewed, or findings simplified — including the phrasings レビューして, コードレビュー, SKILL.mdをレビュー, コード整理して, simplify. Activate after implementation, when reviewing a git diff before opening a PR, when reviewing an existing module, operational Markdown, or whole codebase (no diff needed), or when restructuring messy review findings. レビュー系の語は通常レビュー、整理系の語だけsimplify findingsを起動する。対象はproduction code、agentが実行するMarkdown仕様 (SKILL.md / references / project instructions)、review findings。一般文章の推敲はshippitsuに渡す。"
+description: "Use this skill when the user wants code or executable project instructions reviewed, or findings simplified — including the phrasings レビューして, コードレビュー, SKILL.mdをレビュー, コード整理して, simplify. Activate after implementation, when reviewing a git diff before opening a PR, when reviewing an existing module, operational Markdown, or whole codebase (no diff needed), or when restructuring messy review findings. レビュー系の語は通常レビュー、整理系の語だけsimplify findingsを起動する。対象はproduction code、agentが実行するMarkdown仕様 (SKILL.md / references / project instructions)、review findings。完了したレビューの利用者向け報告はhoukokuに渡す。"
 license: MIT
 when_to_use: "PR確認, レビュー, code review, プロジェクトレビュー, コード整理, simplify"
 ---
@@ -11,7 +11,7 @@ when_to_use: "PR確認, レビュー, code review, プロジェクトレビュ�
 🌲 Using /sadoku for [purpose taken from trigger context].
 ```
 
-production code と実行仕様 Markdown (SKILL.md / references / project instructions) を diff または指定範囲で見る skill。見つけた問題を直すのは `jikkou` (テスト先行の実装は `jikkou` の TDD 実装モード)、設計から見直すなら `sekkei`、提出は `teishutsu` に渡す。一般文章の執筆・推敲は `shippitsu` の責務。
+production code と実行仕様 Markdown (SKILL.md / references / project instructions) を diff または指定範囲で見る skill。見つけた問題を直すのは `jikkou` (テスト先行の実装は `jikkou` の TDD 実装モード)、設計から見直すなら `sekkei`、提出は `teishutsu`、完了結果の利用者向け報告は`houkoku`に渡す。
 
 <!-- hikizan:contract:start -->
 ## 共通ルール
@@ -24,7 +24,7 @@ production code と実行仕様 Markdown (SKILL.md / references / project instru
 - commit する場合は `jikkou` の commit 契約に従う。独立して説明・検証・revert できる 1 つの変更を、関連検証が通った状態で保存する
 - PR / branch / step は機能名か issue 名で呼ぶ。PR-1 のような独自の連番を作らない (詳細は `teishutsu` の naming reference)
 - 別の skill に渡すときは 1 行で書く: `handoff: [skill] / brief: [1 文] / evidence: [file:line かコマンド出力]`
-- 日本語の文章は `shippitsu` の writing-style 規範に従う
+- 日本語の文章は `houkoku` の writing-style 規範に従う
 <!-- hikizan:contract:end -->
 
 ## 2 つのモード
