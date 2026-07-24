@@ -98,8 +98,8 @@ require_text "$ROOT/scripts/visual-contract.md" '自動installや別toolへのfa
 require_text "$ROOT/scripts/visual-contract.md" '.shimon/task.config.mjs' "visual policy omits the task-local shimon config"
 require_text "$ROOT/scripts/visual-contract.md" './node_modules/.bin/shimon verify --config .shimon/task.config.mjs --json' "visual policy omits the local-only shimon command"
 require_text "$ROOT/scripts/visual-contract.md" 'shimon verify --case <name> --config ".shimon/task.config.mjs" --json' "visual policy does not recognize Shimon reproduce output"
-require_text "$ROOT/skills/shippitsu/SKILL.md" 'references/writing-style.md' "shippitsu omits the standard writing profile"
-require_text "$ROOT/skills/shippitsu/SKILL.md" 'references/cognitive-rhythm.md' "shippitsu omits the long-form writing profile"
+require_text "$ROOT/skills/houkoku/SKILL.md" 'references/writing-style.md' "houkoku omits the standard writing profile"
+require_text "$ROOT/skills/houkoku/SKILL.md" 'references/cognitive-rhythm.md' "houkoku omits the long-form reporting profile"
 
 # The documented token scan still catches representative formats.
 token_line="$(awk '/^# hikizan:token-pattern$/ { getline; print; exit }' "$ROOT/skills/teishutsu/references/pr-template.md")"

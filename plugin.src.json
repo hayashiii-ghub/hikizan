@@ -18,5 +18,5 @@
   "homepage": "https://github.com/hayashiii-ghub/hikizan",
   "repository": "https://github.com/hayashiii-ghub/hikizan",
   "license": "MIT",
-  "keywords": ["japanese", "code-review", "tdd", "debugging", "workflow", "writing"]
+  "keywords": ["japanese", "code-review", "tdd", "debugging", "workflow", "reporting"]
 }

@@ -4,7 +4,7 @@
   "owner": {
     "name": "hayashiii-ghub"
   },
-  "description": "調査・設計・実装・レビュー・提出のskillと、任意のsafety floorsをまとめたAgent Skills pack。",
+  "description": "調査・設計・実装・レビュー・提出・報告のskillと、任意のsafety floorsをまとめたAgent Skills pack。",
   "plugins": [
     {
       "name": "hikizan",

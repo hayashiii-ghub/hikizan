@@ -1,6 +1,6 @@
 # hikizan
 
-hikizanは、AIエージェントの開発作業を「調べる・決める・作る・見る・出す」に分けた、日本語の[Agent Skills](https://agentskills.io/) packです。
+hikizanは、AIエージェントの開発作業を「調べる・決める・作る・見る・出す・伝える」に分けた、日本語の[Agent Skills](https://agentskills.io/) packです。
 
 エージェントへ長い指示を毎回書かなくても、次の流れを共通化できます。
 
@@ -9,7 +9,7 @@ hikizanは、AIエージェントの開発作業を「調べる・決める・�
 - 承認された計画を実装して検証する
 - 既存コードとの一貫性や、もっと簡単にできないかまでレビューする
 - commit、push、PR作成を決めた形式へ揃える
-- 日本語のREADMEや説明文を、共通の文章規範で書く・推敲する
+- 変更・検証・残件・次の操作を、利用者へ分かる形で報告する
 
 必要なら、force push・破壊的操作・draftでもreviewer付きでもないPR作成を止めるhooksも追加できます。
 
@@ -98,7 +98,7 @@ ln -sfn "$(pwd)/hooks/adapters/opencode/hikizan.ts" ~/.config/opencode/plugins/h
 承認した計画を実装して
 既存コードと比べて、おかしくないか・簡単にできないかレビューして
 この変更をPRにして
-このREADMEを読みやすく推敲して
+何を変えて何を確認したか報告して
 ```
 
 明示的に呼ぶ場合は、ハーネスのskill呼び出し方法で次の名前を指定します。
@@ -110,7 +110,7 @@ ln -sfn "$(pwd)/hooks/adapters/opencode/hikizan.ts" ~/.config/opencode/plugins/h
 | `jikkou`（実行） | 承認済み計画の実装、原因診断、TDD、commit境界を扱う |
 | `sadoku`（査読） | code・実行仕様Markdownをレビューし、簡略化の余地を見る |
 | `teishutsu`（提出） | PR本文、push、PR提出を扱う |
-| `shippitsu`（執筆） | 日本語文章の執筆・推敲、長文の認知リズムを扱う |
+| `houkoku`（報告） | 6番目の工程として、変更・検証・残件・次の操作を利用者へ報告する |
 
 ## UI検証
 
@@ -149,7 +149,7 @@ hooksは実装方法を決めたり、commitを禁止したりしません。入
 | `jikkou` | 計画実行, 実装, エラー診断, root cause, バグ修正 |
 | `sadoku` | PR確認, レビュー, code review, プロジェクトレビュー, コード整理, simplify |
 | `teishutsu` | PR提出, PR出す, PR ready, PR文書いて, PR description, submission, PR open |
-| `shippitsu` | 執筆, 推敲, リライト, 文章を書く, 平坦な文章, 緩急, 読ませる文章 |
+| `houkoku` | 報告, 完了報告, 作業結果, 何をした, リリース報告, handoff |
 
 発動条件の正本は各 SKILL.md frontmatter `description`。
 <!-- hikizan:triggers:end -->
