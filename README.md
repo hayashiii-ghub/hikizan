@@ -1,17 +1,19 @@
 # hikizan
 
-hikizanは、AIエージェントの開発作業を「調べる・決める・作る・見る・出す・伝える」に分けた、日本語の[Agent Skills](https://agentskills.io/) packです。
+hikizanは、AIエージェントの開発作業を「調べる・決める・作る・見る・出す・伝える」の6方向から補助する、日本語の[Agent Skills](https://agentskills.io/) packです。
 
 [v0.10.5からv0.11.1までの変更を見る](https://hikizan-v011-shimon.haygsiiii.chatgpt.site)
 
-エージェントへ長い指示を毎回書かなくても、次の流れを共通化できます。
+エージェントへ長い指示を毎回書かなくても、必要な場面だけ次の能力を使えます。
 
 - 未知のコードを調べ、影響範囲を整理する
 - 実装前に方針を比較し、やらないことも決める
-- 承認された計画を実装して検証する
+- 明確な依頼はそのまま実装し、riskに合う検証を行う
 - 既存コードとの一貫性や、もっと簡単にできないかまでレビューする
 - commit、push、PR作成を決めた形式へ揃える
-- 変更・検証・残件・次の操作を、利用者へ分かる形で報告する
+- Slack共有やrelease noteなど、用途に合う報告を作る
+
+6つは順番に通す工程ではありません。通常の実装は調査・局所判断・検証・完了報告まで同じtask内で進み、設計比較、独立review、PR提出、共有文面が必要なときだけ該当skillを使います。
 
 必要なら、force push・破壊的操作・draftでもreviewer付きでもないPR作成を止めるhooksも追加できます。
 
@@ -25,7 +27,7 @@ hikizanの導入方法は2つです。同じハーネスへ両方を入れない
 | skills + safety hooks | native plugin | 危険なpushやshell操作も機械的に止めたい |
 
 <!-- hikizan:pack-only -->
-skillsは相互にhandoffするため、pack 単位で導入します。個別skillだけの部分installはサポートしません。
+配布と互換性確認はpack単位です。各skillは独立して使え、固定順のhandoffを要求しません。
 
 ### 推奨: エージェントに依頼
 
@@ -73,8 +75,10 @@ git clone https://github.com/hayashiii-ghub/hikizan.git
 cd hikizan
 npx skills add github:hayashiii-ghub/hikizan -g
 mkdir -p ~/.config/opencode/plugins
-ln -sfn "$(pwd)/hooks/adapters/opencode/hikizan.ts" ~/.config/opencode/plugins/hikizan.ts
+ln -s "$(pwd)/hooks/adapters/opencode/hikizan.ts" ~/.config/opencode/plugins/hikizan.ts
 ```
+
+destinationが既にある場合、上の`ln -s`は失敗します。既存fileやlink先を確認し、同じlinkでなければ置換前にuserへ確認してください。
 
 導入後は新しいtaskを開始し、旧版や別経路のskillが重複していないことを確認してください。
 
@@ -86,7 +90,7 @@ ln -sfn "$(pwd)/hooks/adapters/opencode/hikizan.ts" ~/.config/opencode/plugins/h
 | Codex plugin | skills + safety hooks | manifestのskills・hooks配線とCodex形式の3 floorsをrepository CIで検査 |
 | Cursor plugin | skills + safety hooks | manifestのhooks配線、skill discovery対象、Cursor形式の3 floorsをrepository CIで検査 |
 | OpenCode + local adapter | skills + safety hooks | Agent Skills discoveryと`tool.execute.before`形式の3 floorsをrepository CIで検査 |
-| Agent Skills対応ハーネス | skillsのみ | 6 skillsのfrontmatter名と共通handoff契約をrepository CIで検査 |
+| Agent Skills対応ハーネス | skillsのみ | 6 skillsのfrontmatter名と共通risk契約をrepository CIで検査 |
 
 そのほかのAgent Skills対応ハーネスでは、Agent Skills経路でskillsのみ利用できます。repository CIが保証するのは配布物・配線・adapterの入出力までで、各ハーネス本体の将来versionとの互換性を完全に保証するものではありません。
 
@@ -109,12 +113,14 @@ ln -sfn "$(pwd)/hooks/adapters/opencode/hikizan.ts" ~/.config/opencode/plugins/h
 
 | skill | 役割 |
 | --- | --- |
-| `tansaku`（探索） | code map、影響範囲、用語を整理する |
-| `sekkei`（設計） | 方針比較、kill / keep評価、実装計画を作る |
-| `jikkou`（実行） | 承認済み計画の実装、原因診断、TDD、commit境界を扱う |
-| `sadoku`（査読） | code・実行仕様Markdownをレビューし、簡略化の余地を見る |
-| `teishutsu`（提出） | PR本文、push、PR提出を扱う |
-| `houkoku`（報告） | 6番目の工程として、変更・検証・残件・次の操作を利用者へ報告する |
+| `tansaku`（探索） | 調査自体が成果物のとき、code map・影響範囲・用語を整理する |
+| `sekkei`（設計） | 明示的な方針比較、kill / keep評価、実装計画を作る |
+| `jikkou`（実行） | 通常実装、原因診断、riskに合うtestとcommit境界を扱う |
+| `sadoku`（査読） | code・実行仕様Markdownを独立reviewし、簡略化の余地を見る |
+| `teishutsu`（提出） | PR本文、通常push、PR提出を扱う |
+| `houkoku`（報告） | Slack共有、release note、handoffなどの文面を作る |
+
+検証量は変更規模でなくriskで決めます。文言や局所的な可逆変更は最寄りの検査、ロジック・API・bugfixは回帰検査、security・権限・schema・data loss・高コストなrollbackは対象reviewと全体検証まで行います。
 
 ## UI検証
 

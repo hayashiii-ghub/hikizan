@@ -17,7 +17,9 @@ bash scripts/check-all.sh
 ## Conventions
 
 - skill本文はハーネス非依存にする。Claude Code / Cursor / Codex固有APIは必要な注釈以外で本文に出さない
-- 配布単位はpack全体。別skillは論理名で参照し、repo-relative pathを使わない
+- 配布単位はpack全体だが、6 skillは固定順のworkflowでなく独立したlensとして使う。通常taskへ形式的なhandoffや承認待ちを追加しない
+- 明確で可逆な作業は同じtask内で完了し、確認・検証・reviewは不可逆性、外部作用、security、data、public interface、rollback costに比例させる
+- 別skillを参照するときは論理名を使い、repo-relative pathを使わない
 - shared contractの正本は`scripts/contract.md`。各SKILL.mdのcontract marker間を直接編集しない
 - core skill集合・表示順の正本は`scripts/skills.json`
 - trigger表は`scripts/gen-trigger-docs.sh`で生成し、READMEのmarker区間を手動編集しない
@@ -61,12 +63,12 @@ force pushとreviewerなしの非draft PR作成は全対応ハーネスでdeny�
 | skill trigger / mode / output / stop condition | `skills/<name>/SKILL.md` |
 | 共通skill contract | `scripts/contract.md` |
 | skill集合・順序 | `scripts/skills.json` |
-| 探索・用語・CONTEXT.md契約 | `skills/tansaku/` |
+| 探索・影響範囲・optionalなdomain文書化 | `skills/tansaku/` |
 | 設計・計画・原則 | `skills/sekkei/` |
 | 実装・診断・commit境界 | `skills/jikkou/` |
 | review・simplify・reviewer prompts | `skills/sadoku/` |
 | PR・命名・秘密情報scan | `skills/teishutsu/` |
-| 作業・リリース・handoffの報告と日本語文章規範 | `skills/houkoku/` |
+| Slack・release・handoff文面と日本語文章規範 | `skills/houkoku/` |
 | UI視覚検証・Shimon利用契約 | `scripts/visual-contract.md` |
 | hook分類とadapter | `hooks/conditions.md` / `hooks/scripts/` / `hooks/adapters/` |
 | version / author / harness description | `plugin.src.json` |

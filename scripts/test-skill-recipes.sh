@@ -159,27 +159,4 @@ done
   exit 1
 }
 
-snapshot_repo() {
-  git -C "$repo" status --porcelain=v1 -z
-  git -C "$repo" diff --binary
-  git -C "$repo" diff --cached --binary
-  while IFS= read -r -d '' file; do
-    printf 'untracked:%s\0' "$file"
-    git -C "$repo" hash-object "./$file"
-  done < <(git -C "$repo" ls-files --others --exclude-standard -z)
-}
-status_before="$(git -C "$repo" status --porcelain=v1)"
-snapshot_repo > "$tmp/fingerprint-before"
-printf 'witness-corruption\n' >> "$repo/base.txt"
-status_after="$(git -C "$repo" status --porcelain=v1)"
-[ "$status_before" = "$status_after" ] || {
-  echo '✘ fingerprint test precondition failed: status shape changed'
-  exit 1
-}
-snapshot_repo > "$tmp/fingerprint-after"
-if cmp -s "$tmp/fingerprint-before" "$tmp/fingerprint-after"; then
-  echo '✘ repo fingerprint missed content corruption with unchanged status'
-  exit 1
-fi
-
-echo '✔ skill recipes preserve mixed scope, PR base, explicit push, and witness fingerprints'
+echo '✔ skill recipes preserve mixed scope, PR base, and explicit push'
