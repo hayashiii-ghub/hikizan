@@ -21,6 +21,8 @@ actual="$(find "$ROOT/skills" -mindepth 2 -type f | sed "s#^$ROOT/skills/##" | a
 expected="$(printf '%s\n' $CORE | sort | tr '\n' ' ' | sed 's/ $//')"
 [ "$actual" = "$expected" ] && ok "skills directory matches scripts/skills.json" || bad "skill set drift: expected [$expected], actual [$actual]"
 for name in $CORE; do
+  frontmatter_name="$(awk -F': *' '/^name:/ { print $2; exit }' "$ROOT/skills/$name/SKILL.md")"
+  [ "$frontmatter_name" = "$name" ] || bad "skill discovery name mismatch: directory=$name frontmatter=$frontmatter_name"
   require_text "$ROOT/README.md" "\`$name\`" "README does not mention $name"
   require_text "$ROOT/.claude-plugin/plugin.json" "$name" "Claude manifest does not mention $name"
 done
@@ -71,7 +73,13 @@ require_text "$ROOT/README.md" '手動fallback' "README does not retain a manual
 require_text "$ROOT/README.md" 'codex plugin add hikizan@hikizan' "README is missing Codex fallback"
 require_text "$ROOT/README.md" '/plugin install hikizan@hikizan' "README is missing Claude fallback"
 require_text "$ROOT/README.md" 'npx skills add github:hayashiii-ghub/hikizan -g' "README is missing universal fallback"
+require_text "$ROOT/README.md" '| Claude Code plugin | skills + safety hooks |' "README support matrix omits Claude Code"
+require_text "$ROOT/README.md" '| Codex plugin | skills + safety hooks |' "README support matrix omits Codex"
+require_text "$ROOT/README.md" '| Cursor plugin | skills + safety hooks |' "README support matrix omits Cursor"
+require_text "$ROOT/README.md" '| Agent Skills対応ハーネス | skillsのみ |' "README support matrix omits the skills-only boundary"
 require_text "$ROOT/README.md" 'https://github.com/hayashiii-ghub/shimon' "README does not identify the standard visual harness"
+require_text "$ROOT/README.md" 'npm install --save-dev @hayashiii/shimon' "README omits the project-local Shimon install"
+require_text "$ROOT/README.md" 'npx playwright install chromium' "README omits the Shimon browser install"
 
 # Executable Markdown keeps the reviewed safety invariants from PR #148.
 require_text "$ROOT/skills/sadoku/SKILL.md" '実行仕様 Markdown' "sadoku does not review executable Markdown"
@@ -85,7 +93,8 @@ require_text "$ROOT/skills/jikkou/references/tdd.md" 'git ls-files --others --ex
 require_text "$ROOT/skills/teishutsu/references/pr-template.md" 'scanner関連fileが変更対象なら実行せず' "secret scan may execute an unreviewed scanner"
 require_text "$ROOT/scripts/visual-contract.md" '自動installや別toolへのfallbackはしない' "visual policy allows implicit install/fallback"
 require_text "$ROOT/scripts/visual-contract.md" '.shimon/task.config.mjs' "visual policy omits the task-local shimon config"
-require_text "$ROOT/scripts/visual-contract.md" 'shimon verify --config .shimon/task.config.mjs --json' "visual policy omits the canonical shimon command"
+require_text "$ROOT/scripts/visual-contract.md" './node_modules/.bin/shimon verify --config .shimon/task.config.mjs --json' "visual policy omits the local-only shimon command"
+require_text "$ROOT/scripts/visual-contract.md" 'shimon verify --case <name> --config ".shimon/task.config.mjs" --json' "visual policy does not recognize Shimon reproduce output"
 require_text "$ROOT/skills/shippitsu/SKILL.md" 'references/writing-style.md' "shippitsu omits the standard writing profile"
 require_text "$ROOT/skills/shippitsu/SKILL.md" 'references/cognitive-rhythm.md' "shippitsu omits the long-form writing profile"
 

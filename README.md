@@ -66,6 +66,17 @@ Cursor pluginは、Plugins画面からGitHub repository `hayashiii-ghub/hikizan`
 
 導入後は新しいtaskを開始し、旧版や別経路のskillが重複していないことを確認してください。
 
+### 対応範囲
+
+| 実行環境 | 保証する範囲 | 検証方法 |
+| --- | --- | --- |
+| Claude Code plugin | skills + safety hooks | 6 skillsのdiscoveryとClaude形式の3 floorsをrepository CIで検査 |
+| Codex plugin | skills + safety hooks | manifestのskills・hooks配線とCodex形式の3 floorsをrepository CIで検査 |
+| Cursor plugin | skills + safety hooks | manifestのhooks配線、skill discovery対象、Cursor形式の3 floorsをrepository CIで検査 |
+| Agent Skills対応ハーネス | skillsのみ | 6 skillsのfrontmatter名と共通handoff契約をrepository CIで検査 |
+
+hikizanのnative pluginを提供していないOpenCodeなどのハーネスは、Agent Skills経路でskillsのみ利用できます。hikizanのsafety hooksは提供しません。repository CIが保証するのは配布物・配線・adapterの入出力までで、各ハーネス本体の将来versionとの互換性を完全に保証するものではありません。
+
 ## 使い方
 
 特別なcommandを覚える必要はありません。やりたいことをそのまま依頼します。
@@ -94,7 +105,14 @@ Cursor pluginは、Plugins画面からGitHub repository `hayashiii-ghub/hikizan`
 
 UI・style・layout・interactionの変更では、[Shimon](https://github.com/hayashiii-ghub/shimon)を標準の視覚検証ハーネスとして使います。
 
-Shimon本体やプロジェクト固有の`shimon.config.mjs`はhikizanに同梱しません。対象プロジェクトで設定済みなら、エージェントが一時的な`.shimon/task.config.mjs`を作り、JSON結果と全screenshotを確認します。未導入・未設定・信頼できない設定の場合は別toolへ自動fallbackせず、視覚未確認の理由を報告します。
+Shimon本体やプロジェクト固有の`shimon.config.mjs`はhikizanに同梱しません。UIを持つ対象プロジェクトが、ShimonとChromiumをproject localに導入します。
+
+```bash
+npm install --save-dev @hayashiii/shimon
+npx playwright install chromium
+```
+
+対象プロジェクトで設定済みなら、エージェントがproject-local binaryを確認して一時的な`.shimon/task.config.mjs`を作り、`./node_modules/.bin/shimon verify --config .shimon/task.config.mjs --json`を実行してJSON結果と全screenshotを確認します。未導入・未設定・信頼できない設定の場合は自動installや別toolへのfallbackをせず、視覚未確認の理由を報告します。
 
 ## Safety hooks
 

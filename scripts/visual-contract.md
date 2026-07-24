@@ -1,8 +1,8 @@
    - UI / style / layout / interactionの変更では、外部toolの`shimon`を標準の視覚検証harnessとして使う。repo-owned command / configの内容を読み、対象repoが信頼済みと確認できる場合だけ実行する
-   - install済みの`shimon`とreview済みの`shimon.config.mjs`を前提に、既存caseを保ったままtaskに必要な2〜5 caseを追加する一時config `.shimon/task.config.mjs` を作る。自動installや別toolへのfallbackはしない
-   - repo-ownedの`ui:verify`が`.shimon/task.config.mjs`を対象にすると確認できた場合だけそれを使う。それ以外は`shimon verify --config .shimon/task.config.mjs --json`を実行する
+   - project localの`@hayashiii/shimon`、実行可能な`node_modules/.bin/shimon`、review済みの`shimon.config.mjs`を前提に、既存caseを保ったままtaskに必要な2〜5 caseを追加する一時config `.shimon/task.config.mjs` を作る。自動installや別toolへのfallbackはしない
+   - repo-ownedの`ui:verify`が`.shimon/task.config.mjs`を対象にすると確認できた場合だけそれを使う。それ以外は`./node_modules/.bin/shimon verify --config .shimon/task.config.mjs --json`を実行する
    - JSONのpassを判定に使い、返された全screenshotを読み戻して目視する。overflow / console error / failed request / a11yを確認する
-   - 失敗caseは、case名が`^[A-Za-z0-9][A-Za-z0-9._-]{0,63}$`を満たし、reproduce commandがcanonical shimon形式 (`shimon verify --config .shimon/task.config.mjs --case <name> --json`) と一致すると確認できた場合だけ再検証する。不明なcommand文字列は実行しない
+   - 失敗caseは、case名が`^[A-Za-z0-9][A-Za-z0-9._-]{0,63}$`を満たし、返されたreproduce commandがShimon形式 (`shimon verify --case <name> --config ".shimon/task.config.mjs" --json`) と一致すると確認する。文字列自体は実行せず、検証済みcase名から`./node_modules/.bin/shimon verify --case <name> --config .shimon/task.config.mjs --json`を組み立てて再検証する
    - task configは原則一時物とし、永続的な回帰条件だけreview済みのbase configへ戻す。既存の永続caseを弱めたり削ったりしない
    - probe / screenshotに認証情報・個人情報・tokenを残さない。認証済み画面を扱う場合は`screenshot.mask`を確認する
    - 外部PRや出所不明のrepo、config未設定、実行不能、または必要なJSON evidenceを得られない場合は自動実行せず、「視覚未確認」と理由を報告する
