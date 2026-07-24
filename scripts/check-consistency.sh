@@ -26,16 +26,17 @@ for name in $CORE; do
 done
 require_text "$ROOT/scripts/contract.md" '🌲 <skill名>（日本語名）：<今回の目的>' "shared contract omits the skill activation marker"
 
-# Runtime paths stay ASCII for tools; human-facing Markdown headings stay Japanese.
-heading_drift="$(find "$ROOT/skills" -type f -name '*.md' -print0 | while IFS= read -r -d '' file; do
+# Paths stay ASCII for tools; human-facing Markdown headings stay Japanese.
+heading_drift="$(git -C "$ROOT" ls-files -z -- '*.md' | while IFS= read -r -d '' relative; do
+  file="$ROOT/$relative"
   awk 'BEGIN { code=0 } /^```/ { code=!code; next } !code && /^#{1,3}[[:space:]]/ && $0 !~ /[ぁ-んァ-ヶ一-龠]/ { print FNR ":" $0 }' "$file" |
     while IFS= read -r line; do printf '%s:%s\n' "${file#$ROOT/}" "$line"; done
 done)"
 if [ -n "$heading_drift" ]; then
   printf '%s\n' "$heading_drift"
-  bad "runtime Markdown contains a non-Japanese heading"
+  bad "human-facing Markdown contains a non-Japanese heading"
 else
-  ok "runtime Markdown headings are Japanese"
+  ok "human-facing Markdown headings are Japanese"
 fi
 
 # Generated manifests share one version and retain the native entrypoints.
@@ -82,7 +83,7 @@ fi
 
 # Distribution UX is agent-first but keeps a manual fallback.
 require_text "$ROOT/README.md" 'エージェントに依頼' "README does not lead with agent-assisted setup"
-require_text "$ROOT/README.md" '手動fallback' "README does not retain a manual fallback"
+require_text "$ROOT/README.md" '手動で導入する' "README does not retain manual setup instructions"
 require_text "$ROOT/README.md" 'codex plugin add hikizan@hikizan' "README is missing Codex fallback"
 require_text "$ROOT/README.md" '/plugin install hikizan@hikizan' "README is missing Claude fallback"
 require_text "$ROOT/README.md" 'npx skills add github:hayashiii-ghub/hikizan -g' "README is missing universal fallback"

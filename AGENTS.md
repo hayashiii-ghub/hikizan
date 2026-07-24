@@ -1,10 +1,10 @@
-# AGENTS.md
+# 開発ガイド（AGENTS.md）
 
-## Overview
+## 概要
 
 このrepoはhikizan skill pack本体。runtimeは`skills/`と任意の`hooks/`、開発toolingは`scripts/`。ハーネス固有の設定をrootへ増やさず、native manifestから`hooks/adapters/`を参照する。
 
-## Setup and test
+## 検証
 
 core依存は`bash` / `jq` / `git` / `gh` / `awk`。静的解析の`shellcheck`はlocalでは任意、CIでは必須。
 
@@ -14,10 +14,10 @@ bash scripts/check-all.sh
 
 これがhook tests、recipe regression、consistency、生成物鮮度、shellcheckの単一入口。hook単体実行より`hooks/tests/run.sh`を優先する。
 
-## Conventions
+## 規約
 
 - skill本文はハーネス非依存にする。Claude Code / Cursor / Codex固有APIは必要な注釈以外で本文に出さない
-- directory・file・skill IDは英語のASCII識別子を使い、runtime Markdownの見出しは日本語話者が内容を判断できる日本語にする
+- directory・file・skill IDは英語のASCII識別子を使い、人が読むMarkdownの見出しは日本語話者が内容を判断できる日本語にする
 - 配布単位はpack全体だが、6 skillは固定順のworkflowでなく独立したlensとして使う。通常taskへ形式的なhandoffや承認待ちを追加しない
 - 明確で可逆な作業は同じtask内で完了し、確認・検証・reviewは不可逆性、外部作用、security、data、public interface、rollback costに比例させる
 - 別skillを参照するときは論理名を使い、repo-relative pathを使わない
@@ -40,25 +40,21 @@ skillを足す・減らす場合:
 5. `bash scripts/gen-trigger-docs.sh`
 6. `bash scripts/check-all.sh`
 
-## Hooks
+## 安全フック
 
-hooksはpush、PR作成、破壊的shell操作の決定論的なfloorだけを扱う。commit判断、会話回数ベースの内省、context注入、metricsは追加しない。
+hooksはpush、PR作成、破壊的shell操作の決定論的なfloorだけを扱う。正確な条件は`hooks/conditions.md`を正本とする。
 
-- 発火条件: `hooks/conditions.md`
-- Claude entrypoint: `hooks/hooks.json`
-- Codex / Cursor / OpenCode配線: `hooks/adapters/`
-- 共通logic: `hooks/scripts/lib/`と`hooks/scripts/pre-*.sh`
-- 回帰検査: `hooks/tests/`
+- 共通分類は`hooks/scripts/lib/`と`hooks/scripts/pre-*.sh`に置き、ハーネス差分は`hooks/adapters/`の入出力とdecision policyだけにする
+- Claudeのentrypointは`hooks/hooks.json`、回帰検査は`hooks/tests/`
+- commit判断、会話回数ベースの内省、context注入、metricsは追加しない
 
-force pushとreviewerなしの非draft PR作成は全対応ハーネスでdeny。破壊的操作はClaude Code / Cursorでask、askを返せないCodex / OpenCodeではdeny。差分はadapterのI/Oとdecision policyに限定する。
-
-## Safety
+## 安全
 
 - 破壊的操作やforce pushはユーザの明示確認なしに進めない
 - PR本文・commit messageへtoken、email、チーム外の実名を書かない。scan recipeは`skills/teishutsu/references/pr-template.md`
 - 実行可能Markdownはcodeとしてreviewし、shell safety、temporary file、cleanup、network境界も確認する
 
-## Routing
+## 正本
 
 | 変更対象 | SoT |
 | --- | --- |

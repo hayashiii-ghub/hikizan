@@ -1,4 +1,4 @@
-# Safety floors
+# 安全フックの判定条件
 
 hooksはskillを経由しないshell操作にも適用する任意の安全下限。実装判断、会話回数による内省、commit可否、context注入、利用状況計測は扱わない。
 
