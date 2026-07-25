@@ -25,10 +25,15 @@ for name in $CORE; do
   [ "$frontmatter_name" = "$name" ] || bad "skill discovery name mismatch: directory=$name frontmatter=$frontmatter_name"
 done
 require_text "$ROOT/scripts/contract.md" '🌲 <スキル名>（日本語名）：<今回の目的>' "shared contract omits the skill activation marker"
+require_text "$ROOT/scripts/contract.md" '依頼全体の完了条件として保つ' "shared contract omits the requested endpoint"
+require_text "$ROOT/scripts/contract.md" '推奨順に`A`、`B`、`C`を付けて返す' "shared contract omits alphabetic handoff choices"
+require_text "$ROOT/scripts/contract.md" '人へ渡す日本語' "shared contract omits lightweight prose guidance"
+for name in $CORE; do
+  [ "$(grep -c '^## 次の進め方$' "$ROOT/skills/$name/SKILL.md")" = "1" ] || bad "skills/$name does not define exactly one handoff section"
+done
 
 # Paths stay ASCII for tools; human-facing Markdown headings stay Japanese.
-heading_drift="$(git -C "$ROOT" ls-files -z -- '*.md' | while IFS= read -r -d '' relative; do
-  file="$ROOT/$relative"
+heading_drift="$({ find "$ROOT" -maxdepth 1 -type f -name '*.md' -print0; find "$ROOT/skills" "$ROOT/hooks" "$ROOT/scripts" -type f -name '*.md' -print0; } | while IFS= read -r -d '' file; do
   awk 'BEGIN { code=0 } /^```/ { code=!code; next } !code && /^#{1,3}[[:space:]]/ && $0 !~ /[ぁ-んァ-ヶ一-龠]/ { print FNR ":" $0 }' "$file" |
     while IFS= read -r line; do printf '%s:%s\n' "${file#$ROOT/}" "$line"; done
 done)"
@@ -104,6 +109,7 @@ require_text "$ROOT/README.md" 'https://github.com/hayashiii-ghub/shimon' "READM
 require_text "$ROOT/README.md" 'npm install --save-dev @hayashiii/shimon' "README omits the project-local Shimon install"
 require_text "$ROOT/README.md" 'npx playwright install chromium' "README omits the Shimon browser install"
 require_text "$ROOT/skills/houkoku/references/writing-style.md" '自然な日本語がある概念を英単語のまま文章へ混ぜない' "writing style omits the Japanese prose boundary"
+require_text "$ROOT/skills/houkoku/SKILL.md" 'references/cognitive-rhythm.md' "houkoku omits the long-form writing profile"
 require_text "$ROOT/AGENTS.md" '日本語散文は`skills/houkoku/references/writing-style.md`' "AGENTS does not route Japanese prose to its source"
 
 # Executable Markdown keeps the reviewed safety invariants from PR #148.

@@ -4,7 +4,7 @@ hikizanは、AIエージェントの開発作業を「調べる・決める・�
 
 [v0.10.5からv0.11系までの変更を見る](https://hikizan-v011-shimon.haygsiiii.chatgpt.site)
 
-6つのスキルは順番に通す工程ではありません。通常の実装は同じ作業内で進め、設計比較、独立レビュー、PR提出、共有文面などが必要な場面だけ該当するスキルを使います。
+6つのスキルは固定工程ではありません。ただし「PRまで」のように終点を指定すれば、必要に応じて設計、実装、レビュー、修正、提出をつなぎ、途中で形式的な承認待ちを挟まず最後まで進めます。停止するときは、意味のある次の進め方だけを推奨順に`A` / `B` / `C`で返します。
 
 プラグイン版は、依頼に合うスキルを見つけるための短い起動規則も読み込みます。必要なら、強制プッシュ・破壊的操作・下書きでもレビュー担当付きでもないPR作成を止めるフックも追加できます。
 
@@ -93,7 +93,7 @@ ln -s "$(pwd)/hooks/adapters/opencode/hikizan.ts" ~/.config/opencode/plugins/hik
 | `jikkou`（実行） | 通常実装、原因診断、リスクに合うテストとコミット境界を扱う |
 | `sadoku`（査読） | コード・実行仕様Markdownを独立レビューし、簡略化の余地を見る |
 | `teishutsu`（提出） | PR本文、通常プッシュ、PR提出を扱う |
-| `houkoku`（報告） | Slack共有、リリースノート、引き継ぎなどの文面を作る |
+| `houkoku`（文章・伝達） | README、技術文書、記事、推敲、Slack、報告、リリースノート、引き継ぎを扱う |
 
 検証量は変更規模ではなくリスクで決めます。局所的な可逆変更は最寄りの検査、ロジックやAPIの変更は回帰検査、高リスクな変更は対象レビューと全体検証まで行います。
 
@@ -129,12 +129,12 @@ npx playwright install chromium
 
 | スキル | 起動トリガー |
 |---|---|
-| `tansaku` | 探索, 全体像把握, 影響範囲調査, 用語整理 |
+| `tansaku` | 探索, 全体像把握, 影響範囲調査, 用語整理。調査自体が成果の場合に使い、設計・実装に必要な局所確認だけでは起動しない |
 | `sekkei` | 設計判断, 方針決め, design decision, kill or keep, 計画立案 |
 | `jikkou` | 計画実行, 実装, エラー診断, root cause, バグ修正 |
 | `sadoku` | PR確認, レビュー, code review, プロジェクトレビュー, コード整理, simplify |
 | `teishutsu` | PR提出, PR出す, PR ready, PR文書いて, PR description, submission, PR open |
-| `houkoku` | 報告, 完了報告, 作業結果, 何をした, Slack共有, リリース報告, handoff |
+| `houkoku` | 文章を書いて, 執筆, 推敲, リライト, READMEを書いて, 技術文書を書いて, 記事を書いて, 何をした, 結果を教えて, 完了報告, Slack共有, リリースノート, handoff |
 
 発動条件の正本は各`SKILL.md`の`frontmatter`にある`description`です。
 <!-- hikizan:triggers:end -->

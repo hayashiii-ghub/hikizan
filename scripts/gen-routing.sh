@@ -25,7 +25,7 @@ fm_field() {
 gen_routing() {
   printf '%s\n' '<!-- scripts/gen-routing.shが各SKILL.mdのwhen_to_useから生成。手動編集しない -->'
   printf '%s\n\n' '## hikizanのスキル選択'
-  printf '%s\n\n' '利用者の依頼が次の条件に当てはまる場合は、対応するhikizanスキルの`SKILL.md`を最後まで読んでから作業する。通常作業に不要なスキルを固定順で通さない。'
+  printf '%s\n\n' '利用者の依頼が次の条件に当てはまる場合は、対応するhikizanスキルの`SKILL.md`を最後まで読んでから作業する。通常作業に不要なスキルを固定順で通さない。依頼に「計画だけ」「修正まで」「PRまで」のような終点があれば、必要なスキルを組み合わせ、明示済みの終点まで形式的な承認待ちを挟まず進める。'
   for skill in $ORDER; do
     file="$ROOT/skills/$skill/SKILL.md"
     [ -f "$file" ] || { echo "✘ missing skill: $skill" >&2; return 1; }
@@ -33,7 +33,7 @@ gen_routing() {
     [ -n "$when" ] || { echo "✘ missing when_to_use: $skill" >&2; return 1; }
     printf -- '- `%s`：%s\n' "$skill" "$when"
   done
-  printf '\n%s\n' '複数の観点が必要なら該当するスキルを組み合わせてよい。スキルを起動した場合は、その共通契約に従って作業前に`🌲`の1行を表示する。'
+  printf '\n%s\n' '複数の観点が必要なら該当するスキルを組み合わせてよい。起動するスキルごとに、その作業を始める直前に別の1行で`🌲 <スキル名>（日本語名）：<今回の目的>`と表示する。複数スキルを1行にまとめたり、まだ始めないスキルを予告したりしない。停止するときは、意味のある次の進め方だけを選び、推奨順に`A`、`B`、`C`を付けて返す。'
 }
 
 gen_cursor_rule() {
