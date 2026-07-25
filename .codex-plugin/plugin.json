@@ -1,7 +1,7 @@
 {
   "name": "hikizan",
-  "version": "0.11.8",
-  "description": "hikizan for Codex: verb skills (tansaku / sekkei / jikkou / sadoku / teishutsu / houkoku), lightweight startup routing, and optional PreToolUse safety floors.",
+  "version": "0.11.9",
+  "description": "hikizan for Codex: verb skills (tansaku / sekkei / jikkou / sadoku / teishutsu / houkoku), lightweight goal-aware startup routing, and optional PreToolUse safety floors.",
   "author": {
     "name": "hayashiii-ghub"
   },
@@ -10,8 +10,8 @@
   "license": "MIT",
   "interface": {
     "displayName": "hikizan",
-    "shortDescription": "Japanese workflow skills with lightweight routing",
-    "longDescription": "Verb-oriented Japanese workflow skills with lightweight startup routing and optional deterministic guardrails for push, pull request, and destructive shell operations.",
+    "shortDescription": "Japanese workflow skills with goal-aware routing",
+    "longDescription": "Verb-oriented Japanese workflow skills with lightweight goal-aware routing, prose guidance, and optional deterministic guardrails for push, pull request, and destructive shell operations.",
     "developerName": "hayashiii-ghub",
     "category": "Productivity",
     "capabilities": [

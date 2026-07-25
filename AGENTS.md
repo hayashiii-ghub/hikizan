@@ -18,7 +18,7 @@ bash scripts/check-all.sh
 
 - スキル本文はハーネスに依存させない。Claude Code / Cursor / Codex固有のAPIは必要な注釈以外で本文に出さない
 - ディレクトリ・ファイル・スキルIDは英語のASCII識別子を使い、人が読むMarkdownの見出しは日本語話者が内容を判断できる日本語にする
-- 配布単位はパック全体だが、6スキルは固定順の工程ではなく独立した観点として使う。通常作業へ形式的な引き継ぎや承認待ちを追加しない
+- 配布単位はパック全体だが、6スキルは固定順の工程ではなく独立した観点として使う。依頼に終点があれば必要なスキルをつなぎ、明示済みの終点まで形式的な承認待ちを追加しない
 - 明確で可逆な作業は同じ依頼内で完了し、確認・検証・レビューは不可逆性、外部作用、セキュリティ、データ、公開インターフェース、取り消し費用に比例させる
 - 別スキルを参照するときは論理名を使い、リポジトリ相対のパスを使わない
 - 共通契約の正本は`scripts/contract.md`。各`SKILL.md`の契約マーカー間を直接編集しない
@@ -69,7 +69,7 @@ bash scripts/check-all.sh
 | 実装・診断・コミット境界 | `skills/jikkou/` |
 | レビュー・簡略化・専門レビューの指示 | `skills/sadoku/` |
 | PR・命名・秘密情報検査 | `skills/teishutsu/` |
-| Slack・リリース・引き継ぎ文面と日本語文章規範 | `skills/houkoku/` |
+| README・技術文書・記事・推敲・Slack・リリース・引き継ぎと日本語文章規範 | `skills/houkoku/` |
 | UI視覚検証・Shimon利用契約 | `scripts/visual-contract.md` |
 | フック分類とアダプター | `hooks/conditions.md` / `hooks/scripts/` / `hooks/adapters/` |
 | バージョン・作者・ハーネス別の説明 | `plugin.src.json` |
