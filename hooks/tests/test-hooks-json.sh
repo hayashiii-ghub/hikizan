@@ -20,6 +20,10 @@ assert_exit "hooks.json is valid JSON" 0 "$?"
 ARGS="$(jq -r '.. | .args? // empty | .[]' "$HOOKS_JSON")"
 while IFS= read -r arg; do
   [ -z "$arg" ] && continue
+  case "$arg" in
+    *'${CLAUDE_PLUGIN_ROOT}'*) ;;
+    *) continue ;;
+  esac
   path="${arg/\$\{CLAUDE_PLUGIN_ROOT\}/$ROOT}"
   if [ -f "$path" ]; then
     HZ_PASS=$((HZ_PASS + 1))
@@ -42,7 +46,8 @@ ACTUAL="$(jq -r '
 
 EXPECTED='PreToolUse|Bash|pre-destructive.sh
 PreToolUse|Bash|pre-pr-create.sh
-PreToolUse|Bash|pre-push.sh'
+PreToolUse|Bash|pre-push.sh
+SessionStart|startup|session-routing.sh'
 
 assert_eq "hooks.json wiring matches the pinned expectation" "$EXPECTED" "$ACTUAL"
 

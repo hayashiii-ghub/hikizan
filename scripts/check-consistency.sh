@@ -44,7 +44,7 @@ cc_ver="$(jq -r .version "$ROOT/.claude-plugin/plugin.json")"
 cur_ver="$(jq -r .version "$ROOT/.cursor-plugin/plugin.json")"
 cx_ver="$(jq -r .version "$ROOT/.codex-plugin/plugin.json")"
 [ "$cc_ver" = "$cur_ver" ] && [ "$cc_ver" = "$cx_ver" ] && ok "plugin manifest versions match ($cc_ver)" || bad "plugin manifest versions drift"
-jq -e '.hooks == "hooks/adapters/cursor/hooks.json" and (has("rules") | not)' "$ROOT/.cursor-plugin/plugin.json" >/dev/null || bad "Cursor manifest does not point at the slim adapter"
+jq -e '.hooks == "hooks/adapters/cursor/hooks.json" and .rules == "hooks/adapters/cursor/rules/"' "$ROOT/.cursor-plugin/plugin.json" >/dev/null || bad "Cursor manifest does not publish the routing rule and slim adapter"
 jq -e '.hooks == "./hooks/adapters/codex/hooks.json" and .skills == "./skills/"' "$ROOT/.codex-plugin/plugin.json" >/dev/null || bad "Codex manifest does not point at the slim adapter"
 
 # All harnesses share the same three floor classifiers.
@@ -56,7 +56,12 @@ expected_floors="$(printf '%s\n' pre-destructive.sh pre-pr-create.sh pre-push.sh
 require_text "$ROOT/hooks/adapters/codex/hooks.json" 'pre-destructive.sh deny' "Codex destructive floor is not deny"
 require_text "$ROOT/hooks/adapters/opencode/hikizan.ts" '["deny", "OpenCode"]' "OpenCode destructive floor is not deny"
 require_text "$ROOT/hooks/adapters/cursor/hooks.json" './hooks/adapters/cursor/before-shell.sh' "Cursor adapter path is stale"
+require_text "$ROOT/hooks/hooks.json" 'session-routing.sh' "Claude does not load shared skill routing"
+require_text "$ROOT/hooks/adapters/codex/hooks.json" 'session-routing.sh codex' "Codex does not load shared skill routing"
+require_text "$ROOT/hooks/adapters/opencode/hikizan.ts" 'experimental.chat.system.transform' "OpenCode does not load shared skill routing"
+require_text "$ROOT/hooks/adapters/cursor/rules/hikizan.mdc" 'alwaysApply: true' "Cursor routing rule is not always applied"
 [ -x "$ROOT/hooks/adapters/cursor/before-shell.sh" ] || bad "Cursor adapter is not executable"
+[ -x "$ROOT/hooks/scripts/session-routing.sh" ] || bad "session routing adapter is not executable"
 for file in "$ROOT/hooks/hooks.json" "$ROOT/hooks/adapters/codex/hooks.json" "$ROOT/hooks/adapters/cursor/hooks.json"; do
   jq empty "$file" >/dev/null 2>&1 || bad "invalid JSON: ${file#$ROOT/}"
 done
@@ -70,7 +75,7 @@ for path in agents codex context cursor docs opencode .claude/agents .cursor/age
     [ ! -e "$ROOT/$path" ] || { printf '✘ removed surface returned: %s\n' "$path"; legacy=1; }
   fi
 done
-[ "$legacy" -eq 0 ] && ok "legacy context, metrics, adapter, and duplicate-doc surfaces stay removed" || fail=1
+[ "$legacy" -eq 0 ] && ok "legacy tiers, metrics, adapter, and duplicate-doc surfaces stay removed" || fail=1
 
 # Skills are installed as one pack; cross-skill references use logical names.
 require_text "$ROOT/README.md" 'パック単位' "README is missing the pack-only boundary"
@@ -87,10 +92,10 @@ require_text "$ROOT/README.md" '手動で導入する' "README does not retain m
 require_text "$ROOT/README.md" 'codex plugin add hikizan@hikizan' "README is missing Codex fallback"
 require_text "$ROOT/README.md" '/plugin install hikizan@hikizan' "README is missing Claude fallback"
 require_text "$ROOT/README.md" 'npx skills add github:hayashiii-ghub/hikizan -g' "README is missing universal fallback"
-require_text "$ROOT/README.md" '| Claude Codeプラグイン | スキル + 安全フック |' "README support matrix omits Claude Code"
-require_text "$ROOT/README.md" '| Codexプラグイン | スキル + 安全フック |' "README support matrix omits Codex"
-require_text "$ROOT/README.md" '| Cursorプラグイン | スキル + 安全フック |' "README support matrix omits Cursor"
-require_text "$ROOT/README.md" '| OpenCode + ローカルアダプター | スキル + 安全フック |' "README support matrix omits OpenCode"
+require_text "$ROOT/README.md" '| Claude Codeプラグイン | スキル + 起動規則 + 安全フック |' "README support matrix omits Claude Code routing"
+require_text "$ROOT/README.md" '| Codexプラグイン | スキル + 起動規則 + 安全フック |' "README support matrix omits Codex routing"
+require_text "$ROOT/README.md" '| Cursorプラグイン | スキル + 起動規則 + 安全フック |' "README support matrix omits Cursor routing"
+require_text "$ROOT/README.md" '| OpenCode + ローカルアダプター | スキル + 起動規則 + 安全フック |' "README support matrix omits OpenCode routing"
 require_text "$ROOT/README.md" '| Agent Skills対応ハーネス | スキルのみ |' "README support matrix omits the skills-only boundary"
 require_text "$ROOT/skills/tansaku/references/fanout.md" '親エージェントが必要範囲を読む' "tansaku fan-out omits the inline fallback"
 forbid_text "$ROOT/skills/tansaku/references/fanout.md" 'Claude Code なら' "tansaku fan-out still singles out Claude Code"

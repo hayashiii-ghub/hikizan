@@ -1,4 +1,4 @@
-import { existsSync } from "node:fs"
+import { existsSync, readFileSync } from "node:fs"
 import { dirname, resolve } from "node:path"
 import { fileURLToPath } from "node:url"
 
@@ -99,6 +99,9 @@ async function runHook(
 export const HikizanPlugin = async (context: PluginContext) => {
   const root = findRoot()
   const cwd = context.worktree || context.directory || globalThis.process.cwd()
+  const routing = root && existsSync(resolve(root, "hooks/routing.md"))
+    ? readFileSync(resolve(root, "hooks/routing.md"), "utf8")
+    : ""
 
   return {
     "tool.execute.before": async (input: ToolInput, output: ToolOutput) => {
@@ -124,6 +127,12 @@ export const HikizanPlugin = async (context: PluginContext) => {
           throw new Error(result.permissionDecisionReason || "blocked by hikizan")
         }
       }
+    },
+    "experimental.chat.system.transform": async (
+      _input: { sessionID?: string },
+      output: { system: string[] },
+    ) => {
+      if (routing) output.system.push(routing)
     },
   }
 }

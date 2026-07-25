@@ -89,6 +89,7 @@ gen_cursor() {
     repository: $repository,
     license: $license,
     keywords: ["skills", "floors", "hooks", "code-review", "workflow", "japanese"],
+    rules: "hooks/adapters/cursor/rules/",
     hooks: "hooks/adapters/cursor/hooks.json"
   }'
 }
