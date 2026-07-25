@@ -1,4 +1,4 @@
-   - 信頼できる対象にShimonとレビュー済みの`shimon.config.mjs`がある場合だけ使う。自動インストールや別ツールへの切替は行わない
-   - 今回必要なケースだけを`.shimon/task.mjs`へ書く。リポジトリ所定のコマンドを優先し、なければ`./node_modules/.bin/shimon verify --task .shimon/task.mjs --json`を使い、終了後に一時ファイルを削除する
+   - 信頼できる対象にShimonとレビュー済みの`shimon.config.mjs`がある場合だけ使う。自動インストールや別ツールへの切替は行わない。ChromeやPlaywrightなどのブラウザー実行ファイルを直接起動して代替しない
+   - 今回必要なケースだけを`.shimon/task.mjs`へ書く。サーバー起動とブラウザー確認はリポジトリ所定の固定コマンドへ集約し、なければ`./node_modules/.bin/shimon verify --task .shimon/task.mjs --json`を使う。終了後に一時ファイルを削除する
    - JSONの`pass`と各自動検査を確認し、返された全スクリーンショットを`intent`と`review`に沿って見る。`visualReviewRequired: true`を視覚確認済みとは扱わない
    - スクリーンショットとログへ秘密情報・個人情報を残さない。実行条件を満たさなければ、理由を添えて視覚未確認と報告する
