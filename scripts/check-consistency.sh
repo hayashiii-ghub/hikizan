@@ -113,9 +113,9 @@ forbid_text "$ROOT/skills/teishutsu/SKILL.md" 'git fetch --all' "teishutsu fetch
 require_text "$ROOT/skills/teishutsu/references/pr-template.md" '検査器関連のファイルが変更対象なら実行せず' "secret scan may execute an unreviewed scanner"
 require_text "$ROOT/skills/teishutsu/references/pr-template.md" '提出範囲の追加行' "secret scan omits added source content"
 require_text "$ROOT/scripts/visual-contract.md" '自動インストールや別ツールへの切替は行わない' "visual policy allows implicit install/fallback"
-require_text "$ROOT/scripts/visual-contract.md" '.shimon/task.config.mjs' "visual policy omits the task-local shimon config"
-require_text "$ROOT/scripts/visual-contract.md" './node_modules/.bin/shimon verify --config .shimon/task.config.mjs --json' "visual policy omits the local-only shimon command"
-require_text "$ROOT/scripts/visual-contract.md" '^[A-Za-z0-9][A-Za-z0-9._-]{0,63}$' "visual policy omits the case-name allowlist"
+require_text "$ROOT/scripts/visual-contract.md" '.shimon/task.mjs' "visual policy omits the task-local shimon cases"
+require_text "$ROOT/scripts/visual-contract.md" './node_modules/.bin/shimon verify --task .shimon/task.mjs --json' "visual policy omits the local-only shimon command"
+require_text "$ROOT/scripts/visual-contract.md" 'visualReviewRequired: true' "visual policy may confuse automated checks with visual review"
 require_text "$ROOT/skills/houkoku/SKILL.md" 'references/writing-style.md' "houkoku omits the standard writing profile"
 forbid_text "$ROOT/README.md" 'ln -sfn' "OpenCode fallback force-replaces an existing plugin"
 
