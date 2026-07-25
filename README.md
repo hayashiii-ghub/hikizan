@@ -2,7 +2,7 @@
 
 hikizanは、AIエージェントの開発作業を「調べる・決める・作る・見る・出す・伝える」の6方向から補助する、日本語の[Agent Skills](https://agentskills.io/)スキルパックです。
 
-[v0.10.5からv0.11.5までの変更を見る](https://hikizan-v011-shimon.haygsiiii.chatgpt.site)
+[v0.10.5からv0.11.6までの変更を見る](https://hikizan-v011-shimon.haygsiiii.chatgpt.site)
 
 6つのスキルは順番に通す工程ではありません。通常の実装は同じ作業内で進め、設計比較、独立レビュー、PR提出、共有文面などが必要な場面だけ該当するスキルを使います。
 
