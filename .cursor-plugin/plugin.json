@@ -1,7 +1,7 @@
 {
   "name": "hikizan",
-  "version": "0.11.7",
-  "description": "hikizan for Cursor: verb skills (tansaku / sekkei / jikkou / sadoku / teishutsu / houkoku) with optional beforeShellExecution safety floors for force push, destructive operations, and unreviewed non-draft PR creation.",
+  "version": "0.11.8",
+  "description": "hikizan for Cursor: verb skills (tansaku / sekkei / jikkou / sadoku / teishutsu / houkoku), a lightweight routing rule, and optional beforeShellExecution safety floors.",
   "author": {
     "name": "hayashiii-ghub"
   },
@@ -16,5 +16,6 @@
     "workflow",
     "japanese"
   ],
+  "rules": "hooks/adapters/cursor/rules/",
   "hooks": "hooks/adapters/cursor/hooks.json"
 }

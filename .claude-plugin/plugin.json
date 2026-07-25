@@ -1,8 +1,8 @@
 {
   "$schema": "https://json.schemastore.org/claude-code-plugin-manifest.json",
   "name": "hikizan",
-  "description": "動詞単位のskill (tansaku / sekkei / jikkou / sadoku / teishutsu / houkoku) と、push・PR・破壊的操作だけを扱う任意のsafety floorsで構成するClaude Code plugin / Agent Skills pack。",
-  "version": "0.11.7",
+  "description": "動詞単位のスキル（tansaku / sekkei / jikkou / sadoku / teishutsu / houkoku）、軽量な起動規則、プッシュ・PR・破壊的操作だけを扱う任意の安全フックで構成する、Claude Codeプラグイン兼Agent Skillsパック。",
+  "version": "0.11.8",
   "author": {
     "name": "hayashiii-ghub"
   },

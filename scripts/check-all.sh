@@ -8,6 +8,7 @@ rc=0
 bash "$ROOT/hooks/tests/run.sh" || rc=1
 bash "$ROOT/scripts/test-skill-recipes.sh" || rc=1
 bash "$ROOT/scripts/check-consistency.sh" || rc=1
+bash "$ROOT/scripts/gen-routing.sh" --check || rc=1
 bash "$ROOT/scripts/gen-trigger-docs.sh" --check || rc=1
 bash "$ROOT/scripts/gen-manifests.sh" --check || rc=1
 bash "$ROOT/scripts/gen-contract.sh" --check || rc=1

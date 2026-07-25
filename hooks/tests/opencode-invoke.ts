@@ -10,6 +10,16 @@ if (action === "surface") {
   process.exit(0)
 }
 
+if (action === "routing") {
+  const output = { system: [] as string[] }
+  await plugin["experimental.chat.system.transform"]?.(
+    { sessionID: "ses_hikizan_test" } as never,
+    output as never,
+  )
+  console.log(JSON.stringify(output))
+  process.exit(0)
+}
+
 try {
   await plugin["tool.execute.before"]?.(
     {

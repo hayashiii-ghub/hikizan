@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # OpenCode's plugin API cannot return an interactive ask decision. This adapter
-# must therefore translate the shared floors into thrown errors, without
-# restoring the removed metrics or system-context injection surfaces.
+# translates the shared floors into thrown errors and supplies the same short
+# skill-routing context as the other supported harnesses.
 
 DIR="$(cd "$(dirname "$0")" && pwd)"
 . "$DIR/lib/harness.sh"
@@ -48,8 +48,13 @@ OUT="$(invoke before-non-bash 'rm -rf /tmp/hikizan-opencode-test')"
 assert_eq "non-bash tool is ignored" "allow" "$(printf '%s' "$OUT" | jq -r '.decision // "crash"')"
 
 OUT="$(invoke surface)"
-assert_eq "adapter exposes only the before hook" '["tool.execute.before"]' \
+assert_eq "adapter exposes the floor and routing hooks" \
+  '["experimental.chat.system.transform","tool.execute.before"]' \
   "$(printf '%s' "$OUT" | jq -c '.hooks // []')"
+
+OUT="$(invoke routing)"
+assert_eq "OpenCode receives the shared routing text" "$(cat "$ROOT/hooks/routing.md")" \
+  "$(printf '%s' "$OUT" | jq -r '.system[0] // ""')"
 
 rm -rf "$REPO"
 hz_test_summary

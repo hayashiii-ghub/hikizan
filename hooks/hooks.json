@@ -1,6 +1,19 @@
 {
-  "description": "hikizan: deterministic safety floors for push, PR creation, and destructive shell operations.",
+  "description": "hikizan: lightweight skill routing plus deterministic safety floors for push, PR creation, and destructive shell operations.",
   "hooks": {
+    "SessionStart": [
+      {
+        "matcher": "startup",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash",
+            "args": ["${CLAUDE_PLUGIN_ROOT}/hooks/scripts/session-routing.sh", "claude"],
+            "timeout": 10
+          }
+        ]
+      }
+    ],
     "PreToolUse": [
       {
         "matcher": "Bash",
