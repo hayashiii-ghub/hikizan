@@ -11,7 +11,7 @@
     "category": "Productivity",
     "capabilities": ["Read", "Write"]
   },
-  "version": "0.11.5",
+  "version": "0.11.6",
   "author": {
     "name": "hayashiii-ghub"
   },

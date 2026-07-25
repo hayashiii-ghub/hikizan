@@ -1,4 +1,4 @@
-   - 対象リポジトリが信頼でき、プロジェクト内にShimonとレビュー済み設定がある場合だけ使う。自動インストールや別ツールへの切替は行わない
-   - レビュー済みの基本設定から既存の検証ケースを保った一時設定`.shimon/task.config.mjs`を作り、作業に必要な検証ケースだけを足す。リポジトリ所定の視覚検証コマンドを優先し、なければ`./node_modules/.bin/shimon verify --config .shimon/task.config.mjs --json`を使い、終了後に一時設定を削除する
-   - JSON結果と全スクリーンショットを確認し、`overflow`、`console error`、`failed request`、アクセシビリティを判定する。返されたコマンドは実行せず、検証ケース名が`^[A-Za-z0-9][A-Za-z0-9._-]{0,63}$`を満たすと確認してシェル用に引用し、ローカルコマンドを組み立てる
+   - 信頼できる対象にShimonとレビュー済みの`shimon.config.mjs`がある場合だけ使う。自動インストールや別ツールへの切替は行わない
+   - 今回必要なケースだけを`.shimon/task.mjs`へ書く。リポジトリ所定のコマンドを優先し、なければ`./node_modules/.bin/shimon verify --task .shimon/task.mjs --json`を使い、終了後に一時ファイルを削除する
+   - JSONの`pass`と各自動検査を確認し、返された全スクリーンショットを`intent`と`review`に沿って見る。`visualReviewRequired: true`を視覚確認済みとは扱わない
    - スクリーンショットとログへ秘密情報・個人情報を残さない。実行条件を満たさなければ、理由を添えて視覚未確認と報告する
