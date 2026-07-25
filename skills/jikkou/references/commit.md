@@ -1,35 +1,15 @@
-# commit 契約
+# コミットの区切り
 
-実装中に意味的 checkpoint を保存するときに読む契約。commit の粒度はユーザ承認の単位で決めず、作業を意味のある単位で保存する checkpoint として決める。commit の実行権限は、commit を行う skill の契約に従う。subject の形式は `teishutsu` の naming reference、長期的に残す実装判断は PR 本文の Workflow 節が正本。
+コミットは必須工程ではなく、意味のある状態を保存するときだけ作る。
 
-## 粒度
+1つのコミットには、独立して説明・検証・取り消しできる1つの変更を入れる。振る舞いと回帰テスト、ソースと生成物、スキーマと必須の利用側など、片方だけでは検証に通らない変更は一緒にする。
 
-1 commit には、独立して説明・検証・revert できる 1 つの変更を入れる。
+コミット前：
 
-- plan step / TDD slice / file と commit を 1 対 1 にしない
-- 小さな PR は 1 commit でよい
-- commit 作成自体を必須にしない
-- 関連する検証が green の状態で commit する
+1. リポジトリ直下と現在のブランチが対象と一致するか確認する
+2. ステージ済み差分を1文で説明でき、対象外のファイルがないか確認する
+3. 変更リスクに合う検証が成功しているか確認する
+4. リポジトリ規約を優先して簡潔な件名を付ける。差分だけでは理由が分からない場合だけ本文を書く
+5. トークン、メールアドレス、チーム外の実名、帰属情報の追記を含めない
 
-## 同じ commit に入れるもの
-
-- 振る舞いの変更と、その regression test
-- source と、source から生成した artifact
-- schema 変更と、green を保つために同時変更が必要な consumer / migration
-- rename と、その rename で必ず壊れる参照更新
-
-## 分けるもの
-
-- 別 issue として独立して動く変更
-- 単独で revert できる別の振る舞い
-- 実装中に見つけた、要求外の cleanup
-
-## commit 前の点検
-
-1. `pwd` / `git rev-parse --show-toplevel` / `git branch --show-current` で承認済みの repo / branch と一致することを確認する
-2. staged diff を 1 文で説明する
-3. staged file に承認済み scope 外の変更が無いことを確認する
-4. 関連する検証を実行し、green の出力を控える
-5. `teishutsu` の naming reference に従って subject を付ける。diff だけでは理由が分からないときだけ body を書く
-6. 重要な判断と根拠は commit message だけに置かず、PR 本文の Workflow 節にも残す
-7. email を含む attribution trailer は付けず、共同作業の記録は PR / hosting platform に委ねる
+別目的の整理、単独で取り消せる別挙動、無関係な生成物は分ける。

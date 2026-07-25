@@ -23,9 +23,21 @@ expected="$(printf '%s\n' $CORE | sort | tr '\n' ' ' | sed 's/ $//')"
 for name in $CORE; do
   frontmatter_name="$(awk -F': *' '/^name:/ { print $2; exit }' "$ROOT/skills/$name/SKILL.md")"
   [ "$frontmatter_name" = "$name" ] || bad "skill discovery name mismatch: directory=$name frontmatter=$frontmatter_name"
-  require_text "$ROOT/README.md" "\`$name\`" "README does not mention $name"
-  require_text "$ROOT/.claude-plugin/plugin.json" "$name" "Claude manifest does not mention $name"
 done
+require_text "$ROOT/scripts/contract.md" '🌲 <スキル名>（日本語名）：<今回の目的>' "shared contract omits the skill activation marker"
+
+# Paths stay ASCII for tools; human-facing Markdown headings stay Japanese.
+heading_drift="$(git -C "$ROOT" ls-files -z -- '*.md' | while IFS= read -r -d '' relative; do
+  file="$ROOT/$relative"
+  awk 'BEGIN { code=0 } /^```/ { code=!code; next } !code && /^#{1,3}[[:space:]]/ && $0 !~ /[ぁ-んァ-ヶ一-龠]/ { print FNR ":" $0 }' "$file" |
+    while IFS= read -r line; do printf '%s:%s\n' "${file#$ROOT/}" "$line"; done
+done)"
+if [ -n "$heading_drift" ]; then
+  printf '%s\n' "$heading_drift"
+  bad "human-facing Markdown contains a non-Japanese heading"
+else
+  ok "human-facing Markdown headings are Japanese"
+fi
 
 # Generated manifests share one version and retain the native entrypoints.
 cc_ver="$(jq -r .version "$ROOT/.claude-plugin/plugin.json")"
@@ -51,7 +63,7 @@ done
 
 # Removed subsystems must not return through a generated or copied surface.
 legacy=0
-for path in agents codex context cursor docs opencode skills/init hooks/scripts/session-context.sh hooks/scripts/post-command.sh hooks/scripts/lib/metrics.sh; do
+for path in agents codex context cursor docs opencode .claude/agents .cursor/agents .codex/agents skills/init hooks/scripts/session-context.sh hooks/scripts/post-command.sh hooks/scripts/lib/metrics.sh; do
   if [ -d "$ROOT/$path" ]; then
     [ -z "$(find "$ROOT/$path" -type f -print -quit)" ] || { printf '✘ removed surface returned: %s\n' "$path"; legacy=1; }
   else
@@ -61,7 +73,7 @@ done
 [ "$legacy" -eq 0 ] && ok "legacy context, metrics, adapter, and duplicate-doc surfaces stay removed" || fail=1
 
 # Skills are installed as one pack; cross-skill references use logical names.
-require_text "$ROOT/README.md" 'pack 単位' "README is missing the pack-only boundary"
+require_text "$ROOT/README.md" 'パック単位' "README is missing the pack-only boundary"
 skill_alt="$(jq -r '.core | join("|")' "$ROOT/scripts/skills.json")"
 if grep -R -nE "skills/($skill_alt)/|(\.\./)+($skill_alt)/|($skill_alt)/references/" "$ROOT/skills"; then
   bad "runtime skill content contains repository-relative cross-skill references"
@@ -71,35 +83,41 @@ fi
 
 # Distribution UX is agent-first but keeps a manual fallback.
 require_text "$ROOT/README.md" 'エージェントに依頼' "README does not lead with agent-assisted setup"
-require_text "$ROOT/README.md" '手動fallback' "README does not retain a manual fallback"
+require_text "$ROOT/README.md" '手動で導入する' "README does not retain manual setup instructions"
 require_text "$ROOT/README.md" 'codex plugin add hikizan@hikizan' "README is missing Codex fallback"
 require_text "$ROOT/README.md" '/plugin install hikizan@hikizan' "README is missing Claude fallback"
 require_text "$ROOT/README.md" 'npx skills add github:hayashiii-ghub/hikizan -g' "README is missing universal fallback"
-require_text "$ROOT/README.md" '| Claude Code plugin | skills + safety hooks |' "README support matrix omits Claude Code"
-require_text "$ROOT/README.md" '| Codex plugin | skills + safety hooks |' "README support matrix omits Codex"
-require_text "$ROOT/README.md" '| Cursor plugin | skills + safety hooks |' "README support matrix omits Cursor"
-require_text "$ROOT/README.md" '| OpenCode + local adapter | skills + safety hooks |' "README support matrix omits OpenCode"
-require_text "$ROOT/README.md" '| Agent Skills対応ハーネス | skillsのみ |' "README support matrix omits the skills-only boundary"
+require_text "$ROOT/README.md" '| Claude Codeプラグイン | スキル + 安全フック |' "README support matrix omits Claude Code"
+require_text "$ROOT/README.md" '| Codexプラグイン | スキル + 安全フック |' "README support matrix omits Codex"
+require_text "$ROOT/README.md" '| Cursorプラグイン | スキル + 安全フック |' "README support matrix omits Cursor"
+require_text "$ROOT/README.md" '| OpenCode + ローカルアダプター | スキル + 安全フック |' "README support matrix omits OpenCode"
+require_text "$ROOT/README.md" '| Agent Skills対応ハーネス | スキルのみ |' "README support matrix omits the skills-only boundary"
+require_text "$ROOT/skills/tansaku/references/fanout.md" '親エージェントが必要範囲を読む' "tansaku fan-out omits the inline fallback"
+forbid_text "$ROOT/skills/tansaku/references/fanout.md" 'Claude Code なら' "tansaku fan-out still singles out Claude Code"
+require_text "$ROOT/skills/sadoku/references/persona-catalog.md" '親エージェントが確認する' "sadoku reviewer selection omits the inline fallback"
 require_text "$ROOT/README.md" 'https://github.com/hayashiii-ghub/shimon' "README does not identify the standard visual harness"
 require_text "$ROOT/README.md" 'npm install --save-dev @hayashiii/shimon' "README omits the project-local Shimon install"
 require_text "$ROOT/README.md" 'npx playwright install chromium' "README omits the Shimon browser install"
+require_text "$ROOT/skills/houkoku/references/writing-style.md" '自然な日本語がある概念を英単語のまま文章へ混ぜない' "writing style omits the Japanese prose boundary"
+require_text "$ROOT/AGENTS.md" '日本語散文は`skills/houkoku/references/writing-style.md`' "AGENTS does not route Japanese prose to its source"
 
 # Executable Markdown keeps the reviewed safety invariants from PR #148.
-require_text "$ROOT/skills/sadoku/SKILL.md" '実行仕様 Markdown' "sadoku does not review executable Markdown"
-require_text "$ROOT/skills/sadoku/references/project-context.md" 'git ls-files --others --exclude-standard -z' "sadoku omits untracked files"
+require_text "$ROOT/skills/sadoku/SKILL.md" '実行するMarkdown' "sadoku does not review executable Markdown"
+require_text "$ROOT/skills/sadoku/SKILL.md" '未追跡ファイル' "sadoku omits untracked files"
+require_text "$ROOT/skills/sadoku/SKILL.md" '機能ブランチの上流ブランチを比較元にしない' "sadoku may use a feature upstream as the review base"
 require_text "$ROOT/skills/teishutsu/SKILL.md" '--body-file' "teishutsu does not use a PR body file"
-require_text "$ROOT/skills/teishutsu/SKILL.md" 'PR_REMOTE / PR_URL / PR_REPO / PR_BASE / PR_BASE_REF' "teishutsu omits the qualified PR base"
-require_text "$ROOT/skills/teishutsu/SKILL.md" 'push / PR作成への1行承認を得る' "teishutsu omits scope approval"
+require_text "$ROOT/skills/teishutsu/SKILL.md" '機能ブランチの上流ブランチを比較元にしない' "teishutsu may use a feature upstream as the PR base"
+require_text "$ROOT/skills/teishutsu/SKILL.md" 'プッシュ先リモートとPR先リモートを分け' "teishutsu does not separate fork push and PR remotes"
+require_text "$ROOT/skills/teishutsu/SKILL.md" '--draft`か`--reviewer`' "teishutsu may create an unreviewed ready PR"
 forbid_text "$ROOT/skills/teishutsu/SKILL.md" 'git fetch --all' "teishutsu fetches every remote"
-require_text "$ROOT/skills/jikkou/references/tdd.md" 'git diff --cached --binary' "TDD witness omits the index"
-require_text "$ROOT/skills/jikkou/references/tdd.md" 'git ls-files --others --exclude-standard -z' "TDD witness omits untracked content"
-require_text "$ROOT/skills/teishutsu/references/pr-template.md" 'scanner関連fileが変更対象なら実行せず' "secret scan may execute an unreviewed scanner"
-require_text "$ROOT/scripts/visual-contract.md" '自動installや別toolへのfallbackはしない' "visual policy allows implicit install/fallback"
+require_text "$ROOT/skills/teishutsu/references/pr-template.md" '検査器関連のファイルが変更対象なら実行せず' "secret scan may execute an unreviewed scanner"
+require_text "$ROOT/skills/teishutsu/references/pr-template.md" '提出範囲の追加行' "secret scan omits added source content"
+require_text "$ROOT/scripts/visual-contract.md" '自動インストールや別ツールへの切替は行わない' "visual policy allows implicit install/fallback"
 require_text "$ROOT/scripts/visual-contract.md" '.shimon/task.config.mjs' "visual policy omits the task-local shimon config"
 require_text "$ROOT/scripts/visual-contract.md" './node_modules/.bin/shimon verify --config .shimon/task.config.mjs --json' "visual policy omits the local-only shimon command"
-require_text "$ROOT/scripts/visual-contract.md" 'shimon verify --case <name> --config ".shimon/task.config.mjs" --json' "visual policy does not recognize Shimon reproduce output"
+require_text "$ROOT/scripts/visual-contract.md" '^[A-Za-z0-9][A-Za-z0-9._-]{0,63}$' "visual policy omits the case-name allowlist"
 require_text "$ROOT/skills/houkoku/SKILL.md" 'references/writing-style.md' "houkoku omits the standard writing profile"
-require_text "$ROOT/skills/houkoku/SKILL.md" 'references/cognitive-rhythm.md' "houkoku omits the long-form reporting profile"
+forbid_text "$ROOT/README.md" 'ln -sfn' "OpenCode fallback force-replaces an existing plugin"
 
 # The documented token scan still catches representative formats.
 token_line="$(awk '/^# hikizan:token-pattern$/ { getline; print; exit }' "$ROOT/skills/teishutsu/references/pr-template.md")"

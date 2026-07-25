@@ -1,74 +1,74 @@
-# AGENTS.md
+# 開発ガイド（AGENTS.md）
 
-## Overview
+## 概要
 
-このrepoはhikizan skill pack本体。runtimeは`skills/`と任意の`hooks/`、開発toolingは`scripts/`。ハーネス固有の設定をrootへ増やさず、native manifestから`hooks/adapters/`を参照する。
+このリポジトリはhikizanスキルパック本体です。実行物は`skills/`と任意の`hooks/`、開発用ツールは`scripts/`に置きます。ハーネス固有の設定を直下へ増やさず、各ハーネスのマニフェストから`hooks/adapters/`を参照します。
 
-## Setup and test
+## 検証
 
-core依存は`bash` / `jq` / `git` / `gh` / `awk`。静的解析の`shellcheck`はlocalでは任意、CIでは必須。
+必須の依存は`bash` / `jq` / `git` / `gh` / `awk`です。静的解析の`shellcheck`はローカルでは任意、CIでは必須です。
 
 ```bash
 bash scripts/check-all.sh
 ```
 
-これがhook tests、recipe regression、consistency、生成物鮮度、shellcheckの単一入口。hook単体実行より`hooks/tests/run.sh`を優先する。
+これがフックテスト、操作手順の回帰検査、整合性検査、生成物の鮮度確認、`shellcheck`の単一入口です。フック単体実行より`hooks/tests/run.sh`を優先します。
 
-## Conventions
+## 規約
 
-- skill本文はハーネス非依存にする。Claude Code / Cursor / Codex固有APIは必要な注釈以外で本文に出さない
-- 配布単位はpack全体。別skillは論理名で参照し、repo-relative pathを使わない
-- shared contractの正本は`scripts/contract.md`。各SKILL.mdのcontract marker間を直接編集しない
-- core skill集合・表示順の正本は`scripts/skills.json`
-- trigger表は`scripts/gen-trigger-docs.sh`で生成し、READMEのmarker区間を手動編集しない
-- manifest metadataの正本は`plugin.src.json`。3つのplugin.jsonは`scripts/gen-manifests.sh`の生成物
-- visual verification共通規則の正本は`scripts/visual-contract.md`
-- commit / branch / PRの命名は`skills/teishutsu/references/naming.md`
+- スキル本文はハーネスに依存させない。Claude Code / Cursor / Codex固有のAPIは必要な注釈以外で本文に出さない
+- ディレクトリ・ファイル・スキルIDは英語のASCII識別子を使い、人が読むMarkdownの見出しは日本語話者が内容を判断できる日本語にする
+- 配布単位はパック全体だが、6スキルは固定順の工程ではなく独立した観点として使う。通常作業へ形式的な引き継ぎや承認待ちを追加しない
+- 明確で可逆な作業は同じ依頼内で完了し、確認・検証・レビューは不可逆性、外部作用、セキュリティ、データ、公開インターフェース、取り消し費用に比例させる
+- 別スキルを参照するときは論理名を使い、リポジトリ相対のパスを使わない
+- 共通契約の正本は`scripts/contract.md`。各`SKILL.md`の契約マーカー間を直接編集しない
+- スキル起動時の`🌲`表示は共通契約で揃え、同じスキル内の局所作業では繰り返さない
+- 中核スキルの集合・表示順の正本は`scripts/skills.json`
+- 起動条件表は`scripts/gen-trigger-docs.sh`で生成し、READMEのマーカー区間を手動編集しない
+- マニフェスト情報の正本は`plugin.src.json`。3つの`plugin.json`は`scripts/gen-manifests.sh`の生成物
+- 視覚検証の共通規則の正本は`scripts/visual-contract.md`
+- コミット・ブランチ・PRの命名は`skills/teishutsu/references/naming.md`
 - 日本語散文は`skills/houkoku/references/writing-style.md`
-- 非hiddenの実装rootを`skills/` / `hooks/` / `scripts/`以外に増やさない
+- 隠しディレクトリ以外の実装直下を`skills/` / `hooks/` / `scripts/`以外に増やさない
 
-skillを足す・減らす場合:
+スキルを足す・減らす場合：
 
-1. `skills/<name>/SKILL.md`と必要なreferencesを変更
+1. `skills/<name>/SKILL.md`と必要な参照資料を変更
 2. `scripts/skills.json`を更新
 3. `bash scripts/gen-contract.sh`
-4. `plugin.src.json`のdescription templateを確認し`bash scripts/gen-manifests.sh`
+4. `plugin.src.json`の説明文テンプレートを確認し、`bash scripts/gen-manifests.sh`
 5. `bash scripts/gen-trigger-docs.sh`
 6. `bash scripts/check-all.sh`
 
-## Hooks
+## 安全フック
 
-hooksはpush、PR作成、破壊的shell操作の決定論的なfloorだけを扱う。commit判断、会話回数ベースの内省、context注入、metricsは追加しない。
+フックはプッシュ、PR作成、破壊的なシェル操作の決定論的な安全下限だけを扱います。正確な条件は`hooks/conditions.md`を正本とします。
 
-- 発火条件: `hooks/conditions.md`
-- Claude entrypoint: `hooks/hooks.json`
-- Codex / Cursor / OpenCode配線: `hooks/adapters/`
-- 共通logic: `hooks/scripts/lib/`と`hooks/scripts/pre-*.sh`
-- 回帰検査: `hooks/tests/`
+- 共通分類は`hooks/scripts/lib/`と`hooks/scripts/pre-*.sh`に置き、ハーネス差分は`hooks/adapters/`の入出力と判定方針だけにする
+- Claudeの入口は`hooks/hooks.json`、回帰検査は`hooks/tests/`
+- コミット判断、会話回数による内省、文脈注入、利用状況計測は追加しない
 
-force pushとreviewerなしの非draft PR作成は全対応ハーネスでdeny。破壊的操作はClaude Code / Cursorでask、askを返せないCodex / OpenCodeではdeny。差分はadapterのI/Oとdecision policyに限定する。
+## 安全
 
-## Safety
+- 破壊的操作や強制プッシュは利用者の明示確認なしに進めない
+- PR本文・コミットメッセージへトークン、メールアドレス、チーム外の実名を書かない。検査手順は`skills/teishutsu/references/pr-template.md`
+- 実行可能Markdownはコードとしてレビューし、シェルの安全性、一時ファイル、後処理、ネットワーク境界も確認する
 
-- 破壊的操作やforce pushはユーザの明示確認なしに進めない
-- PR本文・commit messageへtoken、email、チーム外の実名を書かない。scan recipeは`skills/teishutsu/references/pr-template.md`
-- 実行可能Markdownはcodeとしてreviewし、shell safety、temporary file、cleanup、network境界も確認する
+## 正本
 
-## Routing
-
-| 変更対象 | SoT |
+| 変更対象 | 正本 |
 | --- | --- |
-| skill trigger / mode / output / stop condition | `skills/<name>/SKILL.md` |
-| 共通skill contract | `scripts/contract.md` |
-| skill集合・順序 | `scripts/skills.json` |
-| 探索・用語・CONTEXT.md契約 | `skills/tansaku/` |
+| スキルの起動条件・使い分け・出力・停止条件 | `skills/<name>/SKILL.md` |
+| スキルの共通契約 | `scripts/contract.md` |
+| スキルの集合・順序 | `scripts/skills.json` |
+| 探索・影響範囲・任意のドメイン文書化 | `skills/tansaku/` |
 | 設計・計画・原則 | `skills/sekkei/` |
-| 実装・診断・commit境界 | `skills/jikkou/` |
-| review・simplify・reviewer prompts | `skills/sadoku/` |
-| PR・命名・秘密情報scan | `skills/teishutsu/` |
-| 作業・リリース・handoffの報告と日本語文章規範 | `skills/houkoku/` |
+| 実装・診断・コミット境界 | `skills/jikkou/` |
+| レビュー・簡略化・専門レビューの指示 | `skills/sadoku/` |
+| PR・命名・秘密情報検査 | `skills/teishutsu/` |
+| Slack・リリース・引き継ぎ文面と日本語文章規範 | `skills/houkoku/` |
 | UI視覚検証・Shimon利用契約 | `scripts/visual-contract.md` |
-| hook分類とadapter | `hooks/conditions.md` / `hooks/scripts/` / `hooks/adapters/` |
-| version / author / harness description | `plugin.src.json` |
-| Claude marketplaceの公開概要 | `.claude-plugin/marketplace.json` |
-| 人間向けinstall・公開情報 | `README.md` |
+| フック分類とアダプター | `hooks/conditions.md` / `hooks/scripts/` / `hooks/adapters/` |
+| バージョン・作者・ハーネス別の説明 | `plugin.src.json` |
+| Claudeマーケットプレイスの公開概要 | `.claude-plugin/marketplace.json` |
+| 人間向けの導入・公開情報 | `README.md` |
