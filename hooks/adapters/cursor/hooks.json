@@ -3,9 +3,6 @@
   "hooks": {
     "sessionStart": [
       { "command": "./hooks/scripts/session-routing.sh cursor" }
-    ],
-    "beforeShellExecution": [
-      { "command": "./hooks/adapters/cursor/before-shell.sh" }
     ]
   }
 }

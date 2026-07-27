@@ -1,17 +1,17 @@
 {
   "name": "hikizan",
   "descriptions": {
-    "claude": "動詞単位のスキル（{{core_skills}}）、軽量な起動規則、作業開始時のGit状態、PRマージ承認で構成するClaude Codeプラグイン兼Agent Skillsパック。",
-    "cursor": "hikizan for Cursor: verb skills ({{core_skills}}), lightweight routing, repository status, and explicit approval before PR merge.",
-    "codex": "hikizan for Codex: verb skills ({{core_skills}}), lightweight routing, repository status, and explicit approval before PR merge."
+    "claude": "動詞単位のスキル（{{core_skills}}）、軽量な起動規則、作業開始時のGit状態で構成するClaude Codeプラグイン兼Agent Skillsパック。",
+    "cursor": "hikizan for Cursor: verb skills ({{core_skills}}), lightweight routing, and repository status.",
+    "codex": "hikizan for Codex: verb skills ({{core_skills}}), lightweight routing, and repository status."
   },
   "codexInterface": {
     "shortDescription": "Japanese workflow skills with goal-aware routing",
-    "longDescription": "Verb-oriented Japanese workflow skills with lightweight routing, prose guidance, startup repository status, and explicit approval before pull request merge.",
+    "longDescription": "Verb-oriented Japanese workflow skills with lightweight routing, prose guidance, and startup repository status.",
     "category": "Productivity",
     "capabilities": ["Read", "Write"]
   },
-  "version": "0.12.1",
+  "version": "0.12.2",
   "author": {
     "name": "hayashiii-ghub"
   },

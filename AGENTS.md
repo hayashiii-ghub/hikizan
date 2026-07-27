@@ -37,7 +37,7 @@ bash scripts/check-all.sh
 
 ## フック
 
-フックは、スキル選択規則の注入、起動時のGit状態確認、PRマージの明示承認だけを扱います。正確な条件は`hooks/conditions.md`、共通処理は`hooks/scripts/`、ハーネス差分は`hooks/adapters/`、回帰検査は`hooks/tests/`に置きます。コミット判断、会話回数による内省、利用状況計測は追加しません。
+フックは、スキル選択規則の注入と起動時のGit状態確認だけを扱います。正確な条件は`hooks/conditions.md`、共通処理は`hooks/scripts/`、ハーネス差分は`hooks/adapters/`、回帰検査は`hooks/tests/`に置きます。外部操作の承認、コミット判断、会話回数による内省、利用状況計測は追加しません。
 
 ## 安全
 
