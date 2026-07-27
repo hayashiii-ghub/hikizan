@@ -1,7 +1,7 @@
 {
   "name": "hikizan",
-  "version": "0.11.9",
-  "description": "hikizan for Cursor: verb skills (tansaku / sekkei / jikkou / sadoku / teishutsu / houkoku), lightweight goal-aware routing, and optional beforeShellExecution safety floors.",
+  "version": "0.12.0",
+  "description": "hikizan for Cursor: verb skills (tansaku / sekkei / jikkou / sadoku / teishutsu / houkoku), lightweight routing, repository status, and explicit approval before PR merge.",
   "author": {
     "name": "hayashiii-ghub"
   },
@@ -10,11 +10,11 @@
   "license": "MIT",
   "keywords": [
     "skills",
-    "floors",
     "hooks",
+    "japanese",
     "code-review",
     "workflow",
-    "japanese"
+    "reporting"
   ],
   "rules": "hooks/adapters/cursor/rules/",
   "hooks": "hooks/adapters/cursor/hooks.json"

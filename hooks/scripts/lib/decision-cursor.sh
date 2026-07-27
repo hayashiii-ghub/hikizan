@@ -1,8 +1,6 @@
 #!/usr/bin/env bash
-# Emit a Cursor hook permission decision on stdout. Cursor's beforeShellExecution
-# expects {"permission":"allow|deny|ask","user_message":...,"agent_message":...}.
-# This is the Cursor-flavoured sibling of lib/decision.sh (which emits Claude
-# Code's permissionDecision form) — same pure logic feeds both.
+# Cursor hookの権限判断を、要求されるJSON形式で標準出力へ返す。
+# 共通の判定結果をCursor固有の応答形式へ変換するために使う。
 hz_cursor_decision() {
   local permission="$1" reason="$2"
   if command -v jq >/dev/null 2>&1; then

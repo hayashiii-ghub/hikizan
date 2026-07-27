@@ -1,7 +1,6 @@
 #!/usr/bin/env bash
-# Behavioral checks for copyable Git recipes documented by the workflow
-# skills. Static wording checks live in check-consistency.sh; this file proves
-# the documented ranges and explicit first push work in a real temporary repo.
+# スキルに記載したGitの比較範囲とpush手順を、一時リポジトリで検査する。
+# 文書どおりの操作で変更範囲やPRの比較元が崩れないことを確かめる。
 set -euo pipefail
 
 tmp="$(mktemp -d)"

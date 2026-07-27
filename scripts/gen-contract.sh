@@ -1,18 +1,6 @@
 #!/usr/bin/env bash
-# Stamp the 共通ルール block from scripts/contract.md (the SoT) into the
-# contract marker region of every core skill's SKILL.md. The stamped copies
-# are committed so every skill in the hikizan pack receives the same contract;
-# this script replaces the hand-copy + byte-identity lint that used to keep the
-# copies in sync. Cross-skill details are referenced by logical skill name, and
-# the pack is installed as a unit.
-#
-#   bash scripts/gen-contract.sh           # write the blocks
-#   bash scripts/gen-contract.sh --check   # fail if regen would change them
-#
-# Marker region in each skills/<name>/SKILL.md:
-#   <!-- hikizan:contract:start -->
-#   ...stamped from scripts/contract.md...
-#   <!-- hikizan:contract:end -->
+# scripts/contract.mdの共通ルールを、全スキルのマーカー区間へ反映する。
+# 各SKILL.mdへ同じ規則を手作業でコピーせず、形式を揃えるために使う。
 
 set -uo pipefail
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"

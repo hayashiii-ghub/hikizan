@@ -4,7 +4,7 @@
   "owner": {
     "name": "hayashiii-ghub"
   },
-  "description": "調査・設計・実装・レビュー・提出・報告のスキル、軽量な起動規則、任意の安全フックをまとめたAgent Skillsパック。",
+  "description": "調査・設計・実装・レビュー・提出・文章のスキル、軽量な起動情報、PRマージ承認をまとめたAgent Skillsパック。",
   "plugins": [
     {
       "name": "hikizan",

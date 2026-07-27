@@ -1,12 +1,6 @@
 #!/usr/bin/env bash
-# Generate all three plugin manifests from plugin.src.json (the single
-# hand-edited source for version / author / harness descriptions and Codex
-# interface metadata). Description templates use {{core_skills}}, expanded from
-# scripts/skills.json. Public schemas and harness-specific keywords / component
-# pointers live here. Do not edit generated manifests by hand — edit
-# plugin.src.json and rerun.
-#   bash scripts/gen-manifests.sh           # write the manifests
-#   bash scripts/gen-manifests.sh --check   # fail if regen would change them
+# plugin.src.jsonからClaude Code、Cursor、Codexのマニフェストを生成する。
+# バージョンと基本情報を一度の編集で3ハーネスへ揃えるために使う。
 set -euo pipefail
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 command -v jq >/dev/null 2>&1 || { echo "✘ gen-manifests.sh requires jq" >&2; exit 1; }
@@ -80,7 +74,8 @@ gen_claude() {
 gen_cursor() {
   jq -n --arg name "$name" --arg v "$ver" --argjson a "$author" \
     --arg description "$cursor_description" \
-    --arg homepage "$homepage" --arg repository "$repository" --arg license "$license" '{
+    --arg homepage "$homepage" --arg repository "$repository" --arg license "$license" \
+    --argjson keywords "$keywords" '{
     name: $name,
     version: $v,
     description: $description,
@@ -88,7 +83,7 @@ gen_cursor() {
     homepage: $homepage,
     repository: $repository,
     license: $license,
-    keywords: ["skills", "floors", "hooks", "code-review", "workflow", "japanese"],
+    keywords: $keywords,
     rules: "hooks/adapters/cursor/rules/",
     hooks: "hooks/adapters/cursor/hooks.json"
   }'
@@ -98,7 +93,8 @@ gen_codex() {
   jq -n --arg name "$name" --arg v "$ver" --argjson a "$author" \
     --arg description "$codex_description" \
     --argjson interface "$codex_interface" \
-    --arg homepage "$homepage" --arg repository "$repository" --arg license "$license" '{
+    --arg homepage "$homepage" --arg repository "$repository" --arg license "$license" \
+    --argjson keywords "$keywords" '{
     name: $name,
     version: $v,
     description: $description,
@@ -114,7 +110,7 @@ gen_codex() {
       category: $interface.category,
       capabilities: $interface.capabilities
     },
-    keywords: ["skills", "floors", "hooks", "code-review", "workflow", "japanese"],
+    keywords: $keywords,
     skills: "./skills/",
     hooks: "./hooks/adapters/codex/hooks.json"
   }'

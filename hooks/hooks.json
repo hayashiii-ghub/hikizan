@@ -1,5 +1,5 @@
 {
-  "description": "hikizan: lightweight skill routing plus deterministic safety floors for push, PR creation, and destructive shell operations.",
+  "description": "hikizan: lightweight skill routing, repository status, and explicit approval before PR merge.",
   "hooks": {
     "SessionStart": [
       {
@@ -21,23 +21,9 @@
           {
             "type": "command",
             "command": "bash",
-            "args": ["${CLAUDE_PLUGIN_ROOT}/hooks/scripts/pre-push.sh"],
-            "timeout": 30,
-            "statusMessage": "checking push preconditions..."
-          },
-          {
-            "type": "command",
-            "command": "bash",
-            "args": ["${CLAUDE_PLUGIN_ROOT}/hooks/scripts/pre-pr-create.sh"],
-            "timeout": 15,
-            "statusMessage": "checking PR create preconditions..."
-          },
-          {
-            "type": "command",
-            "command": "bash",
-            "args": ["${CLAUDE_PLUGIN_ROOT}/hooks/scripts/pre-destructive.sh"],
+            "args": ["${CLAUDE_PLUGIN_ROOT}/hooks/scripts/pre-merge.sh"],
             "timeout": 10,
-            "statusMessage": "checking destructive op..."
+            "statusMessage": "checking PR merge..."
           }
         ]
       }

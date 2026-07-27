@@ -26,9 +26,9 @@ type HookDecision = {
 
 function findRoot(): string | undefined {
   const required = [
-    "hooks/scripts/pre-push.sh",
-    "hooks/scripts/pre-pr-create.sh",
-    "hooks/scripts/pre-destructive.sh",
+    "hooks/scripts/pre-merge.sh",
+    "hooks/scripts/session-routing.sh",
+    "hooks/routing.md",
   ]
   const valid = (candidate: string) => required.every((path) => existsSync(resolve(candidate, path)))
 
@@ -40,18 +40,14 @@ function findRoot(): string | undefined {
   return valid(bundled) ? bundled : undefined
 }
 
-async function runHook(
-  root: string,
-  script: string,
+async function runProcess(
+  command: string[],
   payload: Record<string, unknown>,
   cwd: string,
-  args: string[] = [],
+  timeout: number,
 ) {
-  const timeout = script.endsWith("pre-push.sh") ? 30_000
-    : script.endsWith("pre-pr-create.sh") ? 15_000
-    : 10_000
   const process = Bun.spawn({
-    cmd: ["bash", resolve(root, script), ...args],
+    cmd: command,
     cwd,
     env: { ...globalThis.process.env },
     stdin: Buffer.from(JSON.stringify(payload)),
@@ -72,67 +68,76 @@ async function runHook(
     ])
     if (exitCode !== 0) {
       const status = timedOut ? `timeout after ${timeout}ms` : `exit ${exitCode}`
-      throw new Error(stderr.trim() || `hikizan hook failed closed: ${script} (${status})`)
+      throw new Error(stderr.trim() || `hikizan hook failed: ${status}`)
     }
-    if (!stdout.trim()) return undefined
-
-    const decision = JSON.parse(stdout) as HookDecision
-    const output = decision.hookSpecificOutput
-    if (
-      output?.hookEventName !== "PreToolUse" ||
-      !["allow", "deny"].includes(output.permissionDecision || "") ||
-      (output.permissionDecisionReason !== undefined && typeof output.permissionDecisionReason !== "string")
-    ) {
-      throw new Error(`hikizan hook returned an invalid decision: ${script}`)
-    }
-    return decision
-  } catch (error) {
-    if (error instanceof SyntaxError) {
-      throw new Error(`hikizan hook returned invalid JSON: ${script}`)
-    }
-    throw error
+    return stdout.trimEnd()
   } finally {
     clearTimeout(timer)
+  }
+}
+
+async function runMergeHook(root: string, command: string, cwd: string, sessionID = "") {
+  const payload = {
+    tool_input: { command },
+    cwd,
+    session_id: sessionID,
+  }
+  const stdout = await runProcess(
+    ["bash", resolve(root, "hooks/scripts/pre-merge.sh"), "deny", "OpenCode"],
+    payload,
+    cwd,
+    10_000,
+  )
+  if (!stdout) return
+
+  let decision: HookDecision
+  try {
+    decision = JSON.parse(stdout) as HookDecision
+  } catch {
+    throw new Error("hikizan merge hook returned invalid JSON")
+  }
+  const output = decision.hookSpecificOutput
+  if (
+    output?.hookEventName !== "PreToolUse" ||
+    !["allow", "deny"].includes(output.permissionDecision || "")
+  ) {
+    throw new Error("hikizan merge hook returned an invalid decision")
+  }
+  if (output.permissionDecision === "deny") {
+    throw new Error(output.permissionDecisionReason || "PR merge blocked by hikizan")
+  }
+}
+
+async function loadSessionContext(root: string, cwd: string) {
+  try {
+    return await runProcess(
+      ["bash", resolve(root, "hooks/scripts/session-routing.sh"), "plain"],
+      { cwd },
+      cwd,
+      5_000,
+    )
+  } catch {
+    return readFileSync(resolve(root, "hooks/routing.md"), "utf8").trimEnd()
   }
 }
 
 export const HikizanPlugin = async (context: PluginContext) => {
   const root = findRoot()
   const cwd = context.worktree || context.directory || globalThis.process.cwd()
-  const routing = root && existsSync(resolve(root, "hooks/routing.md"))
-    ? readFileSync(resolve(root, "hooks/routing.md"), "utf8")
-    : ""
+  const sessionContext = root ? await loadSessionContext(root, cwd) : ""
 
   return {
     "tool.execute.before": async (input: ToolInput, output: ToolOutput) => {
       if (!root || input.tool !== "bash") return
       const command = output.args?.command
       if (typeof command !== "string") return
-
-      const payload = {
-        tool_input: { command },
-        cwd,
-        session_id: input.sessionID || "",
-      }
-      const hooks: Array<[string, string[]]> = [
-        ["hooks/scripts/pre-push.sh", []],
-        ["hooks/scripts/pre-pr-create.sh", []],
-        ["hooks/scripts/pre-destructive.sh", ["deny", "OpenCode"]],
-      ]
-
-      for (const [script, args] of hooks) {
-        const decision = await runHook(root, script, payload, cwd, args)
-        const result = decision?.hookSpecificOutput
-        if (result?.permissionDecision === "deny") {
-          throw new Error(result.permissionDecisionReason || "blocked by hikizan")
-        }
-      }
+      await runMergeHook(root, command, cwd, input.sessionID)
     },
     "experimental.chat.system.transform": async (
       _input: { sessionID?: string },
       output: { system: string[] },
     ) => {
-      if (routing) output.system.push(routing)
+      if (sessionContext) output.system.push(sessionContext)
     },
   }
 }

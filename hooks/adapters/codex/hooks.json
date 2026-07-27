@@ -16,9 +16,7 @@
       {
         "matcher": "Bash",
         "hooks": [
-          { "type": "command", "command": "bash ${PLUGIN_ROOT}/hooks/scripts/pre-push.sh", "statusMessage": "checking push preconditions..." },
-          { "type": "command", "command": "bash ${PLUGIN_ROOT}/hooks/scripts/pre-destructive.sh deny", "statusMessage": "checking destructive op..." },
-          { "type": "command", "command": "bash ${PLUGIN_ROOT}/hooks/scripts/pre-pr-create.sh", "statusMessage": "checking PR create preconditions..." }
+          { "type": "command", "command": "bash ${PLUGIN_ROOT}/hooks/scripts/pre-merge.sh deny Codex", "statusMessage": "checking PR merge..." }
         ]
       }
     ]

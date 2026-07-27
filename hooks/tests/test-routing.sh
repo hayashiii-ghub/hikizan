@@ -1,40 +1,71 @@
 #!/usr/bin/env bash
-# 共通ルーティングの生成と、各ハーネスへの配布形式を固定する。
+# description由来の起動規則と、セッション開始時のGit状態を確認する。
+# スキル選択と作業開始時の前提がハーネス間でずれないようにするために使う。
 
 DIR="$(cd "$(dirname "$0")" && pwd)"
 . "$DIR/lib/harness.sh"
 ROOT="$DIR/../.."
 ROUTING="$ROOT/hooks/routing.md"
-SESSION_ROUTING="$ROOT/hooks/scripts/session-routing.sh"
+SESSION="$ROOT/hooks/scripts/session-routing.sh"
 
 bash "$ROOT/scripts/gen-routing.sh" --check >/dev/null 2>&1
 assert_exit "routing artifacts are current" 0 "$?"
+assert_eq "when_to_use is absent from skills" "" \
+  "$(grep -Rl '^when_to_use:' "$ROOT/skills" || true)"
 
-EXPECTED="$(cat "$ROUTING")"
-ACTUAL="$(bash "$SESSION_ROUTING" claude)"
-assert_eq "Claude receives the shared routing text" "$EXPECTED" "$ACTUAL"
+for skill in $(jq -r '.core[]' "$ROOT/scripts/skills.json"); do
+  description=$(awk '
+    NR==1 && $0=="---" {inside=1; next}
+    inside && $0=="---" {exit}
+    inside && /^description:/ {sub(/^description:[[:space:]]*/, ""); gsub(/^"|"$/, ""); print; exit}
+  ' "$ROOT/skills/$skill/SKILL.md")
+  assert_contains "routing uses $skill description" "$description" "$(cat "$ROUTING")"
+done
 
-CODEX="$(bash "$SESSION_ROUTING" codex)"
-assert_eq "Codex SessionStart event is named correctly" "SessionStart" \
+TMP=$(mktemp -d)
+REMOTE="$TMP/remote.git"
+WORK="$TMP/work"
+OTHER="$TMP/other"
+git init -q --bare -b main "$REMOTE"
+git init -q "$WORK"
+git -C "$WORK" config user.email test@localhost
+git -C "$WORK" config user.name test
+printf 'base\n' > "$WORK/file.txt"
+git -C "$WORK" add file.txt
+git -C "$WORK" commit -qm base
+git -C "$WORK" branch -M main
+git -C "$WORK" remote add origin "$REMOTE"
+git -C "$WORK" push -qu --set-upstream origin main
+git clone -q "$REMOTE" "$OTHER"
+git -C "$OTHER" config user.email test@localhost
+git -C "$OTHER" config user.name test
+printf 'remote\n' >> "$OTHER/file.txt"
+git -C "$OTHER" commit -qam remote
+git -C "$OTHER" push -q origin main
+printf 'dirty\n' >> "$WORK/file.txt"
+PAYLOAD=$(jq -nc --arg cwd "$WORK" '{cwd:$cwd}')
+
+CLAUDE=$(printf '%s' "$PAYLOAD" | bash "$SESSION" claude)
+assert_contains "Claude receives routing" "## hikizanのスキル選択" "$CLAUDE"
+assert_contains "routing explains merge approval" "HIKIZAN_MERGE_APPROVED=1" "$CLAUDE"
+assert_contains "Claude receives repository name" "リポジトリ: work" "$CLAUDE"
+assert_contains "dirty worktree is reported" "worktree=変更あり" "$CLAUDE"
+assert_contains "remote fetch updates behind count" "behind=1" "$CLAUDE"
+assert_contains "successful fetch is reported" "remote=確認済み" "$CLAUDE"
+
+CODEX=$(HIKIZAN_SKIP_FETCH=1 bash "$SESSION" codex <<<"$PAYLOAD")
+assert_eq "Codex event is SessionStart" "SessionStart" \
   "$(printf '%s' "$CODEX" | jq -r '.hookSpecificOutput.hookEventName')"
-assert_eq "Codex receives the shared routing text" "$EXPECTED" \
+assert_contains "Codex receives routing" "## hikizanのスキル選択" \
   "$(printf '%s' "$CODEX" | jq -r '.hookSpecificOutput.additionalContext')"
 
-assert_contains "Cursor rule is always applied" "alwaysApply: true" \
-  "$(cat "$ROOT/hooks/adapters/cursor/rules/hikizan.mdc")"
-assert_eq "Cursor manifest publishes the routing rule" "hooks/adapters/cursor/rules/" \
-  "$(jq -r '.rules' "$ROOT/.cursor-plugin/plugin.json")"
+CURSOR=$(HIKIZAN_SKIP_FETCH=1 bash "$SESSION" cursor <<<"$PAYLOAD")
+CURSOR_CONTEXT=$(printf '%s' "$CURSOR" | jq -r '.additional_context')
+assert_contains "Cursor receives dynamic repository status" "リポジトリ: work" "$CURSOR_CONTEXT"
+case "$CURSOR_CONTEXT" in
+  *'## hikizanのスキル選択'*) HZ_FAIL=$((HZ_FAIL + 1)); printf '  FAIL: Cursor dynamic context duplicates its generated rule\n' ;;
+  *) HZ_PASS=$((HZ_PASS + 1)) ;;
+esac
 
-CLAUDE_EVENTS="$(jq -r '.hooks | keys[]' "$ROOT/hooks/hooks.json" | sort | tr '\n' ' ')"
-assert_contains "Claude registers SessionStart routing" "SessionStart" "$CLAUDE_EVENTS"
-CODEX_EVENTS="$(jq -r '.hooks | keys[]' "$ROOT/hooks/adapters/codex/hooks.json" | sort | tr '\n' ' ')"
-assert_contains "Codex registers SessionStart routing" "SessionStart" "$CODEX_EVENTS"
-
-SKILLS="$(jq -r '.core[]' "$ROOT/scripts/skills.json")"
-while IFS= read -r skill; do
-  assert_contains "routing includes $skill" "\`$skill\`" "$EXPECTED"
-done <<EOF
-$SKILLS
-EOF
-
+rm -rf "$TMP"
 hz_test_summary

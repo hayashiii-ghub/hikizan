@@ -1,9 +1,6 @@
 #!/usr/bin/env bash
-# Minimal assert harness for hikizan hook tests (bash 3.2 compatible, no deps).
-#
-# Each test file sources this, then calls assert_* helpers. The runner
-# (run.sh) sources each test file in a subshell and inspects the exported
-# counters PASS / FAIL printed by hz_test_summary.
+# Hookテストで共通利用する最小限のアサーション関数を提供する。
+# 各テストの結果形式を揃え、run.shで集計できるようにするために使う。
 
 HZ_PASS=0
 HZ_FAIL=0
