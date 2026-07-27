@@ -97,16 +97,9 @@ ln -s "$(pwd)/hooks/adapters/opencode/hikizan.ts" ~/.config/opencode/plugins/hik
 
 ## 画面の検証
 
-UI・スタイル・配置・操作の変更では、[Shimon](https://github.com/hayashiii-ghub/shimon)を標準の視覚検証ハーネスとして使います。
+UI・スタイル・配置・操作を変更したら、対象プロジェクトに既存の視覚検証方法があればそれを使います。検査結果だけでなく、生成された画像や実際の表示も確認します。
 
-Shimon本体やプロジェクト固有の`shimon.config.mjs`はhikizanに同梱しません。UIを持つ対象プロジェクトが、ShimonとChromiumをプロジェクト内に導入します。
-
-```bash
-npm install --save-dev @hayashiii/shimon
-npx playwright install chromium
-```
-
-設定済みのプロジェクトでだけShimonを実行します。エージェントは今回必要なケースを`.shimon/task.mjs`へ書き、自動検査と全スクリーンショットを確認します。未導入・未設定の場合は自動インストールや別ツールへの切替をせず、視覚未確認として報告します。
+[Shimon](https://github.com/hayashiii-ghub/shimon)が設定済みならShimonを使います。hikizanは特定のツールを同梱・強制せず、検証のためだけに新しいツールを勝手に導入しません。利用できる方法がなければ、視覚未確認であることを伝えます。
 
 ## フック
 

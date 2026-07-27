@@ -11,7 +11,6 @@ bash "$ROOT/scripts/gen-routing.sh" --check || rc=1
 bash "$ROOT/scripts/gen-trigger-docs.sh" --check || rc=1
 bash "$ROOT/scripts/gen-manifests.sh" --check || rc=1
 bash "$ROOT/scripts/gen-contract.sh" --check || rc=1
-bash "$ROOT/scripts/gen-visual-contract.sh" --check || rc=1
 if command -v shellcheck >/dev/null 2>&1; then
   (cd "$ROOT" && git ls-files '*.sh' | xargs shellcheck -x -S warning) || rc=1
 else
