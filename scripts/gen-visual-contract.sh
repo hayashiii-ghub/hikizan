@@ -1,10 +1,6 @@
 #!/usr/bin/env bash
-# Stamp the visual verification policy into jikkou and sadoku. The callers own
-# when the check runs and how the result is used; scripts/visual-contract.md
-# owns the shared trust, command, evidence, and secret-handling policy.
-#
-#   bash scripts/gen-visual-contract.sh
-#   bash scripts/gen-visual-contract.sh --check
+# scripts/visual-contract.mdの視覚検証規則をjikkouとsadokuへ反映する。
+# Shimonの実行条件と確認方法を、実装とレビューで揃えるために使う。
 set -uo pipefail
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 SRC="$ROOT/scripts/visual-contract.md"

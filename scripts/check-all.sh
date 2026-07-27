@@ -1,7 +1,6 @@
 #!/usr/bin/env bash
-# Single entry point for every hikizan check: hook tests + consistency lint +
-# generated artifact freshness. CI and humans run only this.
-#   bash scripts/check-all.sh
+# Hook、スキル、生成物、シェルをまとめて検査する。
+# 人とCIが同じ入口で全体の状態を確認するための開発用スクリプト。
 set -uo pipefail
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 rc=0

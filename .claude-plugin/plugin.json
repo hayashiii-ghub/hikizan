@@ -1,8 +1,8 @@
 {
   "$schema": "https://json.schemastore.org/claude-code-plugin-manifest.json",
   "name": "hikizan",
-  "description": "動詞単位のスキル（tansaku / sekkei / jikkou / sadoku / teishutsu / houkoku）、終点までつなぐ軽量な起動規則、プッシュ・PR・破壊的操作だけを扱う任意の安全フックで構成する、Claude Codeプラグイン兼Agent Skillsパック。",
-  "version": "0.11.9",
+  "description": "動詞単位のスキル（tansaku / sekkei / jikkou / sadoku / teishutsu / houkoku）、軽量な起動規則、作業開始時のGit状態、PRマージ確認で構成するClaude Codeプラグイン兼Agent Skillsパック。",
+  "version": "0.12.0",
   "author": {
     "name": "hayashiii-ghub"
   },
@@ -10,10 +10,10 @@
   "repository": "https://github.com/hayashiii-ghub/hikizan",
   "license": "MIT",
   "keywords": [
+    "skills",
+    "hooks",
     "japanese",
     "code-review",
-    "tdd",
-    "debugging",
     "workflow",
     "reporting"
   ]

@@ -1,22 +1,22 @@
 {
   "name": "hikizan",
   "descriptions": {
-    "claude": "動詞単位のスキル（{{core_skills}}）、終点までつなぐ軽量な起動規則、プッシュ・PR・破壊的操作だけを扱う任意の安全フックで構成する、Claude Codeプラグイン兼Agent Skillsパック。",
-    "cursor": "hikizan for Cursor: verb skills ({{core_skills}}), lightweight goal-aware routing, and optional beforeShellExecution safety floors.",
-    "codex": "hikizan for Codex: verb skills ({{core_skills}}), lightweight goal-aware startup routing, and optional PreToolUse safety floors."
+    "claude": "動詞単位のスキル（{{core_skills}}）、軽量な起動規則、作業開始時のGit状態、PRマージ確認で構成するClaude Codeプラグイン兼Agent Skillsパック。",
+    "cursor": "hikizan for Cursor: verb skills ({{core_skills}}), lightweight routing, repository status, and a PR merge checkpoint.",
+    "codex": "hikizan for Codex: verb skills ({{core_skills}}), lightweight routing, repository status, and a PR merge checkpoint."
   },
   "codexInterface": {
     "shortDescription": "Japanese workflow skills with goal-aware routing",
-    "longDescription": "Verb-oriented Japanese workflow skills with lightweight goal-aware routing, prose guidance, and optional deterministic guardrails for push, pull request, and destructive shell operations.",
+    "longDescription": "Verb-oriented Japanese workflow skills with lightweight routing, prose guidance, startup repository status, and a pull request merge checkpoint.",
     "category": "Productivity",
     "capabilities": ["Read", "Write"]
   },
-  "version": "0.11.9",
+  "version": "0.12.0",
   "author": {
     "name": "hayashiii-ghub"
   },
   "homepage": "https://github.com/hayashiii-ghub/hikizan",
   "repository": "https://github.com/hayashiii-ghub/hikizan",
   "license": "MIT",
-  "keywords": ["japanese", "code-review", "tdd", "debugging", "workflow", "reporting"]
+  "keywords": ["skills", "hooks", "japanese", "code-review", "workflow", "reporting"]
 }

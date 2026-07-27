@@ -1,23 +1,24 @@
-# 安全フックの判定条件
+# フックの責務
 
-安全フックは、スキルを経由しないシェル操作にも適用する任意の安全下限です。実装判断、会話回数による内省、コミット可否、一般的な文脈注入、利用状況計測は扱いません。プラグインの起動時アダプターは別責務として、生成済みの`hooks/routing.md`だけを渡します。
+フックは次の3つだけを扱います。実装判断、コミット可否、会話回数による内省、利用状況計測は扱いません。
 
-| 分類 | 条件 | Claude Code / Cursor | Codex / OpenCode |
-| --- | --- | --- | --- |
-| プッシュ | `main` / `master` / `develop`への強制相当プッシュ、またはリモートより遅れたブランチのプッシュ | `deny` | `deny` |
-| 破壊的操作 | `rm -rf`、`git reset --hard`、`git clean -f`、変更破棄を伴う`git checkout` | `ask` | `deny` |
-| PR作成 | `gh pr create`に`--draft`も`--reviewer`もない | `deny` | `deny` |
+| タイミング | 処理 | 失敗時 |
+| --- | --- | --- |
+| セッション開始 | 生成済みのスキル選択規則を渡す | 規則を渡せなくても作業を止めない |
+| セッション開始 | 現在のリポジトリ、ブランチ、作業ツリー、upstreamとの差分を1行で渡す | リモート取得に失敗した場合は`未確認`とする |
+| シェル実行前 | `gh pr merge`を人間の確認へ戻す | Claude Codeは確認を求め、ほかの対応ハーネスは拒否する |
 
-CodexとOpenCodeはフックから対話的な`ask`を返せないため、破壊的操作も`deny`にします。拒否後にエージェントが別経路で回避してはならず、必要なら利用者本人へ実行を戻します。
+リモート確認は、設定済みのupstreamに対する`git fetch --no-tags`だけを短時間実行します。作業ツリー、ローカルブランチ、履歴は変更せず、pull、merge、rebase、pruneは行いません。
+
+PRマージの判定対象は、通常経路として使う`gh pr merge`です。GitHubの画面操作や未知のAPI経路を網羅するセキュリティ境界ではありません。拒否されたエージェントは別経路で回避せず、利用者へ実行を戻します。
 
 ## 構成
 
-- `hooks.json`：Claude Codeの固定入口
-- `adapters/codex/hooks.json`：Codexのマニフェストから参照する配線
-- `adapters/cursor/hooks.json` / `before-shell.sh`：Cursorの入出力アダプター
-- `adapters/opencode/hikizan.ts`：OpenCodeの`tool.execute.before`アダプター
-- `scripts/pre-*.sh`：共通入口
-- `scripts/lib/`：シェル解析、分類、判定形式
-- `tests/`：共通ロジックと各アダプターの回帰テスト
-
-全ハーネスは同じ分類ロジックを共有し、差分は入力形式と判定方針だけに限定します。フックは補助的な安全策であり、すべてのシェル経路を捕捉するセキュリティ境界とはみなしません。
+- `hooks.json`：Claude Codeの入口
+- `adapters/codex/hooks.json`：Codexの入口
+- `adapters/cursor/`：Cursorの入出力アダプター
+- `adapters/opencode/hikizan.ts`：OpenCodeの入出力アダプター
+- `scripts/session-routing.sh`：起動時の規則とGit状態
+- `scripts/pre-merge.sh`：共通のPRマージ入口
+- `scripts/lib/`：通常のPRマージコマンドの軽い判定
+- `tests/`：共通処理と各アダプターの回帰検査

@@ -1,7 +1,6 @@
 #!/usr/bin/env bash
-# OpenCode's plugin API cannot return an interactive ask decision. This adapter
-# translates the shared floors into thrown errors and supplies the same short
-# skill-routing context as the other supported harnesses.
+# OpenCodeアダプターが起動情報とマージ停止だけを持つことを確認する。
+# ハーネス固有の配線へ不要なHook責務が戻らないようにするために使う。
 
 DIR="$(cd "$(dirname "$0")" && pwd)"
 . "$DIR/lib/harness.sh"
@@ -14,47 +13,35 @@ if ! command -v bun >/dev/null 2>&1; then
   exit 0
 fi
 
-hz_mkrepo() {
-  local branch="$1" dir
-  dir="$(mktemp -d)"
-  git -C "$dir" init -q
-  git -C "$dir" config user.email t@example.com
-  git -C "$dir" config user.name t
-  git -C "$dir" commit -q --allow-empty -m init
-  git -C "$dir" branch -M "$branch"
-  printf '%s' "$dir"
-}
+REPO=$(mktemp -d)
+git -C "$REPO" init -q
+git -C "$REPO" config user.email test@localhost
+git -C "$REPO" config user.name test
+git -C "$REPO" commit -q --allow-empty -m init
 
 invoke() {
-  bun "$INVOKE" "$1" "$ROOT" "$REPO" "${2:-}" 2>/dev/null
+  HIKIZAN_SKIP_FETCH=1 bun "$INVOKE" "$1" "$ROOT" "$REPO" "${2:-}" 2>/dev/null
 }
 
-REPO="$(hz_mkrepo main)"
-
-OUT="$(invoke before 'git push --force origin main')"
-assert_eq "force push is denied" "deny" "$(printf '%s' "$OUT" | jq -r '.decision // "crash"')"
-
-OUT="$(invoke before 'git push origin feature')"
-assert_eq "benign push is allowed" "allow" "$(printf '%s' "$OUT" | jq -r '.decision // "crash"')"
-
-OUT="$(invoke before 'rm -rf /tmp/hikizan-opencode-test')"
-assert_eq "destructive operation is denied" "deny" "$(printf '%s' "$OUT" | jq -r '.decision // "crash"')"
-assert_contains "destructive reason names OpenCode" "OpenCode" "$(printf '%s' "$OUT" | jq -r '.reason // ""')"
-
-OUT="$(invoke before 'gh pr create --title x')"
-assert_eq "non-draft PR is denied" "deny" "$(printf '%s' "$OUT" | jq -r '.decision // "crash"')"
-
-OUT="$(invoke before-non-bash 'rm -rf /tmp/hikizan-opencode-test')"
+OUT=$(invoke before 'gh pr merge 123')
+assert_eq "PR merge is denied" "deny" "$(printf '%s' "$OUT" | jq -r '.decision // "crash"')"
+OUT=$(invoke before 'git push origin feature')
+assert_eq "normal push is allowed" "allow" "$(printf '%s' "$OUT" | jq -r '.decision // "crash"')"
+OUT=$(invoke before 'gh pr create --title x')
+assert_eq "PR creation is allowed" "allow" "$(printf '%s' "$OUT" | jq -r '.decision // "crash"')"
+OUT=$(invoke before 'rm -rf build')
+assert_eq "destructive command is outside this hook" "allow" "$(printf '%s' "$OUT" | jq -r '.decision // "crash"')"
+OUT=$(invoke before-non-bash 'gh pr merge 123')
 assert_eq "non-bash tool is ignored" "allow" "$(printf '%s' "$OUT" | jq -r '.decision // "crash"')"
 
-OUT="$(invoke surface)"
-assert_eq "adapter exposes the floor and routing hooks" \
+OUT=$(invoke surface)
+assert_eq "adapter exposes context and pre-tool hooks" \
   '["experimental.chat.system.transform","tool.execute.before"]' \
   "$(printf '%s' "$OUT" | jq -c '.hooks // []')"
-
-OUT="$(invoke routing)"
-assert_eq "OpenCode receives the shared routing text" "$(cat "$ROOT/hooks/routing.md")" \
-  "$(printf '%s' "$OUT" | jq -r '.system[0] // ""')"
+OUT=$(invoke routing)
+SYSTEM=$(printf '%s' "$OUT" | jq -r '.system[0] // ""')
+assert_contains "OpenCode receives routing" "## hikizanのスキル選択" "$SYSTEM"
+assert_contains "OpenCode receives repository status" "リポジトリ:" "$SYSTEM"
 
 rm -rf "$REPO"
 hz_test_summary

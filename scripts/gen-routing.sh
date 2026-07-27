@@ -1,9 +1,6 @@
 #!/usr/bin/env bash
-# 各SKILL.mdの起動条件から、全ハーネス共通の短いルーティング規則と
-# Cursor向けalways-apply ruleを生成する。
-#
-#   bash scripts/gen-routing.sh
-#   bash scripts/gen-routing.sh --check
+# 各SKILL.mdのdescriptionから、共通の起動規則とCursor向け規則を生成する。
+# スキルの呼び分けをハーネスごとに手作業で同期しないために使う。
 
 set -euo pipefail
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
@@ -23,17 +20,18 @@ fm_field() {
 }
 
 gen_routing() {
-  printf '%s\n' '<!-- scripts/gen-routing.shが各SKILL.mdのwhen_to_useから生成。手動編集しない -->'
+  printf '%s\n' '<!-- scripts/gen-routing.shが各SKILL.mdのdescriptionから生成。手動編集しない -->'
   printf '%s\n\n' '## hikizanのスキル選択'
-  printf '%s\n\n' '利用者の依頼が次の条件に当てはまる場合は、対応するhikizanスキルの`SKILL.md`を最後まで読んでから作業する。通常作業に不要なスキルを固定順で通さない。依頼に「計画だけ」「修正まで」「PRまで」のような終点があれば、必要なスキルを組み合わせ、明示済みの終点まで形式的な承認待ちを挟まず進める。'
+  printf '%s\n\n' '利用者の依頼が次の説明に当てはまる場合は、対応する`SKILL.md`を最後まで読んでから作業する。必要なスキルだけを使い、調査、相談、設計、レビューだけの依頼では対象を変更しない。修正やPR提出まで明示されていれば、必要なスキルをつないでその終点まで進む。'
   for skill in $ORDER; do
     file="$ROOT/skills/$skill/SKILL.md"
     [ -f "$file" ] || { echo "✘ missing skill: $skill" >&2; return 1; }
-    when="$(fm_field "$file" when_to_use)"
-    [ -n "$when" ] || { echo "✘ missing when_to_use: $skill" >&2; return 1; }
-    printf -- '- `%s`：%s\n' "$skill" "$when"
+    description="$(fm_field "$file" description)"
+    [ -n "$description" ] || { echo "✘ missing description: $skill" >&2; return 1; }
+    printf -- '- `%s`：%s\n' "$skill" "$description"
   done
-  printf '\n%s\n' '複数の観点が必要なら該当するスキルを組み合わせてよい。起動するスキルごとに、その作業を始める直前に別の1行で`🌲 <スキル名>（日本語名）：<今回の目的>`と表示する。複数スキルを1行にまとめたり、まだ始めないスキルを予告したりしない。停止するときは、意味のある次の進め方だけを選び、推奨順に`A`、`B`、`C`を付けて返す。'
+  printf '\n%s\n\n' 'PRのマージは利用者が行う。`gh pr merge`や別経路でマージを実行しない。'
+  printf '%s\n' '起動するスキルごとに、作業の直前に1行だけ`🌲 <スキル名>（日本語名）：<今回の目的>`と表示する。停止時に意味のある次の進め方があれば、最大3件を推奨順に`A（あ）`、`B（い）`、`C（う）`で示し、英字とひらがなのどちらの回答も同じ選択として扱う。'
 }
 
 gen_cursor_rule() {

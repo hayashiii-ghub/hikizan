@@ -1,11 +1,7 @@
 #!/usr/bin/env bash
-# hikizan hook test runner. Runs every test-*.sh in this directory, each in
-# its own subshell, and aggregates the HZ_RESULT counters they print.
-#
-#   bash hooks/tests/run.sh            # run all
-#   bash hooks/tests/run.sh push-parse # run test-push-parse.sh only
-#
-# Exit 0 iff every assertion passed.
+# hooks/testsの各テストを個別に実行し、結果を集計する。
+# 人とCIが同じ入口でHook全体を検証するために使う。
+# 使い方: bash hooks/tests/run.sh [テスト名]
 
 set -uo pipefail
 DIR="$(cd "$(dirname "$0")" && pwd)"

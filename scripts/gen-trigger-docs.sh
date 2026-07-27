@@ -1,18 +1,6 @@
 #!/usr/bin/env bash
-# Generate the trigger 早見表 from each skill's frontmatter (the SoT) and inject
-# it into the marker region of README.md — the single generated copy. This replaces
-# the hand-maintained tables that drifted (H2): the frontmatter `when_to_use`
-# is now the single source.
-# The skill set and display order come from scripts/skills.json (shared with
-# scripts/check-consistency.sh).
-#
-#   bash scripts/gen-trigger-docs.sh           # write the tables
-#   bash scripts/gen-trigger-docs.sh --check    # fail if regen would change them
-#
-# Marker region in each target file:
-#   <!-- hikizan:triggers:start -->
-#   ...generated...
-#   <!-- hikizan:triggers:end -->
+# 各SKILL.mdのdescriptionから、READMEのスキル起動条件表を生成する。
+# スキル本文と人向け一覧の説明がずれないようにするために使う。
 
 set -uo pipefail
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
@@ -37,8 +25,8 @@ gen_table() {
   for s in $ORDER; do
     f="$ROOT/skills/$s/SKILL.md"
     [ -f "$f" ] || continue
-    wtu="$(fm_field "$f" when_to_use)"
-    printf '| `%s` | %s |\n' "$s" "$wtu"
+    description="$(fm_field "$f" description)"
+    printf '| `%s` | %s |\n' "$s" "$description"
   done
   printf '\n発動条件の正本は各`SKILL.md`の`frontmatter`にある`description`です。\n'
   printf '%s\n' "$END"

@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
-# Cross-file invariants not covered by the generators.
+# 生成処理だけでは確認できない、ファイル間の構造と規約のずれを検査する。
+# 配布物の欠落やハーネス間の不整合を公開前に見つけるために使う。
 set -uo pipefail
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 CORE="$(jq -r '.core | join(" ")' "$ROOT/scripts/skills.json")"
@@ -23,11 +24,14 @@ expected="$(printf '%s\n' $CORE | sort | tr '\n' ' ' | sed 's/ $//')"
 for name in $CORE; do
   frontmatter_name="$(awk -F': *' '/^name:/ { print $2; exit }' "$ROOT/skills/$name/SKILL.md")"
   [ "$frontmatter_name" = "$name" ] || bad "skill discovery name mismatch: directory=$name frontmatter=$frontmatter_name"
+  description="$(awk '/^description:/ { sub(/^description:[[:space:]]*/, ""); print; exit }' "$ROOT/skills/$name/SKILL.md")"
+  [ -n "$description" ] || bad "skill description is empty: $name"
+  ! grep -q '^when_to_use:' "$ROOT/skills/$name/SKILL.md" || bad "duplicate when_to_use remains: $name"
 done
 require_text "$ROOT/scripts/contract.md" '🌲 <スキル名>（日本語名）：<今回の目的>' "shared contract omits the skill activation marker"
-require_text "$ROOT/scripts/contract.md" '依頼全体の完了条件として保つ' "shared contract omits the requested endpoint"
-require_text "$ROOT/scripts/contract.md" '推奨順に`A`、`B`、`C`を付けて返す' "shared contract omits alphabetic handoff choices"
-require_text "$ROOT/scripts/contract.md" '人へ渡す日本語' "shared contract omits lightweight prose guidance"
+require_text "$ROOT/scripts/contract.md" '調査、相談、設計、レビューだけの依頼では対象を変更しない' "shared contract omits the read-only boundary"
+require_text "$ROOT/scripts/contract.md" '最大3件を推奨順に`A（あ）`、`B（い）`、`C（う）`で示し' "shared contract omits bilingual handoff choices"
+require_text "$ROOT/scripts/contract.md" '簡潔で分かりやすく書く' "shared contract omits lightweight prose guidance"
 for name in $CORE; do
   [ "$(grep -c '^## 次の進め方$' "$ROOT/skills/$name/SKILL.md")" = "1" ] || bad "skills/$name does not define exactly one handoff section"
 done
@@ -52,28 +56,29 @@ cx_ver="$(jq -r .version "$ROOT/.codex-plugin/plugin.json")"
 jq -e '.hooks == "hooks/adapters/cursor/hooks.json" and .rules == "hooks/adapters/cursor/rules/"' "$ROOT/.cursor-plugin/plugin.json" >/dev/null || bad "Cursor manifest does not publish the routing rule and slim adapter"
 jq -e '.hooks == "./hooks/adapters/codex/hooks.json" and .skills == "./skills/"' "$ROOT/.codex-plugin/plugin.json" >/dev/null || bad "Codex manifest does not point at the slim adapter"
 
-# All harnesses share the same three floor classifiers.
-cc_floors="$(grep -o 'pre-[a-z-]*\.sh' "$ROOT/hooks/hooks.json" | sort -u)"
-cx_floors="$(grep -o 'pre-[a-z-]*\.sh' "$ROOT/hooks/adapters/codex/hooks.json" | sort -u)"
-oc_floors="$(grep -o 'pre-[a-z-]*\.sh' "$ROOT/hooks/adapters/opencode/hikizan.ts" | sort -u)"
-expected_floors="$(printf '%s\n' pre-destructive.sh pre-pr-create.sh pre-push.sh)"
-[ "$cc_floors" = "$expected_floors" ] && [ "$cx_floors" = "$expected_floors" ] && [ "$oc_floors" = "$expected_floors" ] && ok "Claude, Codex, and OpenCode wire the shared safety floors" || bad "hook floor wiring differs"
-require_text "$ROOT/hooks/adapters/codex/hooks.json" 'pre-destructive.sh deny' "Codex destructive floor is not deny"
-require_text "$ROOT/hooks/adapters/opencode/hikizan.ts" '["deny", "OpenCode"]' "OpenCode destructive floor is not deny"
+# All harnesses share one PR merge checkpoint.
+cc_hooks="$(grep -o 'pre-[a-z-]*\.sh' "$ROOT/hooks/hooks.json" | sort -u)"
+cx_hooks="$(grep -o 'pre-[a-z-]*\.sh' "$ROOT/hooks/adapters/codex/hooks.json" | sort -u)"
+oc_hooks="$(grep -o 'pre-[a-z-]*\.sh' "$ROOT/hooks/adapters/opencode/hikizan.ts" | sort -u)"
+[ "$cc_hooks" = "pre-merge.sh" ] && [ "$cx_hooks" = "pre-merge.sh" ] && [ "$oc_hooks" = "pre-merge.sh" ] && ok "Claude, Codex, and OpenCode wire only the PR merge checkpoint" || bad "hook wiring is not minimal"
+require_text "$ROOT/hooks/adapters/codex/hooks.json" 'pre-merge.sh deny Codex' "Codex merge checkpoint is not deny"
+require_text "$ROOT/hooks/adapters/opencode/hikizan.ts" '"deny", "OpenCode"' "OpenCode merge checkpoint is not deny"
 require_text "$ROOT/hooks/adapters/cursor/hooks.json" './hooks/adapters/cursor/before-shell.sh' "Cursor adapter path is stale"
 require_text "$ROOT/hooks/hooks.json" 'session-routing.sh' "Claude does not load shared skill routing"
 require_text "$ROOT/hooks/adapters/codex/hooks.json" 'session-routing.sh codex' "Codex does not load shared skill routing"
 require_text "$ROOT/hooks/adapters/opencode/hikizan.ts" 'experimental.chat.system.transform' "OpenCode does not load shared skill routing"
 require_text "$ROOT/hooks/adapters/cursor/rules/hikizan.mdc" 'alwaysApply: true' "Cursor routing rule is not always applied"
+require_text "$ROOT/hooks/adapters/cursor/hooks.json" 'sessionStart' "Cursor does not load repository status at session start"
 [ -x "$ROOT/hooks/adapters/cursor/before-shell.sh" ] || bad "Cursor adapter is not executable"
 [ -x "$ROOT/hooks/scripts/session-routing.sh" ] || bad "session routing adapter is not executable"
+[ -x "$ROOT/hooks/scripts/pre-merge.sh" ] || bad "merge checkpoint is not executable"
 for file in "$ROOT/hooks/hooks.json" "$ROOT/hooks/adapters/codex/hooks.json" "$ROOT/hooks/adapters/cursor/hooks.json"; do
   jq empty "$file" >/dev/null 2>&1 || bad "invalid JSON: ${file#$ROOT/}"
 done
 
 # Removed subsystems must not return through a generated or copied surface.
 legacy=0
-for path in agents codex context cursor docs opencode .claude/agents .cursor/agents .codex/agents skills/init hooks/scripts/session-context.sh hooks/scripts/post-command.sh hooks/scripts/lib/metrics.sh; do
+for path in agents codex context cursor docs opencode .claude/agents .cursor/agents .codex/agents skills/init hooks/scripts/session-context.sh hooks/scripts/post-command.sh hooks/scripts/lib/metrics.sh hooks/scripts/pre-push.sh hooks/scripts/pre-pr-create.sh hooks/scripts/pre-destructive.sh hooks/scripts/lib/push-parse.sh hooks/scripts/lib/pr-create.sh hooks/scripts/lib/destructive.sh; do
   if [ -d "$ROOT/$path" ]; then
     [ -z "$(find "$ROOT/$path" -type f -print -quit)" ] || { printf '✘ removed surface returned: %s\n' "$path"; legacy=1; }
   else
@@ -97,10 +102,10 @@ require_text "$ROOT/README.md" '手動で導入する' "README does not retain m
 require_text "$ROOT/README.md" 'codex plugin add hikizan@hikizan' "README is missing Codex fallback"
 require_text "$ROOT/README.md" '/plugin install hikizan@hikizan' "README is missing Claude fallback"
 require_text "$ROOT/README.md" 'npx skills add github:hayashiii-ghub/hikizan -g' "README is missing universal fallback"
-require_text "$ROOT/README.md" '| Claude Codeプラグイン | スキル + 起動規則 + 安全フック |' "README support matrix omits Claude Code routing"
-require_text "$ROOT/README.md" '| Codexプラグイン | スキル + 起動規則 + 安全フック |' "README support matrix omits Codex routing"
-require_text "$ROOT/README.md" '| Cursorプラグイン | スキル + 起動規則 + 安全フック |' "README support matrix omits Cursor routing"
-require_text "$ROOT/README.md" '| OpenCode + ローカルアダプター | スキル + 起動規則 + 安全フック |' "README support matrix omits OpenCode routing"
+require_text "$ROOT/README.md" '| Claude Codeプラグイン | スキル + 起動情報 + マージ確認 |' "README support matrix omits Claude Code routing"
+require_text "$ROOT/README.md" '| Codexプラグイン | スキル + 起動情報 + マージ確認 |' "README support matrix omits Codex routing"
+require_text "$ROOT/README.md" '| Cursorプラグイン | スキル + 起動情報 + マージ確認 |' "README support matrix omits Cursor routing"
+require_text "$ROOT/README.md" '| OpenCode + ローカルアダプター | スキル + 起動情報 + マージ確認 |' "README support matrix omits OpenCode routing"
 require_text "$ROOT/README.md" '| Agent Skills対応ハーネス | スキルのみ |' "README support matrix omits the skills-only boundary"
 require_text "$ROOT/skills/tansaku/references/fanout.md" '親エージェントが必要範囲を読む' "tansaku fan-out omits the inline fallback"
 forbid_text "$ROOT/skills/tansaku/references/fanout.md" 'Claude Code なら' "tansaku fan-out still singles out Claude Code"

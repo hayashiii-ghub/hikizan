@@ -1,14 +1,6 @@
 #!/usr/bin/env bash
-# Emit a PreToolUse permission decision in Claude Code's official JSON form on
-# stdout, then return. The caller exits 0 afterwards.
-#
-#   hz_decision deny "reason..."   -> block, reason relayed to the model
-#   hz_decision ask  "reason..."   -> prompt the user to confirm
-#   hz_decision allow "reason..."  -> explicit allow (rarely needed)
-#
-# Fallback: defense-in-depth only. The entry guard (lib/guard.sh hz_require_jq)
-# already fails closed before a hook gets this far, so this degrade path
-# normally never executes.
+# Claude CodeのPreToolUse判断を、要求されるJSON形式で標準出力へ返す。
+# 共通の判定結果をClaude Code固有の応答形式へ変換するために使う。
 hz_decision() {
   local decision="$1" reason="$2"
   if command -v jq >/dev/null 2>&1; then
