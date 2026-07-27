@@ -7,26 +7,8 @@ type PluginContext = {
   worktree?: string
 }
 
-type ToolInput = {
-  tool: string
-  sessionID?: string
-}
-
-type ToolOutput = {
-  args?: Record<string, unknown>
-}
-
-type HookDecision = {
-  hookSpecificOutput?: {
-    hookEventName?: string
-    permissionDecision?: string
-    permissionDecisionReason?: string
-  }
-}
-
 function findRoot(): string | undefined {
   const required = [
-    "hooks/scripts/pre-merge.sh",
     "hooks/scripts/session-routing.sh",
     "hooks/routing.md",
   ]
@@ -76,38 +58,6 @@ async function runProcess(
   }
 }
 
-async function runMergeHook(root: string, command: string, cwd: string, sessionID = "") {
-  const payload = {
-    tool_input: { command },
-    cwd,
-    session_id: sessionID,
-  }
-  const stdout = await runProcess(
-    ["bash", resolve(root, "hooks/scripts/pre-merge.sh"), "deny", "OpenCode"],
-    payload,
-    cwd,
-    10_000,
-  )
-  if (!stdout) return
-
-  let decision: HookDecision
-  try {
-    decision = JSON.parse(stdout) as HookDecision
-  } catch {
-    throw new Error("hikizan merge hook returned invalid JSON")
-  }
-  const output = decision.hookSpecificOutput
-  if (
-    output?.hookEventName !== "PreToolUse" ||
-    !["allow", "deny"].includes(output.permissionDecision || "")
-  ) {
-    throw new Error("hikizan merge hook returned an invalid decision")
-  }
-  if (output.permissionDecision === "deny") {
-    throw new Error(output.permissionDecisionReason || "PR merge blocked by hikizan")
-  }
-}
-
 async function loadSessionContext(root: string, cwd: string) {
   try {
     return await runProcess(
@@ -127,12 +77,6 @@ export const HikizanPlugin = async (context: PluginContext) => {
   const sessionContext = root ? await loadSessionContext(root, cwd) : ""
 
   return {
-    "tool.execute.before": async (input: ToolInput, output: ToolOutput) => {
-      if (!root || input.tool !== "bash") return
-      const command = output.args?.command
-      if (typeof command !== "string") return
-      await runMergeHook(root, command, cwd, input.sessionID)
-    },
     "experimental.chat.system.transform": async (
       _input: { sessionID?: string },
       output: { system: string[] },

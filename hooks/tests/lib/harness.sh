@@ -31,27 +31,6 @@ assert_contains() {
   esac
 }
 
-# hz_run_hook <script> <command> [cwd] — run a hook script with a synthetic
-# PreToolUse payload. Sets HZ_OUT (stdout), HZ_ERR (stderr), HZ_CODE (exit).
-# shellcheck disable=SC2034  # HZ_OUT / HZ_CODE / HZ_ERR are read by the sourcing test files
-hz_run_hook() {
-  local script="$1" cmd="$2" cwd="${3:-}"
-  local payload errf
-  payload=$(jq -nc --arg c "$cmd" --arg w "$cwd" \
-    '{tool_input:{command:$c}, cwd:$w, session_id:"test"}')
-  errf="$(mktemp 2>/dev/null || echo /tmp/hz_err.$$)"
-  HZ_OUT=$(printf '%s' "$payload" | bash "$script" 2>"$errf")
-  HZ_CODE=$?
-  HZ_ERR=$(cat "$errf" 2>/dev/null)
-  rm -f "$errf"
-}
-
-# hz_decision_of <stdout-json> — extract permissionDecision, default "allow".
-hz_decision_of() {
-  if [ -z "$1" ]; then echo allow; return; fi
-  printf '%s' "$1" | jq -r '.hookSpecificOutput.permissionDecision // "allow"' 2>/dev/null || echo allow
-}
-
 # hz_test_summary — print machine-readable counters the runner aggregates.
 hz_test_summary() {
   printf 'HZ_RESULT pass=%s fail=%s\n' "$HZ_PASS" "$HZ_FAIL"

@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Claude CodeのHook設定とイベント配線を確認する。
-# 起動情報とPRマージ停止以外の責務が混ざらないようにするために使う。
+# 起動情報以外の責務が混ざらないようにするために使う。
 
 DIR="$(cd "$(dirname "$0")" && pwd)"
 . "$DIR/lib/harness.sh"
@@ -30,11 +30,10 @@ ACTUAL=$(jq -r '
   $entry.hooks[] |
   [$event.key, $entry.matcher, (.args[0] | split("/") | last)] | join("|")
 ' "$HOOKS_JSON" | sort)
-EXPECTED='PreToolUse|Bash|pre-merge.sh
-SessionStart|startup|session-routing.sh'
-assert_eq "Claude wiring has only session context and PR merge" "$EXPECTED" "$ACTUAL"
+EXPECTED='SessionStart|startup|session-routing.sh'
+assert_eq "Claude wiring has only session context" "$EXPECTED" "$ACTUAL"
 
 TIMEOUTS=$(jq -r '[.. | objects | select(.type? == "command") | .timeout] | join(",")' "$HOOKS_JSON")
-assert_eq "both hooks use ten-second harness timeouts" "10,10" "$TIMEOUTS"
+assert_eq "session hook uses a ten-second harness timeout" "10" "$TIMEOUTS"
 
 hz_test_summary

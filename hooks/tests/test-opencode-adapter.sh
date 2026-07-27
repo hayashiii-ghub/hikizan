@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
-# OpenCodeアダプターが起動情報とマージ停止だけを持つことを確認する。
-# ハーネス固有の配線へ不要なHook責務が戻らないようにするために使う。
+# OpenCodeアダプターが起動情報だけを持つことを確認する。
+# ハーネス固有の配線へシェル実行前の判定が戻らないようにするために使う。
 
 DIR="$(cd "$(dirname "$0")" && pwd)"
 . "$DIR/lib/harness.sh"
@@ -23,22 +23,9 @@ invoke() {
   HIKIZAN_SKIP_FETCH=1 bun "$INVOKE" "$1" "$ROOT" "$REPO" "${2:-}" 2>/dev/null
 }
 
-OUT=$(invoke before 'gh pr merge 123')
-assert_eq "PR merge is denied" "deny" "$(printf '%s' "$OUT" | jq -r '.decision // "crash"')"
-OUT=$(invoke before 'HIKIZAN_MERGE_APPROVED=1 gh pr merge 123')
-assert_eq "approved PR merge is allowed" "allow" "$(printf '%s' "$OUT" | jq -r '.decision // "crash"')"
-OUT=$(invoke before 'git push origin feature')
-assert_eq "normal push is allowed" "allow" "$(printf '%s' "$OUT" | jq -r '.decision // "crash"')"
-OUT=$(invoke before 'gh pr create --title x')
-assert_eq "PR creation is allowed" "allow" "$(printf '%s' "$OUT" | jq -r '.decision // "crash"')"
-OUT=$(invoke before 'rm -rf build')
-assert_eq "destructive command is outside this hook" "allow" "$(printf '%s' "$OUT" | jq -r '.decision // "crash"')"
-OUT=$(invoke before-non-bash 'gh pr merge 123')
-assert_eq "non-bash tool is ignored" "allow" "$(printf '%s' "$OUT" | jq -r '.decision // "crash"')"
-
 OUT=$(invoke surface)
-assert_eq "adapter exposes context and pre-tool hooks" \
-  '["experimental.chat.system.transform","tool.execute.before"]' \
+assert_eq "adapter exposes only session context" \
+  '["experimental.chat.system.transform"]' \
   "$(printf '%s' "$OUT" | jq -c '.hooks // []')"
 OUT=$(invoke routing)
 SYSTEM=$(printf '%s' "$OUT" | jq -r '.system[0] // ""')
