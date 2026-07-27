@@ -17,6 +17,8 @@ cursor_permission() {
 
 OUT=$(run_cursor 'gh pr merge 123')
 assert_eq "Cursor denies PR merge" "deny" "$(cursor_permission "$OUT")"
+OUT=$(run_cursor 'HIKIZAN_MERGE_APPROVED=1 gh pr merge 123')
+assert_eq "Cursor allows approved PR merge" "allow" "$(cursor_permission "$OUT")"
 OUT=$(run_cursor 'git push origin feature')
 assert_eq "Cursor allows normal push" "allow" "$(cursor_permission "$OUT")"
 OUT=$(run_cursor 'gh pr create --title x')

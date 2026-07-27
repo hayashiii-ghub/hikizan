@@ -1,7 +1,7 @@
 {
   "name": "hikizan",
   "version": "0.12.0",
-  "description": "hikizan for Codex: verb skills (tansaku / sekkei / jikkou / sadoku / teishutsu / houkoku), lightweight routing, repository status, and a PR merge checkpoint.",
+  "description": "hikizan for Codex: verb skills (tansaku / sekkei / jikkou / sadoku / teishutsu / houkoku), lightweight routing, repository status, and explicit approval before PR merge.",
   "author": {
     "name": "hayashiii-ghub"
   },
@@ -11,7 +11,7 @@
   "interface": {
     "displayName": "hikizan",
     "shortDescription": "Japanese workflow skills with goal-aware routing",
-    "longDescription": "Verb-oriented Japanese workflow skills with lightweight routing, prose guidance, startup repository status, and a pull request merge checkpoint.",
+    "longDescription": "Verb-oriented Japanese workflow skills with lightweight routing, prose guidance, startup repository status, and explicit approval before pull request merge.",
     "developerName": "hayashiii-ghub",
     "category": "Productivity",
     "capabilities": [

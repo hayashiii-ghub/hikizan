@@ -25,6 +25,8 @@ invoke() {
 
 OUT=$(invoke before 'gh pr merge 123')
 assert_eq "PR merge is denied" "deny" "$(printf '%s' "$OUT" | jq -r '.decision // "crash"')"
+OUT=$(invoke before 'HIKIZAN_MERGE_APPROVED=1 gh pr merge 123')
+assert_eq "approved PR merge is allowed" "allow" "$(printf '%s' "$OUT" | jq -r '.decision // "crash"')"
 OUT=$(invoke before 'git push origin feature')
 assert_eq "normal push is allowed" "allow" "$(printf '%s' "$OUT" | jq -r '.decision // "crash"')"
 OUT=$(invoke before 'gh pr create --title x')

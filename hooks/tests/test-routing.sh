@@ -47,6 +47,7 @@ PAYLOAD=$(jq -nc --arg cwd "$WORK" '{cwd:$cwd}')
 
 CLAUDE=$(printf '%s' "$PAYLOAD" | bash "$SESSION" claude)
 assert_contains "Claude receives routing" "## hikizanのスキル選択" "$CLAUDE"
+assert_contains "routing explains merge approval" "HIKIZAN_MERGE_APPROVED=1" "$CLAUDE"
 assert_contains "Claude receives repository name" "リポジトリ: work" "$CLAUDE"
 assert_contains "dirty worktree is reported" "worktree=変更あり" "$CLAUDE"
 assert_contains "remote fetch updates behind count" "behind=1" "$CLAUDE"

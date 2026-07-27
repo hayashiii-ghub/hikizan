@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
-# Cursor形式の入力で`gh pr merge`だけを止める。
-# 共通のマージ判定をCursorの権限応答へ変換するために使う。
+# Cursor形式の入力で未承認の`gh pr merge`だけを止める。
+# 共通のマージ判定と承認印をCursorの権限応答へ変換するために使う。
 
 set -uo pipefail
 LIB="$(cd "$(dirname "$0")/../../scripts/lib" && pwd)"
@@ -18,7 +18,8 @@ CWD=$(printf '%s' "$JSON" | jq -r '.cwd // ""')
 [ -n "$CWD" ] && cd "$CWD" 2>/dev/null || true
 
 if hz_is_pr_merge "$CMD"; then
-  hz_cursor_decision deny "PRマージは人間の確認が必要です。利用者へ実行を戻し、別のコマンドや経路で回避しないでください。"
+  hz_has_merge_approval "$CMD" && exit 0
+  hz_cursor_decision deny "PRマージには利用者の明示承認が必要です。対象PRの承認を求め、承認後だけHIKIZAN_MERGE_APPROVED=1を同じマージコマンドへ付けて再実行してください。"
   exit 0
 fi
 

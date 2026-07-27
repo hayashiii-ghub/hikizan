@@ -30,7 +30,7 @@ gen_routing() {
     [ -n "$description" ] || { echo "✘ missing description: $skill" >&2; return 1; }
     printf -- '- `%s`：%s\n' "$skill" "$description"
   done
-  printf '\n%s\n\n' 'PRのマージは利用者が行う。`gh pr merge`や別経路でマージを実行しない。'
+  printf '\n%s\n\n' 'PRのマージは承認制とする。未承認なら対象PRと検査結果を示して利用者へ確認し、明示承認後だけ同じマージコマンドへ`HIKIZAN_MERGE_APPROVED=1`を付けて実行する。承認を別のPRや将来のマージへ流用しない。'
   printf '%s\n' '起動するスキルごとに、作業の直前に1行だけ`🌲 <スキル名>（日本語名）：<今回の目的>`と表示する。停止時に意味のある次の進め方があれば、最大3件を推奨順に`A（あ）`、`B（い）`、`C（う）`で示し、英字とひらがなのどちらの回答も同じ選択として扱う。'
 }
 

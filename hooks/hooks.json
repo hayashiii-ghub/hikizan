@@ -1,5 +1,5 @@
 {
-  "description": "hikizan: lightweight skill routing, repository status, and a PR merge checkpoint.",
+  "description": "hikizan: lightweight skill routing, repository status, and explicit approval before PR merge.",
   "hooks": {
     "SessionStart": [
       {
