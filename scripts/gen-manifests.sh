@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
-# plugin.src.jsonからAgent PluginsとClaude Code、Cursor、Codexのマニフェストを生成する。
-# バージョンと基本情報を一度の編集で共通規格と3ハーネスへ揃えるために使う。
+# plugin.src.jsonからAgent PluginsとClaude Code、任意のHookアダプター用マニフェストを生成する。
+# スキルの配布情報とハーネス固有の入口でバージョンを揃えるために使う。
 set -euo pipefail
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 command -v jq >/dev/null 2>&1 || { echo "✘ gen-manifests.sh requires jq" >&2; exit 1; }
@@ -129,7 +129,6 @@ gen_codex() {
       capabilities: $interface.capabilities
     },
     keywords: $keywords,
-    skills: "./skills/",
     hooks: "./hooks/adapters/codex/hooks.json"
   }'
 }
