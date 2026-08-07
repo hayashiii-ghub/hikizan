@@ -29,11 +29,11 @@ bash scripts/check-all.sh
 | 共通ルール | `scripts/contract.md` | `bash scripts/gen-contract.sh` |
 | スキルの集合・順序 | `scripts/skills.json` | 関係する生成スクリプト |
 | 起動規則とREADME一覧 | 各`SKILL.md`の`description` | `bash scripts/gen-routing.sh` / `bash scripts/gen-trigger-docs.sh` |
-| ハーネス別マニフェスト | `plugin.src.json` | `bash scripts/gen-manifests.sh` |
+| Agent Plugins・ハーネス別マニフェスト | `plugin.src.json` | `bash scripts/gen-manifests.sh` |
 | 実装時の視覚検証 | `skills/jikkou/references/visual-verification.md` | — |
 | 査読時の視覚検証 | `skills/sadoku/references/visual-verification.md` | — |
 
-生成先のマーカー区間と3つの`plugin.json`は直接編集しません。
+生成先のマーカー区間と4つの`plugin.json`は直接編集しません。
 
 ## フック
 

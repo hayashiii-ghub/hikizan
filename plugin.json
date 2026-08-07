@@ -1,7 +1,8 @@
 {
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "hikizan",
   "version": "0.12.4",
-  "description": "hikizan for Cursor: verb skills (tansaku / sekkei / jikkou / sadoku / teishutsu / houkoku), lightweight routing, and repository status.",
+  "description": "Portable Japanese workflow skills (tansaku / sekkei / jikkou / sadoku / teishutsu / houkoku) for planning, implementation, review, delivery, and communication.",
   "author": {
     "name": "hayashiii-ghub"
   },
@@ -15,7 +16,5 @@
     "code-review",
     "workflow",
     "reporting"
-  ],
-  "rules": "hooks/adapters/cursor/rules/",
-  "hooks": "hooks/adapters/cursor/hooks.json"
+  ]
 }
