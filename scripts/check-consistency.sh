@@ -32,6 +32,8 @@ require_text "$ROOT/scripts/contract.md" '🌲 <スキル名>（日本語名）�
 require_text "$ROOT/scripts/contract.md" '調査、相談、設計、レビューだけの依頼では対象を変更しない' "shared contract omits the read-only boundary"
 require_text "$ROOT/scripts/contract.md" '最大3件を推奨順に`A（あ）`、`B（い）`、`C（う）`で示し' "shared contract omits bilingual handoff choices"
 require_text "$ROOT/scripts/contract.md" '簡潔で分かりやすく書く' "shared contract omits lightweight prose guidance"
+require_text "$ROOT/scripts/contract.md" '同じ原因を防ぐ最小の共通箇所' "shared contract omits common-cause repair guidance"
+require_text "$ROOT/scripts/contract.md" '要求外の一般化はしない' "shared contract omits the overgeneralization boundary"
 for name in $CORE; do
   [ "$(grep -c '^## 次の進め方$' "$ROOT/skills/$name/SKILL.md")" = "1" ] || bad "skills/$name does not define exactly one handoff section"
 done
@@ -114,6 +116,9 @@ require_text "$ROOT/AGENTS.md" '日本語散文は`skills/houkoku/references/wri
 
 # Executable Markdown keeps the reviewed safety invariants from PR #148.
 require_text "$ROOT/skills/sadoku/SKILL.md" '実行するMarkdown' "sadoku does not review executable Markdown"
+require_text "$ROOT/skills/sekkei/SKILL.md" 'その表現や一件だけを仕様にしない' "sekkei may turn one example into the whole specification"
+require_text "$ROOT/skills/jikkou/SKILL.md" '同じ原因を通る代表的な入力' "jikkou omits representative common-cause verification"
+require_text "$ROOT/skills/sadoku/SKILL.md" '提示されたケースだけを通す局所パッチ' "sadoku omits local-patch review"
 require_text "$ROOT/skills/sadoku/SKILL.md" '未追跡ファイル' "sadoku omits untracked files"
 require_text "$ROOT/skills/sadoku/SKILL.md" '機能ブランチの上流ブランチを比較元にしない' "sadoku may use a feature upstream as the review base"
 require_text "$ROOT/skills/teishutsu/SKILL.md" '--body-file' "teishutsu does not use a PR body file"
