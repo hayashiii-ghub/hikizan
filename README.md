@@ -8,19 +8,19 @@ hikizanは、AIエージェントの開発作業を「調べる・決める・�
 
 ## 導入方法を選ぶ
 
-hikizanの導入方法は2つです。同じハーネスへ両方を入れないでください。
+hikizanの配布形式は、共通のAgent PluginsとClaude Codeプラグインの2つです。CodexとCursorではAgent Pluginsからスキルを読み込み、必要な場合だけハーネス固有のHookアダプターを加えます。
 
 | 欲しいもの | 導入方法 | 向いているケース |
 | --- | --- | --- |
 | スキルだけ | Agent SkillsまたはAgent Plugins | まず試したい、既存の操作を変えたくない |
-| スキル + 起動情報 | 各ハーネスのプラグイン | スキルを確実に使い分け、リモートとの差分も把握したい |
+| スキル + 起動情報 | Agent Plugins + 任意のHookアダプター | スキルを確実に使い分け、リモートとの差分も把握したい |
 
 <!-- hikizan:pack-only -->
 配布と互換性確認はパック単位です。各スキルは独立して使え、固定順の引き継ぎを要求しません。
 
 ### エージェントに依頼する（推奨）
 
-利用中のClaude Code、Codex、Cursor、OpenCodeなどで、エージェントに依頼するのが一番簡単です。
+利用中のClaude Code、Codex、Cursorなどで、エージェントに依頼するのが一番簡単です。
 
 > hayashiii-ghub/hikizanのREADMEとマニフェストを確認し、現在のハーネスへ設定してください。最初にスキルだけにするか、起動情報を含むプラグインにするか確認し、既存設定と重複しない標準の方法を選んでください。変更内容を提示してから適用し、最後にスキルの検出を確認してください。
 
@@ -36,7 +36,7 @@ hikizan自体はインストーラーやハーネス別の設定状態を持ち�
 npx skills add github:hayashiii-ghub/hikizan -g
 ```
 
-Agent Plugins対応クライアントでは、このGitHubリポジトリをクライアント標準の方法で追加すると、ルートの`plugin.json`と`skills/`が読み込まれます。Agent Plugins v1ではHookが共通化されていないため、起動情報も必要なら以下のハーネス専用プラグインを使ってください。
+Agent Plugins対応クライアントでは、このGitHubリポジトリをクライアント標準の方法で追加すると、ルートの`plugin.json`と`skills/`が読み込まれます。Agent Plugins v1ではHookが共通化されていないため、起動情報も必要なら以下の任意アダプターを加えてください。
 
 Claude Codeプラグイン：
 
@@ -45,26 +45,14 @@ Claude Codeプラグイン：
 /plugin install hikizan@hikizan
 ```
 
-Codexプラグイン：
+CodexのHookアダプター：
 
 ```bash
 codex plugin marketplace add hayashiii-ghub/hikizan
 codex plugin add hikizan@hikizan
 ```
 
-Cursorプラグインは、プラグイン画面からGitHubリポジトリ`hayashiii-ghub/hikizan`を追加します。
-
-OpenCodeは、スキルパックを導入したうえで、リポジトリ内のローカルアダプターをプラグインディレクトリへリンクします。
-
-```bash
-git clone https://github.com/hayashiii-ghub/hikizan.git
-cd hikizan
-npx skills add github:hayashiii-ghub/hikizan -g
-mkdir -p ~/.config/opencode/plugins
-ln -s "$(pwd)/hooks/adapters/opencode/hikizan.ts" ~/.config/opencode/plugins/hikizan.ts
-```
-
-リンク先が既にある場合は置換せず、内容を確認してください。
+CursorのHookアダプターは、プラグイン画面からGitHubリポジトリ`hayashiii-ghub/hikizan`を追加します。
 
 導入後は新しい作業を開始し、旧版や別経路のスキルが重複していないことを確認してください。
 
@@ -73,9 +61,8 @@ ln -s "$(pwd)/hooks/adapters/opencode/hikizan.ts" ~/.config/opencode/plugins/hik
 | 実行環境 | 保証する範囲 | 検証方法 |
 | --- | --- | --- |
 | Claude Codeプラグイン | スキル + 起動情報 | 起動時の規則とGit状態をCIで検査 |
-| Codexプラグイン | スキル + 起動情報 | 起動時の規則とGit状態をCIで検査 |
-| Cursorプラグイン | スキル + 起動情報 | 常時適用する規則と起動時Git状態をCIで検査 |
-| OpenCode + ローカルアダプター | スキル + 起動情報 | システム文脈の規則とGit状態をCIで検査 |
+| Codex + Hookアダプター | Agent Pluginsのスキル + 起動情報 | 起動時の規則とGit状態をCIで検査 |
+| Cursor + Hookアダプター | Agent Pluginsのスキル + 起動情報 | 常時適用する規則と起動時Git状態をCIで検査 |
 | Agent Plugins対応クライアント | スキル | ルート`plugin.json`と6スキルの構成をCIで検査 |
 | Agent Skills対応ハーネス | スキルのみ | 6スキルの`frontmatter`にある`name`、`description`、共通契約をCIで検査 |
 
@@ -138,7 +125,7 @@ UI・スタイル・配置・操作を変更したら、対象プロジェクト
 bash scripts/check-all.sh
 ```
 
-バージョンの正本は`plugin.src.json`です。Agent Pluginsと3つのハーネス専用マニフェストは`bash scripts/gen-manifests.sh`で生成します。
+バージョンの正本は`plugin.src.json`です。Agent Plugins、Claude Code、Codex・CursorのHookアダプター用マニフェストは`bash scripts/gen-manifests.sh`で生成します。
 共通の起動規則は各`SKILL.md`の`description`から`bash scripts/gen-routing.sh`で生成します。
 
 ## ライセンス
