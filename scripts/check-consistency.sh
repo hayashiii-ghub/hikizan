@@ -51,10 +51,16 @@ else
 fi
 
 # Generated manifests share one version and retain the native entrypoints.
+portable_ver="$(jq -r .version "$ROOT/plugin.json")"
 cc_ver="$(jq -r .version "$ROOT/.claude-plugin/plugin.json")"
 cur_ver="$(jq -r .version "$ROOT/.cursor-plugin/plugin.json")"
 cx_ver="$(jq -r .version "$ROOT/.codex-plugin/plugin.json")"
-[ "$cc_ver" = "$cur_ver" ] && [ "$cc_ver" = "$cx_ver" ] && ok "plugin manifest versions match ($cc_ver)" || bad "plugin manifest versions drift"
+[ "$portable_ver" = "$cc_ver" ] && [ "$cc_ver" = "$cur_ver" ] && [ "$cc_ver" = "$cx_ver" ] && ok "plugin manifest versions match ($cc_ver)" || bad "plugin manifest versions drift"
+jq -e '
+  ."$schema" == "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json" and
+  .name == "hikizan" and
+  (keys - ["$schema", "name", "version", "description", "author", "homepage", "repository", "license", "keywords"] | length == 0)
+' "$ROOT/plugin.json" >/dev/null || bad "root plugin.json does not conform to the portable manifest surface"
 jq -e '.hooks == "hooks/adapters/cursor/hooks.json" and .rules == "hooks/adapters/cursor/rules/"' "$ROOT/.cursor-plugin/plugin.json" >/dev/null || bad "Cursor manifest does not publish the routing rule and slim adapter"
 jq -e '.hooks == "./hooks/adapters/codex/hooks.json" and .skills == "./skills/"' "$ROOT/.codex-plugin/plugin.json" >/dev/null || bad "Codex manifest does not point at the slim adapter"
 
@@ -99,6 +105,7 @@ require_text "$ROOT/README.md" '手動で導入する' "README does not retain m
 require_text "$ROOT/README.md" 'codex plugin add hikizan@hikizan' "README is missing Codex fallback"
 require_text "$ROOT/README.md" '/plugin install hikizan@hikizan' "README is missing Claude fallback"
 require_text "$ROOT/README.md" 'npx skills add github:hayashiii-ghub/hikizan -g' "README is missing universal fallback"
+require_text "$ROOT/README.md" '| Agent Plugins対応クライアント | スキル |' "README support matrix omits Agent Plugins"
 require_text "$ROOT/README.md" '| Claude Codeプラグイン | スキル + 起動情報 |' "README support matrix omits Claude Code routing"
 require_text "$ROOT/README.md" '| Codexプラグイン | スキル + 起動情報 |' "README support matrix omits Codex routing"
 require_text "$ROOT/README.md" '| Cursorプラグイン | スキル + 起動情報 |' "README support matrix omits Cursor routing"

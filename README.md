@@ -1,6 +1,6 @@
 # hikizan：AIエージェント開発のスキルパック
 
-hikizanは、AIエージェントの開発作業を「調べる・決める・作る・見る・出す・伝える」の6方向から補助する、日本語の[Agent Skills](https://agentskills.io/)スキルパックです。
+hikizanは、AIエージェントの開発作業を「調べる・決める・作る・見る・出す・伝える」の6方向から補助する、日本語の[Agent Skills](https://agentskills.io/)スキルパックです。ルートの`plugin.json`は[Agent Plugins](https://agent-plugins.org/) v1に準拠しています。
 
 6つのスキルは固定工程ではありません。ただし「PRまで」のように終点を指定すれば、必要に応じて設計、実装、レビュー、修正、提出をつなぎ、途中で形式的な承認待ちを挟まず最後まで進めます。停止するときは、意味のある次の進め方だけを推奨順に`A（あ）` / `B（い）` / `C（う）`で返し、英字とひらがなのどちらでも選べます。
 
@@ -12,7 +12,7 @@ hikizanの導入方法は2つです。同じハーネスへ両方を入れない
 
 | 欲しいもの | 導入方法 | 向いているケース |
 | --- | --- | --- |
-| スキルだけ | Agent Skills | まず試したい、既存の操作を変えたくない |
+| スキルだけ | Agent SkillsまたはAgent Plugins | まず試したい、既存の操作を変えたくない |
 | スキル + 起動情報 | 各ハーネスのプラグイン | スキルを確実に使い分け、リモートとの差分も把握したい |
 
 <!-- hikizan:pack-only -->
@@ -35,6 +35,8 @@ hikizan自体はインストーラーやハーネス別の設定状態を持ち�
 ```bash
 npx skills add github:hayashiii-ghub/hikizan -g
 ```
+
+Agent Plugins対応クライアントでは、このGitHubリポジトリをクライアント標準の方法で追加すると、ルートの`plugin.json`と`skills/`が読み込まれます。Agent Plugins v1ではHookが共通化されていないため、起動情報も必要なら以下のハーネス専用プラグインを使ってください。
 
 Claude Codeプラグイン：
 
@@ -74,6 +76,7 @@ ln -s "$(pwd)/hooks/adapters/opencode/hikizan.ts" ~/.config/opencode/plugins/hik
 | Codexプラグイン | スキル + 起動情報 | 起動時の規則とGit状態をCIで検査 |
 | Cursorプラグイン | スキル + 起動情報 | 常時適用する規則と起動時Git状態をCIで検査 |
 | OpenCode + ローカルアダプター | スキル + 起動情報 | システム文脈の規則とGit状態をCIで検査 |
+| Agent Plugins対応クライアント | スキル | ルート`plugin.json`と6スキルの構成をCIで検査 |
 | Agent Skills対応ハーネス | スキルのみ | 6スキルの`frontmatter`にある`name`、`description`、共通契約をCIで検査 |
 
 そのほかのAgent Skills対応ハーネスでは、ハーネス標準の検出機能でスキルだけを利用できます。CIが保証するのは配布物、配線、アダプターの入出力までです。
@@ -135,7 +138,7 @@ UI・スタイル・配置・操作を変更したら、対象プロジェクト
 bash scripts/check-all.sh
 ```
 
-バージョンの正本は`plugin.src.json`です。3つのプラグインマニフェストは`bash scripts/gen-manifests.sh`で生成します。
+バージョンの正本は`plugin.src.json`です。Agent Pluginsと3つのハーネス専用マニフェストは`bash scripts/gen-manifests.sh`で生成します。
 共通の起動規則は各`SKILL.md`の`description`から`bash scripts/gen-routing.sh`で生成します。
 
 ## ライセンス
