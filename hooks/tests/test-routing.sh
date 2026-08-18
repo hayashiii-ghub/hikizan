@@ -20,6 +20,9 @@ for skill in $(jq -r '.core[]' "$ROOT/scripts/skills.json"); do
     inside && /^description:/ {sub(/^description:[[:space:]]*/, ""); gsub(/^"|"$/, ""); print; exit}
   ' "$ROOT/skills/$skill/SKILL.md")
   assert_contains "routing uses $skill description" "$description" "$(cat "$ROUTING")"
+  assert_contains "$skill keeps merge authority without hooks" \
+    'PRのマージと既定ブランチへの直接のpushは、利用者が依頼の終点として明示した場合だけ行う' \
+    "$(cat "$ROOT/skills/$skill/SKILL.md")"
 done
 
 TMP=$(mktemp -d)

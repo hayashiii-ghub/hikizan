@@ -34,6 +34,7 @@ require_text "$ROOT/scripts/contract.md" '最大3件を推奨順に`A（あ）`�
 require_text "$ROOT/scripts/contract.md" '簡潔で分かりやすく書く' "shared contract omits lightweight prose guidance"
 require_text "$ROOT/scripts/contract.md" '同じ原因を防ぐ最小の共通箇所' "shared contract omits common-cause repair guidance"
 require_text "$ROOT/scripts/contract.md" '要求外の一般化はしない' "shared contract omits the overgeneralization boundary"
+require_text "$ROOT/scripts/contract.md" 'PRのマージと既定ブランチへの直接のpushは、利用者が依頼の終点として明示した場合だけ行う' "shared contract omits the merge and direct-push authority boundary"
 for name in $CORE; do
   [ "$(grep -c '^## 次の進め方$' "$ROOT/skills/$name/SKILL.md")" = "1" ] || bad "skills/$name does not define exactly one handoff section"
 done
@@ -97,7 +98,7 @@ else
   ok "runtime cross-skill references use logical names"
 fi
 
-# Distribution UX is agent-first but keeps a manual fallback.
+# Distribution UX is agent-first, recommends one path per harness, and keeps a portable fallback.
 require_text "$ROOT/README.md" 'エージェントに依頼' "README does not lead with agent-assisted setup"
 require_text "$ROOT/README.md" '手動で導入する' "README does not retain manual setup instructions"
 require_text "$ROOT/README.md" 'codex plugin add hikizan@hikizan' "README is missing Codex fallback"
@@ -108,6 +109,8 @@ require_text "$ROOT/README.md" '| Claude Codeプラグイン | スキル + 起�
 require_text "$ROOT/README.md" '| Codex + Hookアダプター | Agent Pluginsのスキル + 起動情報 |' "README support matrix omits Codex routing"
 require_text "$ROOT/README.md" '| Cursor + Hookアダプター | Agent Pluginsのスキル + 起動情報 |' "README support matrix omits Cursor routing"
 require_text "$ROOT/README.md" '| Agent Skills対応ハーネス | スキルのみ |' "README support matrix omits the skills-only boundary"
+require_text "$ROOT/README.md" '## v1で守ること' "README does not define the v1 compatibility boundary"
+require_text "$ROOT/README.md" '提供する範囲' "README overstates repository checks as a runtime guarantee"
 require_text "$ROOT/skills/tansaku/references/fanout.md" '親エージェントが必要範囲を読む' "tansaku fan-out omits the inline fallback"
 forbid_text "$ROOT/skills/tansaku/references/fanout.md" 'Claude Code なら' "tansaku fan-out still singles out Claude Code"
 require_text "$ROOT/skills/sadoku/references/persona-catalog.md" '親エージェントが確認する' "sadoku reviewer selection omits the inline fallback"
