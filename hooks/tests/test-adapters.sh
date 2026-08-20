@@ -71,7 +71,7 @@ export default function inspectExa(pi: ExtensionAPI): void {
 }
 EOF
   PI_OUTPUT=$(printf '%s\n' '{"type":"get_commands"}' '{"type":"get_state"}' | \
-    PI_CODING_AGENT_DIR="$PI_AGENT_DIR" HIKIZAN_SKIP_FETCH=1 EXA_API_KEY= \
+    PI_CODING_AGENT_DIR="$PI_AGENT_DIR" HIKIZAN_SKIP_FETCH=1 EXA_API_KEY='' \
     pi --mode rpc --offline --no-session --approve -e "$ROOT" -e "$PI_INSPECTOR" 2>&1)
   assert_contains "pi loads the hikizan extension" '"name":"hikizan"' "$PI_OUTPUT"
   assert_contains "pi discovers the hikizan skills" '"name":"skill:jikkou"' "$PI_OUTPUT"
