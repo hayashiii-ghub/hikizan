@@ -16,5 +16,6 @@ PRマージと既定ブランチへの直接のpushはコマンド解析で止�
 - `hooks.json`：Claude Codeの入口
 - `adapters/codex/hooks.json`：Codexの入口
 - `adapters/cursor/`：Cursorの起動規則とGit状態の入口
+- `adapters/pi/index.ts`：piの起動規則、Git状態、TUIの入口
 - `scripts/session-routing.sh`：起動時の規則とGit状態
 - `tests/`：起動情報と各アダプターの回帰検査

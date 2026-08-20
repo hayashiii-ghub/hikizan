@@ -18,4 +18,38 @@ assert_exit "Cursor hooks JSON is valid" 0 "$?"
 assert_eq "Cursor exposes only sessionStart" '["sessionStart"]' \
   "$(jq -c '.hooks | keys' "$CURSOR")"
 
+PI_PACKAGE="$ROOT/package.json"
+jq empty "$PI_PACKAGE" >/dev/null 2>&1
+assert_exit "pi package JSON is valid" 0 "$?"
+assert_eq "pi package exposes the portable skills" '["./skills"]' \
+  "$(jq -c '.pi.skills' "$PI_PACKAGE")"
+assert_eq "pi package exposes only the pi adapter" '["./hooks/adapters/pi/index.ts"]' \
+  "$(jq -c '.pi.extensions' "$PI_PACKAGE")"
+assert_eq "pi package declares its bundled core API as a peer" '"*"' \
+  "$(jq -c '.peerDependencies["@earendil-works/pi-coding-agent"]' "$PI_PACKAGE")"
+
+PI_ADAPTER="$ROOT/hooks/adapters/pi/index.ts"
+[ -f "$PI_ADAPTER" ]
+assert_exit "pi adapter exists" 0 "$?"
+assert_contains "pi adapter loads shared session routing" 'SESSION_ROUTING, "pi"' \
+  "$(cat "$PI_ADAPTER")"
+assert_contains "pi adapter registers its TUI command" 'registerCommand("hikizan"' \
+  "$(cat "$PI_ADAPTER")"
+assert_contains "pi adapter renders the hikizan ASCII wordmark" '/___/\\__,_/_/ /_/' \
+  "$(cat "$PI_ADAPTER")"
+assert_contains "pi adapter keeps a narrow fallback" 'if (width < 38) return ["", "  hikizan", ""]' \
+  "$(cat "$PI_ADAPTER")"
+
+if command -v pi >/dev/null 2>&1; then
+  PI_AGENT_DIR=$(mktemp -d)
+  PI_OUTPUT=$(printf '%s\n' '{"type":"get_commands"}' | \
+    PI_CODING_AGENT_DIR="$PI_AGENT_DIR" HIKIZAN_SKIP_FETCH=1 \
+    pi --mode rpc --offline --no-session --approve -e "$ROOT" 2>&1)
+  assert_contains "pi loads the hikizan extension" '"name":"hikizan"' "$PI_OUTPUT"
+  assert_contains "pi discovers the hikizan skills" '"name":"skill:jikkou"' "$PI_OUTPUT"
+  rm -rf "$PI_AGENT_DIR"
+else
+  printf '  skip: pi runtime smoke test (pi is not installed)\n'
+fi
+
 hz_test_summary

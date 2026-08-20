@@ -56,7 +56,8 @@ portable_ver="$(jq -r .version "$ROOT/plugin.json")"
 cc_ver="$(jq -r .version "$ROOT/.claude-plugin/plugin.json")"
 cur_ver="$(jq -r .version "$ROOT/.cursor-plugin/plugin.json")"
 cx_ver="$(jq -r .version "$ROOT/.codex-plugin/plugin.json")"
-[ "$portable_ver" = "$cc_ver" ] && [ "$cc_ver" = "$cur_ver" ] && [ "$cc_ver" = "$cx_ver" ] && ok "plugin manifest versions match ($cc_ver)" || bad "plugin manifest versions drift"
+pi_ver="$(jq -r .version "$ROOT/package.json")"
+[ "$portable_ver" = "$cc_ver" ] && [ "$cc_ver" = "$cur_ver" ] && [ "$cc_ver" = "$cx_ver" ] && [ "$cc_ver" = "$pi_ver" ] && ok "plugin manifest versions match ($cc_ver)" || bad "plugin manifest versions drift"
 jq -e '
   ."$schema" == "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json" and
   .name == "hikizan" and
@@ -64,8 +65,15 @@ jq -e '
 ' "$ROOT/plugin.json" >/dev/null || bad "root plugin.json does not conform to the portable manifest surface"
 jq -e '.hooks == "hooks/adapters/cursor/hooks.json" and .rules == "hooks/adapters/cursor/rules/"' "$ROOT/.cursor-plugin/plugin.json" >/dev/null || bad "Cursor manifest does not publish the routing rule and slim adapter"
 jq -e '.hooks == "./hooks/adapters/codex/hooks.json" and (has("skills") | not)' "$ROOT/.codex-plugin/plugin.json" >/dev/null || bad "Codex manifest does not keep portable skills separate from the slim adapter"
+jq -e '
+  .name == "hikizan" and
+  (.keywords | index("pi-package") != null) and
+  .peerDependencies == {"@earendil-works/pi-coding-agent": "*"} and
+  .pi.skills == ["./skills"] and
+  .pi.extensions == ["./hooks/adapters/pi/index.ts"]
+' "$ROOT/package.json" >/dev/null || bad "pi package does not publish the skills and slim adapter"
 
-# All harnesses expose only startup routing and repository status.
+# All adapters expose only startup routing and repository status; pi also owns its TUI surface.
 jq -e '.hooks | keys == ["SessionStart"]' "$ROOT/hooks/hooks.json" >/dev/null || bad "Claude hook surface is not startup-only"
 jq -e '.hooks | keys == ["SessionStart"]' "$ROOT/hooks/adapters/codex/hooks.json" >/dev/null || bad "Codex hook surface is not startup-only"
 jq -e '.hooks | keys == ["sessionStart"]' "$ROOT/hooks/adapters/cursor/hooks.json" >/dev/null || bad "Cursor hook surface is not startup-only"
@@ -73,6 +81,12 @@ require_text "$ROOT/hooks/hooks.json" 'session-routing.sh' "Claude does not load
 require_text "$ROOT/hooks/adapters/codex/hooks.json" 'session-routing.sh codex' "Codex does not load shared skill routing"
 require_text "$ROOT/hooks/adapters/cursor/rules/hikizan.mdc" 'alwaysApply: true' "Cursor routing rule is not always applied"
 require_text "$ROOT/hooks/adapters/cursor/hooks.json" 'sessionStart' "Cursor does not load repository status at session start"
+require_text "$ROOT/hooks/adapters/pi/index.ts" 'pi.on("session_start"' "pi does not load startup information"
+require_text "$ROOT/hooks/adapters/pi/index.ts" 'SESSION_ROUTING, "pi"' "pi does not load shared skill routing"
+require_text "$ROOT/hooks/adapters/pi/index.ts" 'ctx.ui.setHeader' "pi does not expose the hikizan TUI header"
+for symbol in 🌲 🌿 🔭 🧭 🛠️ 👀 🚀 ✍️; do
+  forbid_text "$ROOT/hooks/adapters/pi/index.ts" "$symbol" "pi TUI embeds an emoji: $symbol"
+done
 [ -x "$ROOT/hooks/scripts/session-routing.sh" ] || bad "session routing adapter is not executable"
 for file in "$ROOT/hooks/hooks.json" "$ROOT/hooks/adapters/codex/hooks.json" "$ROOT/hooks/adapters/cursor/hooks.json"; do
   jq empty "$file" >/dev/null 2>&1 || bad "invalid JSON: ${file#$ROOT/}"
@@ -102,12 +116,14 @@ fi
 require_text "$ROOT/README.md" 'エージェントに依頼' "README does not lead with agent-assisted setup"
 require_text "$ROOT/README.md" '手動で導入する' "README does not retain manual setup instructions"
 require_text "$ROOT/README.md" 'codex plugin add hikizan@hikizan' "README is missing Codex fallback"
+require_text "$ROOT/README.md" 'pi install git:github.com/hayashiii-ghub/hikizan' "README is missing pi installation"
 require_text "$ROOT/README.md" '/plugin install hikizan@hikizan' "README is missing Claude fallback"
 require_text "$ROOT/README.md" 'npx skills add github:hayashiii-ghub/hikizan -g' "README is missing universal fallback"
 require_text "$ROOT/README.md" '| Agent Plugins対応クライアント | スキル |' "README support matrix omits Agent Plugins"
 require_text "$ROOT/README.md" '| Claude Codeプラグイン | スキル + 起動情報 |' "README support matrix omits Claude Code routing"
 require_text "$ROOT/README.md" '| Codex + Hookアダプター | Agent Pluginsのスキル + 起動情報 |' "README support matrix omits Codex routing"
 require_text "$ROOT/README.md" '| Cursor + Hookアダプター | Agent Pluginsのスキル + 起動情報 |' "README support matrix omits Cursor routing"
+require_text "$ROOT/README.md" '| piパッケージ | スキル + 起動情報 + TUI |' "README support matrix omits pi"
 require_text "$ROOT/README.md" '| Agent Skills対応ハーネス | スキルのみ |' "README support matrix omits the skills-only boundary"
 require_text "$ROOT/README.md" '## v1で守ること' "README does not define the v1 compatibility boundary"
 require_text "$ROOT/README.md" '提供する範囲' "README overstates repository checks as a runtime guarantee"

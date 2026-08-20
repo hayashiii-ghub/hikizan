@@ -86,11 +86,11 @@ case "$HARNESS" in
     command -v jq >/dev/null 2>&1 || exit 0
     jq -nc --arg context "$cursor_context" '{additional_context:$context}'
     ;;
-  plain)
+  pi|plain)
     printf '%s\n' "$CONTEXT"
     ;;
   *)
-    echo "usage: session-routing.sh claude|codex|cursor|plain" >&2
+    echo "usage: session-routing.sh claude|codex|cursor|pi|plain" >&2
     exit 2
     ;;
 esac
