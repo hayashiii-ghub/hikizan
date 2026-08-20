@@ -19,7 +19,7 @@ jq -e '
   (has("$schema") | not) and
   (has("description") | not) and
   (.descriptions | type == "object") and
-  all(.descriptions.portable, .descriptions.claude, .descriptions.cursor, .descriptions.codex;
+  all(.descriptions.portable, .descriptions.claude, .descriptions.cursor, .descriptions.codex, .descriptions.pi;
     type == "string" and length > 0 and contains("{{core_skills}}")) and
   (.codexInterface.shortDescription | type == "string" and length > 0) and
   (.codexInterface.longDescription | type == "string" and length > 0) and
@@ -53,6 +53,7 @@ render_description() {
 claude_description="$(render_description claude)"
 cursor_description="$(render_description cursor)"
 codex_description="$(render_description codex)"
+pi_description="$(render_description pi)"
 portable_description="$(render_description portable)"
 
 gen_portable() {
@@ -133,6 +134,30 @@ gen_codex() {
   }'
 }
 
+gen_pi() {
+  jq -n --arg name "$name" --arg description "$pi_description" \
+    --arg v "$ver" --argjson a "$author" --arg homepage "$homepage" \
+    --arg repository "$repository" --arg license "$license" \
+    --argjson keywords "$keywords" '{
+    name: $name,
+    version: $v,
+    description: $description,
+    type: "module",
+    author: $a,
+    homepage: $homepage,
+    repository: $repository,
+    license: $license,
+    keywords: (($keywords + ["pi-package"]) | unique),
+    peerDependencies: {
+      "@earendil-works/pi-coding-agent": "*"
+    },
+    pi: {
+      extensions: ["./hooks/adapters/pi/index.ts"],
+      skills: ["./skills"]
+    }
+  }'
+}
+
 check_one() {
   local path="$1" genfn="$2"
   if diff -q "$path" <("$genfn") >/dev/null 2>&1; then
@@ -149,6 +174,7 @@ if [ "${1:-}" = "--check" ]; then
   check_one "$ROOT/.claude-plugin/plugin.json" gen_claude || rc=1
   check_one "$ROOT/.cursor-plugin/plugin.json" gen_cursor || rc=1
   check_one "$ROOT/.codex-plugin/plugin.json" gen_codex || rc=1
+  check_one "$ROOT/package.json" gen_pi || rc=1
   exit "$rc"
 else
   mkdir -p "$ROOT/.claude-plugin" "$ROOT/.cursor-plugin" "$ROOT/.codex-plugin"
@@ -156,28 +182,34 @@ else
   tmp_claude="$(mktemp "$ROOT/.claude-plugin/plugin.json.tmp.XXXXXX")"
   tmp_cursor="$(mktemp "$ROOT/.cursor-plugin/plugin.json.tmp.XXXXXX")"
   tmp_codex="$(mktemp "$ROOT/.codex-plugin/plugin.json.tmp.XXXXXX")"
+  tmp_pi="$(mktemp "$ROOT/package.json.tmp.XXXXXX")"
   cleanup() {
     [ -z "${tmp_portable:-}" ] || rm -f -- "$tmp_portable"
     [ -z "${tmp_claude:-}" ] || rm -f -- "$tmp_claude"
     [ -z "${tmp_cursor:-}" ] || rm -f -- "$tmp_cursor"
     [ -z "${tmp_codex:-}" ] || rm -f -- "$tmp_codex"
+    [ -z "${tmp_pi:-}" ] || rm -f -- "$tmp_pi"
   }
   trap cleanup EXIT
   gen_portable > "$tmp_portable"
   gen_claude > "$tmp_claude"
   gen_cursor > "$tmp_cursor"
   gen_codex > "$tmp_codex"
-  jq -e . "$tmp_portable" "$tmp_claude" "$tmp_cursor" "$tmp_codex" >/dev/null
+  gen_pi > "$tmp_pi"
+  jq -e . "$tmp_portable" "$tmp_claude" "$tmp_cursor" "$tmp_codex" "$tmp_pi" >/dev/null
   chmod 0644 "$tmp_portable"
   chmod 0644 "$tmp_claude" "$tmp_cursor" "$tmp_codex"
+  chmod 0644 "$tmp_pi"
   mv "$tmp_portable" "$ROOT/plugin.json"
   mv "$tmp_claude" "$ROOT/.claude-plugin/plugin.json"
   mv "$tmp_cursor" "$ROOT/.cursor-plugin/plugin.json"
   mv "$tmp_codex" "$ROOT/.codex-plugin/plugin.json"
+  mv "$tmp_pi" "$ROOT/package.json"
   tmp_portable=""
   tmp_claude=""
   tmp_cursor=""
   tmp_codex=""
+  tmp_pi=""
   trap - EXIT
-  echo "✔ wrote plugin.json, .claude-plugin/plugin.json, .cursor-plugin/plugin.json and .codex-plugin/plugin.json"
+  echo "✔ wrote plugin.json, .claude-plugin/plugin.json, .cursor-plugin/plugin.json, .codex-plugin/plugin.json and package.json"
 fi

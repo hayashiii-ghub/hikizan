@@ -18,13 +18,14 @@ v1では、次の振る舞いを互換性の基準とします。
 
 ## 導入方法を選ぶ
 
-hikizanの配布形式は、共通のAgent PluginsとClaude Codeプラグインの2つです。通常は使用中のハーネスに合うプラグインを選ぶだけで、Skillsと利用可能な起動情報がまとめて設定されます。
+hikizanの配布形式は、共通のAgent Plugins、Claude Codeプラグイン、piパッケージです。通常は使用中のハーネスに合う形式を選ぶだけで、Skillsと利用可能な起動情報がまとめて設定されます。
 
 | 実行環境 | 推奨する導入方法 |
 | --- | --- |
 | Claude Code | Claude Codeプラグイン |
 | Codex | Agent Plugins + Codex Hookアダプター |
 | Cursor | Agent Plugins + Cursor Hookアダプター |
+| pi | piパッケージ |
 | その他 | Agent Plugins。未対応ならAgent Skills |
 
 <!-- hikizan:pack-only -->
@@ -56,6 +57,14 @@ codex plugin marketplace add hayashiii-ghub/hikizan
 codex plugin add hikizan@hikizan
 ```
 
+piパッケージ：
+
+```bash
+pi install git:github.com/hayashiii-ghub/hikizan
+```
+
+piでは6スキル、起動時のリポジトリ状態、文字ベースのヘッダーがまとめて読み込まれます。`/hikizan`でヘッダーの表示を切り替えられます。
+
 CursorのHookアダプターは、プラグイン画面からGitHubリポジトリ`hayashiii-ghub/hikizan`を追加します。
 
 そのほかのAgent Plugins対応クライアントでは、このGitHubリポジトリをクライアント標準の方法で追加します。ルートの`plugin.json`と`skills/`が読み込まれます。
@@ -75,6 +84,7 @@ npx skills add github:hayashiii-ghub/hikizan -g
 | Claude Codeプラグイン | スキル + 起動情報 | マニフェスト、配線、Hook出力をCIで検査 |
 | Codex + Hookアダプター | Agent Pluginsのスキル + 起動情報 | マニフェスト、配線、Hook出力をCIで検査 |
 | Cursor + Hookアダプター | Agent Pluginsのスキル + 起動情報 | マニフェスト、配線、Hook出力をCIで検査 |
+| piパッケージ | スキル + 起動情報 + TUI | マニフェストと配線をCIで検査。piがある環境では起動も確認 |
 | Agent Plugins対応クライアント | スキル | ルート`plugin.json`と6スキルの構成をCIで検査 |
 | Agent Skills対応ハーネス | スキルのみ | 6スキルの`frontmatter`にある`name`、`description`、共通契約をCIで検査 |
 
@@ -110,6 +120,8 @@ UI・スタイル・配置・操作を変更したら、対象プロジェクト
 - 依頼に合うスキルを見つける短い規則を渡す
 - 現在のリポジトリ、ブランチ、作業ツリー、upstreamとの差分を知らせる
 
+piでは同じ起動情報に加え、hikizanのAA、6スキル、実行状態を示す短いステータスを表示します。狭いターミナルでは短い文字表示へ縮退します。
+
 リモート確認に失敗しても作業は止めず、`未確認`と表示します。PRマージと既定ブランチへの直接のpushはHookで解析せず、明示された依頼に基づいて判断します。詳しい責務は[hooks/conditions.md](hooks/conditions.md)を参照してください。
 
 ## 起動の目安
@@ -137,7 +149,7 @@ UI・スタイル・配置・操作を変更したら、対象プロジェクト
 bash scripts/check-all.sh
 ```
 
-バージョンの正本は`plugin.src.json`です。Agent Plugins、Claude Code、Codex・CursorのHookアダプター用マニフェストは`bash scripts/gen-manifests.sh`で生成します。
+バージョンの正本は`plugin.src.json`です。Agent Plugins、Claude Code、Codex・CursorのHookアダプター用マニフェストとpi用`package.json`は`bash scripts/gen-manifests.sh`で生成します。
 共通の起動規則は各`SKILL.md`の`description`から`bash scripts/gen-routing.sh`で生成します。
 
 ## ライセンス

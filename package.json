@@ -1,0 +1,32 @@
+{
+  "name": "hikizan",
+  "version": "1.1.0",
+  "description": "hikizan for pi: portable workflow skills (tansaku / sekkei / jikkou / sadoku / teishutsu / houkoku), startup routing, repository status, and a compact text-based TUI.",
+  "type": "module",
+  "author": {
+    "name": "hayashiii-ghub"
+  },
+  "homepage": "https://github.com/hayashiii-ghub/hikizan",
+  "repository": "https://github.com/hayashiii-ghub/hikizan",
+  "license": "MIT",
+  "keywords": [
+    "code-review",
+    "hooks",
+    "japanese",
+    "pi-package",
+    "reporting",
+    "skills",
+    "workflow"
+  ],
+  "peerDependencies": {
+    "@earendil-works/pi-coding-agent": "*"
+  },
+  "pi": {
+    "extensions": [
+      "./hooks/adapters/pi/index.ts"
+    ],
+    "skills": [
+      "./skills"
+    ]
+  }
+}

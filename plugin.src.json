@@ -4,7 +4,8 @@
     "portable": "Portable Japanese workflow skills ({{core_skills}}) for planning, implementation, review, delivery, and communication.",
     "claude": "動詞単位のスキル（{{core_skills}}）、軽量な起動規則、作業開始時のGit状態で構成するClaude Codeプラグイン兼Agent Skillsパック。",
     "cursor": "hikizan for Cursor: optional routing and repository status for the portable skills ({{core_skills}}).",
-    "codex": "hikizan for Codex: optional routing and repository status for the portable skills ({{core_skills}})."
+    "codex": "hikizan for Codex: optional routing and repository status for the portable skills ({{core_skills}}).",
+    "pi": "hikizan for pi: portable workflow skills ({{core_skills}}), startup routing, repository status, and a compact text-based TUI."
   },
   "codexInterface": {
     "shortDescription": "Japanese workflow skills with goal-aware routing",
@@ -12,7 +13,7 @@
     "category": "Productivity",
     "capabilities": ["Read", "Write"]
   },
-  "version": "1.0.0",
+  "version": "1.1.0",
   "author": {
     "name": "hayashiii-ghub"
   },

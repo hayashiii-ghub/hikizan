@@ -71,5 +71,9 @@ case "$CURSOR_CONTEXT" in
   *) HZ_PASS=$((HZ_PASS + 1)) ;;
 esac
 
+PI=$(HIKIZAN_SKIP_FETCH=1 bash "$SESSION" pi <<<"$PAYLOAD")
+assert_contains "pi receives routing" "## hikizanのスキル選択" "$PI"
+assert_contains "pi receives repository status" "リポジトリ: work" "$PI"
+
 rm -rf "$TMP"
 hz_test_summary
