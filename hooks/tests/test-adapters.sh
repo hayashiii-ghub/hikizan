@@ -27,6 +27,10 @@ assert_eq "pi package exposes only the pi adapter" '["./hooks/adapters/pi/index.
   "$(jq -c '.pi.extensions' "$PI_PACKAGE")"
 assert_eq "pi package declares its bundled core API as a peer" '"*"' \
   "$(jq -c '.peerDependencies["@earendil-works/pi-coding-agent"]' "$PI_PACKAGE")"
+assert_eq "pi package declares its bundled TUI API as a peer" '"*"' \
+  "$(jq -c '.peerDependencies["@earendil-works/pi-tui"]' "$PI_PACKAGE")"
+assert_eq "pi package declares TypeBox as a peer" '"*"' \
+  "$(jq -c '.peerDependencies.typebox' "$PI_PACKAGE")"
 
 PI_ADAPTER="$ROOT/hooks/adapters/pi/index.ts"
 [ -f "$PI_ADAPTER" ]
@@ -39,14 +43,44 @@ assert_contains "pi adapter renders the hikizan ASCII wordmark" '/___/\\__,_/_/ 
   "$(cat "$PI_ADAPTER")"
 assert_contains "pi adapter keeps a narrow fallback" 'if (width < 38) return ["", "  hikizan", ""]' \
   "$(cat "$PI_ADAPTER")"
+assert_contains "pi adapter conditionally registers Exa search" 'registerExaSearchIfConfigured(pi)' \
+  "$(cat "$PI_ADAPTER")"
+
+EXA_SEARCH="$ROOT/hooks/adapters/pi/exa-search.ts"
+EXA_CLIENT="$ROOT/hooks/adapters/pi/exa-client.js"
+[ -f "$EXA_SEARCH" ]
+assert_exit "pi Exa tool exists" 0 "$?"
+[ -f "$EXA_CLIENT" ]
+assert_exit "pi Exa client exists" 0 "$?"
+assert_contains "pi Exa tool gates registration on its API key" 'if (!apiKey) return false' \
+  "$(cat "$EXA_SEARCH")"
+assert_contains "pi Exa client uses the low-latency search type" 'type: "fast"' \
+  "$(cat "$EXA_CLIENT")"
 
 if command -v pi >/dev/null 2>&1; then
   PI_AGENT_DIR=$(mktemp -d)
-  PI_OUTPUT=$(printf '%s\n' '{"type":"get_commands"}' | \
-    PI_CODING_AGENT_DIR="$PI_AGENT_DIR" HIKIZAN_SKIP_FETCH=1 \
-    pi --mode rpc --offline --no-session --approve -e "$ROOT" 2>&1)
+  PI_INSPECTOR="$PI_AGENT_DIR/exa-inspector.ts"
+  cat > "$PI_INSPECTOR" <<'EOF'
+import type { ExtensionAPI } from "@earendil-works/pi-coding-agent";
+
+export default function inspectExa(pi: ExtensionAPI): void {
+  pi.on("session_start", async () => {
+    const present = pi.getAllTools().some((tool) => tool.name === "web_search");
+    process.stderr.write(present ? "PI_EXA_PRESENT\n" : "PI_EXA_MISSING\n");
+  });
+}
+EOF
+  PI_OUTPUT=$(printf '%s\n' '{"type":"get_commands"}' '{"type":"get_state"}' | \
+    PI_CODING_AGENT_DIR="$PI_AGENT_DIR" HIKIZAN_SKIP_FETCH=1 EXA_API_KEY='' \
+    pi --mode rpc --offline --no-session --approve -e "$ROOT" -e "$PI_INSPECTOR" 2>&1)
   assert_contains "pi loads the hikizan extension" '"name":"hikizan"' "$PI_OUTPUT"
   assert_contains "pi discovers the hikizan skills" '"name":"skill:jikkou"' "$PI_OUTPUT"
+  assert_contains "pi omits Exa search without a key" 'PI_EXA_MISSING' "$PI_OUTPUT"
+
+  PI_EXA_OUTPUT=$(printf '%s\n' '{"type":"get_state"}' | \
+    PI_CODING_AGENT_DIR="$PI_AGENT_DIR" HIKIZAN_SKIP_FETCH=1 EXA_API_KEY=test-key \
+    pi --mode rpc --offline --no-session --approve -e "$ROOT" -e "$PI_INSPECTOR" 2>&1)
+  assert_contains "pi registers Exa search when a key is present" 'PI_EXA_PRESENT' "$PI_EXA_OUTPUT"
   rm -rf "$PI_AGENT_DIR"
 else
   printf '  skip: pi runtime smoke test (pi is not installed)\n'

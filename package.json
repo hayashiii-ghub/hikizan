@@ -1,7 +1,7 @@
 {
   "name": "hikizan",
-  "version": "1.1.0",
-  "description": "hikizan for pi: portable workflow skills (tansaku / sekkei / jikkou / sadoku / teishutsu / houkoku), startup routing, repository status, and a compact text-based TUI.",
+  "version": "1.1.1",
+  "description": "hikizan for pi: portable workflow skills (tansaku / sekkei / jikkou / sadoku / teishutsu / houkoku), startup routing, repository status, a compact text-based TUI, and optional Exa web search.",
   "type": "module",
   "author": {
     "name": "hayashiii-ghub"
@@ -19,7 +19,9 @@
     "workflow"
   ],
   "peerDependencies": {
-    "@earendil-works/pi-coding-agent": "*"
+    "@earendil-works/pi-coding-agent": "*",
+    "@earendil-works/pi-tui": "*",
+    "typebox": "*"
   },
   "pi": {
     "extensions": [

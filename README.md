@@ -65,6 +65,18 @@ pi install git:github.com/hayashiii-ghub/hikizan
 
 piでは6スキル、起動時のリポジトリ状態、文字ベースのヘッダーがまとめて読み込まれます。`/hikizan`でヘッダーの表示を切り替えられます。
 
+ExaのAPIキーを設定してpiを起動すると、追加設定なしで任意の`web_search`も使えます。キーがなければ検索ツール自体を登録せず、従来のhikizanとして動作します。
+
+```bash
+read -s EXA_API_KEY
+export EXA_API_KEY
+pi
+```
+
+APIキーの入力内容は画面へ表示されません。macOSでは、キーをコピーして`EXA_API_KEY="$(pbpaste)" pi`でも起動できます。
+
+検索語はExaへ送信されますが、APIキー、検索語、結果、利用状況をhikizan側で保存しません。検索は`fast`、既定5件、最大10件、10秒のタイムアウトに固定しています。HTTP 402では再試行や有料サービスへの切り替えをせず停止します。従量課金の上限は、Exa側でAPIキーごとの予算も設定してください。
+
 CursorのHookアダプターは、プラグイン画面からGitHubリポジトリ`hayashiii-ghub/hikizan`を追加します。
 
 そのほかのAgent Plugins対応クライアントでは、このGitHubリポジトリをクライアント標準の方法で追加します。ルートの`plugin.json`と`skills/`が読み込まれます。
@@ -84,7 +96,7 @@ npx skills add github:hayashiii-ghub/hikizan -g
 | Claude Codeプラグイン | スキル + 起動情報 | マニフェスト、配線、Hook出力をCIで検査 |
 | Codex + Hookアダプター | Agent Pluginsのスキル + 起動情報 | マニフェスト、配線、Hook出力をCIで検査 |
 | Cursor + Hookアダプター | Agent Pluginsのスキル + 起動情報 | マニフェスト、配線、Hook出力をCIで検査 |
-| piパッケージ | スキル + 起動情報 + TUI | マニフェストと配線をCIで検査。piがある環境では起動も確認 |
+| piパッケージ | スキル + 起動情報 + TUI + 任意Web検索 | マニフェストと配線をCIで検査。piがある環境では起動も確認 |
 | Agent Plugins対応クライアント | スキル | ルート`plugin.json`と6スキルの構成をCIで検査 |
 | Agent Skills対応ハーネス | スキルのみ | 6スキルの`frontmatter`にある`name`、`description`、共通契約をCIで検査 |
 
@@ -120,7 +132,7 @@ UI・スタイル・配置・操作を変更したら、対象プロジェクト
 - 依頼に合うスキルを見つける短い規則を渡す
 - 現在のリポジトリ、ブランチ、作業ツリー、upstreamとの差分を知らせる
 
-piでは同じ起動情報に加え、hikizanのAA、6スキル、実行状態を示す短いステータスを表示します。狭いターミナルでは短い文字表示へ縮退します。
+piでは同じ起動情報に加え、hikizanのAA、6スキル、実行状態を示す短いステータスを表示します。狭いターミナルでは短い文字表示へ縮退します。`EXA_API_KEY`がある場合だけ、低遅延の`web_search`も登録します。
 
 リモート確認に失敗しても作業は止めず、`未確認`と表示します。PRマージと既定ブランチへの直接のpushはHookで解析せず、明示された依頼に基づいて判断します。詳しい責務は[hooks/conditions.md](hooks/conditions.md)を参照してください。
 
