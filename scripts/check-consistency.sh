@@ -138,7 +138,7 @@ require_text "$ROOT/README.md" '提供する範囲' "README overstates repositor
 require_text "$ROOT/skills/tansaku/references/fanout.md" '親エージェントが必要範囲を読む' "tansaku fan-out omits the inline fallback"
 forbid_text "$ROOT/skills/tansaku/references/fanout.md" 'Claude Code なら' "tansaku fan-out still singles out Claude Code"
 require_text "$ROOT/skills/sadoku/references/persona-catalog.md" '親エージェントが確認する' "sadoku reviewer selection omits the inline fallback"
-require_text "$ROOT/README.md" 'https://github.com/hayashiii-ghub/shimon' "README does not identify Shimon as a supported visual method"
+require_text "$ROOT/README.md" 'https://github.com/hayashiii-ghub/shimon' "README does not identify shimon as a supported visual method"
 require_text "$ROOT/skills/jikkou/SKILL.md" 'references/visual-verification.md' "jikkou does not route UI changes to visual verification"
 require_text "$ROOT/skills/sadoku/SKILL.md" 'references/visual-verification.md' "sadoku does not route UI reviews to visual verification"
 require_text "$ROOT/skills/houkoku/references/writing-style.md" '自然な日本語がある概念を英単語のまま文章へ混ぜない' "writing style omits the Japanese prose boundary"
