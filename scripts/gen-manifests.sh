@@ -149,7 +149,9 @@ gen_pi() {
     license: $license,
     keywords: (($keywords + ["pi-package"]) | unique),
     peerDependencies: {
-      "@earendil-works/pi-coding-agent": "*"
+      "@earendil-works/pi-coding-agent": "*",
+      "@earendil-works/pi-tui": "*",
+      "typebox": "*"
     },
     pi: {
       extensions: ["./hooks/adapters/pi/index.ts"],

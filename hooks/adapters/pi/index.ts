@@ -6,6 +6,7 @@
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import type { ExtensionAPI, ExtensionContext } from "@earendil-works/pi-coding-agent";
+import { registerExaSearchIfConfigured } from "./exa-search.ts";
 
 const ADAPTER_DIR = dirname(fileURLToPath(import.meta.url));
 const SESSION_ROUTING = resolve(ADAPTER_DIR, "../../scripts/session-routing.sh");
@@ -40,6 +41,8 @@ function setStatus(ctx: ExtensionContext, text: string, tone: "accent" | "muted"
 }
 
 export default function hikizanForPi(pi: ExtensionAPI) {
+	registerExaSearchIfConfigured(pi);
+
 	let startupContext = "";
 	let headerVisible = true;
 	let activeTools = 0;
