@@ -6,6 +6,7 @@
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import type { ExtensionAPI, ExtensionContext } from "@earendil-works/pi-coding-agent";
+import { createShimonTool } from "@hayashiii/shimon/extensions/pi/index.ts";
 import { registerExaSearchIfConfigured } from "./exa-search.ts";
 
 const ADAPTER_DIR = dirname(fileURLToPath(import.meta.url));
@@ -41,6 +42,7 @@ function setStatus(ctx: ExtensionContext, text: string, tone: "accent" | "muted"
 }
 
 export default function hikizanForPi(pi: ExtensionAPI) {
+	pi.registerTool(createShimonTool());
 	registerExaSearchIfConfigured(pi);
 
 	let startupContext = "";

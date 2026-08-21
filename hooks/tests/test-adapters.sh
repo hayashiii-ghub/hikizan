@@ -31,6 +31,8 @@ assert_eq "pi package declares its bundled TUI API as a peer" '"*"' \
   "$(jq -c '.peerDependencies["@earendil-works/pi-tui"]' "$PI_PACKAGE")"
 assert_eq "pi package declares TypeBox as a peer" '"*"' \
   "$(jq -c '.peerDependencies.typebox' "$PI_PACKAGE")"
+assert_eq "pi package installs shimon visual verification" '"^0.3.1"' \
+  "$(jq -c '.dependencies["@hayashiii/shimon"]' "$PI_PACKAGE")"
 
 PI_ADAPTER="$ROOT/hooks/adapters/pi/index.ts"
 [ -f "$PI_ADAPTER" ]
@@ -45,6 +47,8 @@ assert_contains "pi adapter keeps a narrow fallback" 'if (width < 38) return [""
   "$(cat "$PI_ADAPTER")"
 assert_contains "pi adapter conditionally registers Exa search" 'registerExaSearchIfConfigured(pi)' \
   "$(cat "$PI_ADAPTER")"
+assert_contains "pi adapter registers shimon visual verification" 'pi.registerTool(createShimonTool())' \
+  "$(cat "$PI_ADAPTER")"
 
 EXA_SEARCH="$ROOT/hooks/adapters/pi/exa-search.ts"
 EXA_CLIENT="$ROOT/hooks/adapters/pi/exa-client.js"
@@ -57,16 +61,17 @@ assert_contains "pi Exa tool gates registration on its API key" 'if (!apiKey) re
 assert_contains "pi Exa client uses the low-latency search type" 'type: "fast"' \
   "$(cat "$EXA_CLIENT")"
 
-if command -v pi >/dev/null 2>&1; then
+if command -v pi >/dev/null 2>&1 && [ -d "$ROOT/node_modules/@hayashiii/shimon" ]; then
   PI_AGENT_DIR=$(mktemp -d)
   PI_INSPECTOR="$PI_AGENT_DIR/exa-inspector.ts"
   cat > "$PI_INSPECTOR" <<'EOF'
 import type { ExtensionAPI } from "@earendil-works/pi-coding-agent";
 
-export default function inspectExa(pi: ExtensionAPI): void {
+export default function inspectPiTools(pi: ExtensionAPI): void {
   pi.on("session_start", async () => {
-    const present = pi.getAllTools().some((tool) => tool.name === "web_search");
-    process.stderr.write(present ? "PI_EXA_PRESENT\n" : "PI_EXA_MISSING\n");
+    const tools = pi.getAllTools();
+    process.stderr.write(tools.some((tool) => tool.name === "web_search") ? "PI_EXA_PRESENT\n" : "PI_EXA_MISSING\n");
+    process.stderr.write(tools.some((tool) => tool.name === "shimon_verify") ? "PI_SHIMON_PRESENT\n" : "PI_SHIMON_MISSING\n");
   });
 }
 EOF
@@ -76,6 +81,7 @@ EOF
   assert_contains "pi loads the hikizan extension" '"name":"hikizan"' "$PI_OUTPUT"
   assert_contains "pi discovers the hikizan skills" '"name":"skill:jikkou"' "$PI_OUTPUT"
   assert_contains "pi omits Exa search without a key" 'PI_EXA_MISSING' "$PI_OUTPUT"
+  assert_contains "pi registers shimon visual verification" 'PI_SHIMON_PRESENT' "$PI_OUTPUT"
 
   PI_EXA_OUTPUT=$(printf '%s\n' '{"type":"get_state"}' | \
     PI_CODING_AGENT_DIR="$PI_AGENT_DIR" HIKIZAN_SKIP_FETCH=1 EXA_API_KEY=test-key \
@@ -83,7 +89,7 @@ EOF
   assert_contains "pi registers Exa search when a key is present" 'PI_EXA_PRESENT' "$PI_EXA_OUTPUT"
   rm -rf "$PI_AGENT_DIR"
 else
-  printf '  skip: pi runtime smoke test (pi is not installed)\n'
+  printf '  skip: pi runtime smoke test (pi or installed package dependencies are unavailable)\n'
 fi
 
 hz_test_summary

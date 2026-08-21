@@ -63,7 +63,15 @@ piパッケージ：
 pi install git:github.com/hayashiii-ghub/hikizan
 ```
 
-piでは6スキル、起動時のリポジトリ状態、文字ベースのヘッダーがまとめて読み込まれます。`/hikizan`でヘッダーの表示を切り替えられます。
+piでは6スキル、起動時のリポジトリ状態、文字ベースのヘッダー、[shimon](https://github.com/hayashiii-ghub/shimon)の`shimon_verify`がまとめて読み込まれます。`/hikizan`でヘッダーの表示を切り替えられます。
+
+`shimon_verify`は設定ファイルなしで使えます。Chromiumをまだ導入していない環境だけ、初回に次を実行してください。ブラウザー本体はhikizanのインストール時に自動ダウンロードしません。
+
+```bash
+npx playwright install chromium
+```
+
+以前にshimonを単体のpiパッケージとして導入している場合は、`pi list`でshimonのsourceを確認し、`pi remove <source>`で外してからhikizanを更新してください。同じ`shimon_verify`を2つのパッケージから登録するとpiが起動を拒否します。
 
 ExaのAPIキーを設定してpiを起動すると、追加設定なしで任意の`web_search`も使えます。キーがなければ検索ツール自体を登録せず、従来のhikizanとして動作します。
 
@@ -96,7 +104,7 @@ npx skills add github:hayashiii-ghub/hikizan -g
 | Claude Codeプラグイン | スキル + 起動情報 | マニフェスト、配線、Hook出力をCIで検査 |
 | Codex + Hookアダプター | Agent Pluginsのスキル + 起動情報 | マニフェスト、配線、Hook出力をCIで検査 |
 | Cursor + Hookアダプター | Agent Pluginsのスキル + 起動情報 | マニフェスト、配線、Hook出力をCIで検査 |
-| piパッケージ | スキル + 起動情報 + TUI + 任意Web検索 | マニフェストと配線をCIで検査。piがある環境では起動も確認 |
+| piパッケージ | スキル + 起動情報 + TUI + 画面検証 + 任意Web検索 | マニフェストと配線をCIで検査。piがある環境では起動も確認 |
 | Agent Plugins対応クライアント | スキル | ルート`plugin.json`と6スキルの構成をCIで検査 |
 | Agent Skills対応ハーネス | スキルのみ | 6スキルの`frontmatter`にある`name`、`description`、共通契約をCIで検査 |
 
@@ -123,7 +131,7 @@ npx skills add github:hayashiii-ghub/hikizan -g
 
 UI・スタイル・配置・操作を変更したら、対象プロジェクトまたは現在のハーネスで利用できる視覚検証方法を使います。検査結果だけでなく、生成された画像や実際の表示も確認します。
 
-[shimon](https://github.com/hayashiii-ghub/shimon)の`shimon_verify`が利用可能なら、起動済みの画面URLと今回必要なケースを渡して使います。通常はプロジェクト側の設定ファイルを必要としません。hikizanは特定のツールを同梱・強制せず、検証のためだけに新しいツールを勝手に導入しません。利用できる方法がなければ、視覚未確認であることを伝えます。
+[shimon](https://github.com/hayashiii-ghub/shimon)の`shimon_verify`が利用可能なら、起動済みの画面URLと今回必要なケースを渡して使います。通常はプロジェクト側の設定ファイルを必要としません。piパッケージにはshimonを含み、そのほかのハーネスでは既に利用できる視覚検証方法を使います。利用できる方法がなければ、視覚未確認であることを伝えます。
 
 ## フック
 
@@ -132,7 +140,7 @@ UI・スタイル・配置・操作を変更したら、対象プロジェクト
 - 依頼に合うスキルを見つける短い規則を渡す
 - 現在のリポジトリ、ブランチ、作業ツリー、upstreamとの差分を知らせる
 
-piでは同じ起動情報に加え、hikizanのAA、6スキル、実行状態を示す短いステータスを表示します。狭いターミナルでは短い文字表示へ縮退します。`EXA_API_KEY`がある場合だけ、低遅延の`web_search`も登録します。
+piでは同じ起動情報に加え、hikizanのAA、6スキル、実行状態を示す短いステータスと`shimon_verify`を提供します。狭いターミナルでは短い文字表示へ縮退します。`EXA_API_KEY`がある場合だけ、低遅延の`web_search`も登録します。
 
 リモート確認に失敗しても作業は止めず、`未確認`と表示します。PRマージと既定ブランチへの直接のpushはHookで解析せず、明示された依頼に基づいて判断します。詳しい責務は[hooks/conditions.md](hooks/conditions.md)を参照してください。
 
