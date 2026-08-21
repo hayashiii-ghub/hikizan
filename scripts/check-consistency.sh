@@ -91,7 +91,7 @@ require_text "$ROOT/hooks/adapters/cursor/hooks.json" 'sessionStart' "Cursor doe
 require_text "$ROOT/hooks/adapters/pi/index.ts" 'pi.on("session_start"' "pi does not load startup information"
 require_text "$ROOT/hooks/adapters/pi/index.ts" 'SESSION_ROUTING, "pi"' "pi does not load shared skill routing"
 require_text "$ROOT/hooks/adapters/pi/index.ts" 'ctx.ui.setHeader' "pi does not expose the hikizan TUI header"
-require_text "$ROOT/hooks/adapters/pi/index.ts" 'pi.registerTool(createShimonTool())' "pi does not expose shimon visual verification"
+require_text "$ROOT/hooks/adapters/pi/index.ts" 'shimonForPi(pi)' "pi does not expose the complete shimon extension"
 require_text "$ROOT/hooks/adapters/pi/index.ts" 'registerExaSearchIfConfigured(pi)' "pi does not expose optional Exa search"
 require_text "$ROOT/hooks/adapters/pi/index.ts" 'registerProductionGuard(pi)' "pi does not register the production guard"
 require_text "$ROOT/hooks/adapters/pi/exa-search.ts" 'if (!apiKey) return false' "pi Exa search is not gated by EXA_API_KEY"

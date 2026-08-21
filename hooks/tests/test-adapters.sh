@@ -45,7 +45,7 @@ assert_contains "pi adapter renders the hikizan ASCII wordmark" '/___/\\__,_/_/ 
   "$(cat "$PI_ADAPTER")"
 assert_contains "pi adapter keeps a narrow fallback" 'if (width < 38) return ["", "  hikizan", ""]' \
   "$(cat "$PI_ADAPTER")"
-assert_contains "pi adapter registers shimon visual verification" 'pi.registerTool(createShimonTool())' \
+assert_contains "pi adapter registers the complete shimon extension" 'shimonForPi(pi)' \
   "$(cat "$PI_ADAPTER")"
 assert_contains "pi adapter conditionally registers Exa search" 'registerExaSearchIfConfigured(pi)' \
   "$(cat "$PI_ADAPTER")"
@@ -81,6 +81,7 @@ EOF
     PI_CODING_AGENT_DIR="$PI_AGENT_DIR" HIKIZAN_SKIP_FETCH=1 \
     pi --mode rpc --offline --no-session --approve -e "$ROOT" -e "$PI_INSPECTOR" 2>&1)
   assert_contains "pi loads the hikizan extension" '"name":"hikizan"' "$PI_OUTPUT"
+  assert_contains "pi registers the shimon command" '"name":"shimon"' "$PI_OUTPUT"
   assert_contains "pi discovers the hikizan skills" '"name":"skill:jikkou"' "$PI_OUTPUT"
   assert_contains "pi registers shimon visual verification" 'PI_SHIMON_PRESENT' "$PI_OUTPUT"
   assert_contains "pi omits Exa search without a key" 'PI_EXA_MISSING' "$PI_OUTPUT"

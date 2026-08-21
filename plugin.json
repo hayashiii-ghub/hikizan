@@ -1,7 +1,7 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "hikizan",
-  "version": "1.1.5",
+  "version": "1.1.6",
   "description": "Portable Japanese workflow skills (tansaku / sekkei / jikkou / sadoku / teishutsu / houkoku) for planning, implementation, review, delivery, and communication.",
   "author": {
     "name": "hayashiii-ghub"
