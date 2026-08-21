@@ -97,6 +97,7 @@ require_text "$ROOT/hooks/adapters/pi/index.ts" 'shimonForPi(pi)' "pi does not e
 require_text "$ROOT/hooks/adapters/pi/index.ts" 'registerExaSearchIfConfigured(pi)' "pi does not expose optional Exa search"
 require_text "$ROOT/hooks/adapters/pi/index.ts" 'registerProductionGuard(pi)' "pi does not register the production guard"
 require_text "$ROOT/hooks/adapters/pi/index.ts" 'registerClaudeDelegate(pi)' "pi does not register Claude ACP delegation"
+require_text "$ROOT/hooks/adapters/pi/index.ts" 'registerSkillAliases(pi)' "pi does not register direct skill aliases"
 require_text "$ROOT/hooks/adapters/pi/exa-search.ts" 'if (!apiKey) return false' "pi Exa search is not gated by EXA_API_KEY"
 require_text "$ROOT/hooks/adapters/pi/exa-client.js" 'type: "fast"' "pi Exa client does not use low-latency search"
 require_text "$ROOT/hooks/adapters/pi/exa-client.js" 'case 402:' "pi Exa client does not stop on exhausted credit"

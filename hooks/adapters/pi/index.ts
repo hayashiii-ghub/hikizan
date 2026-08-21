@@ -14,6 +14,7 @@ import { registerProductionGuard } from "./production-guard.js";
 const ADAPTER_DIR = dirname(fileURLToPath(import.meta.url));
 const SESSION_ROUTING = resolve(ADAPTER_DIR, "../../scripts/session-routing.sh");
 const STATUS_ID = "hikizan";
+const SKILL_ALIASES = ["tansaku", "sekkei", "jikkou", "sadoku", "teishutsu", "houkoku"] as const;
 
 function renderHeader(width: number): string[] {
 	if (width < 38) return ["", "  hikizan", ""];
@@ -43,11 +44,26 @@ function setStatus(ctx: ExtensionContext, text: string, tone: "accent" | "muted"
 	ctx.ui.setStatus(STATUS_ID, ctx.ui.theme.fg(tone, text));
 }
 
+function registerSkillAliases(pi: ExtensionAPI): void {
+	for (const name of SKILL_ALIASES) {
+		pi.registerCommand(name, {
+			description: `${name}スキルを明示的に使う`,
+			handler: async (args, ctx) => {
+				const suffix = args.trim();
+				await ctx.sendUserMessage(`/skill:${name}${suffix ? ` ${suffix}` : ""}`, {
+					expandPromptTemplates: true,
+				});
+			},
+		});
+	}
+}
+
 export default function hikizanForPi(pi: ExtensionAPI) {
 	registerProductionGuard(pi);
 	shimonForPi(pi);
 	registerClaudeDelegate(pi);
 	registerExaSearchIfConfigured(pi);
+	registerSkillAliases(pi);
 
 	let startupContext = "";
 	let headerVisible = true;
