@@ -49,6 +49,8 @@ assert_contains "pi adapter registers shimon visual verification" 'pi.registerTo
   "$(cat "$PI_ADAPTER")"
 assert_contains "pi adapter conditionally registers Exa search" 'registerExaSearchIfConfigured(pi)' \
   "$(cat "$PI_ADAPTER")"
+assert_contains "pi adapter registers its production guard" 'registerProductionGuard(pi)' \
+  "$(cat "$PI_ADAPTER")"
 
 EXA_SEARCH="$ROOT/hooks/adapters/pi/exa-search.ts"
 EXA_CLIENT="$ROOT/hooks/adapters/pi/exa-client.js"

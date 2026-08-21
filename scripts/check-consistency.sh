@@ -34,7 +34,7 @@ require_text "$ROOT/scripts/contract.md" '最大3件を推奨順に`A（あ）`�
 require_text "$ROOT/scripts/contract.md" '簡潔で分かりやすく書く' "shared contract omits lightweight prose guidance"
 require_text "$ROOT/scripts/contract.md" '同じ原因を防ぐ最小の共通箇所' "shared contract omits common-cause repair guidance"
 require_text "$ROOT/scripts/contract.md" '要求外の一般化はしない' "shared contract omits the overgeneralization boundary"
-require_text "$ROOT/scripts/contract.md" 'PRのマージと既定ブランチへの直接のpushは、利用者が依頼の終点として明示した場合だけ行う' "shared contract omits the merge and direct-push authority boundary"
+require_text "$ROOT/scripts/contract.md" 'PRのマージと既定ブランチへの直接のpush、公開・配布・本番環境や共有データを変更する操作は、利用者が依頼の終点として明示した場合だけ行う' "shared contract omits the external-change authority boundary"
 for name in $CORE; do
   [ "$(grep -c '^## 次の進め方$' "$ROOT/skills/$name/SKILL.md")" = "1" ] || bad "skills/$name does not define exactly one handoff section"
 done
@@ -93,6 +93,7 @@ require_text "$ROOT/hooks/adapters/pi/index.ts" 'SESSION_ROUTING, "pi"' "pi does
 require_text "$ROOT/hooks/adapters/pi/index.ts" 'ctx.ui.setHeader' "pi does not expose the hikizan TUI header"
 require_text "$ROOT/hooks/adapters/pi/index.ts" 'pi.registerTool(createShimonTool())' "pi does not expose shimon visual verification"
 require_text "$ROOT/hooks/adapters/pi/index.ts" 'registerExaSearchIfConfigured(pi)' "pi does not expose optional Exa search"
+require_text "$ROOT/hooks/adapters/pi/index.ts" 'registerProductionGuard(pi)' "pi does not register the production guard"
 require_text "$ROOT/hooks/adapters/pi/exa-search.ts" 'if (!apiKey) return false' "pi Exa search is not gated by EXA_API_KEY"
 require_text "$ROOT/hooks/adapters/pi/exa-client.js" 'type: "fast"' "pi Exa client does not use low-latency search"
 require_text "$ROOT/hooks/adapters/pi/exa-client.js" 'case 402:' "pi Exa client does not stop on exhausted credit"
@@ -135,7 +136,7 @@ require_text "$ROOT/README.md" '| Agent Plugins対応クライアント | スキ
 require_text "$ROOT/README.md" '| Claude Codeプラグイン | スキル + 起動情報 |' "README support matrix omits Claude Code routing"
 require_text "$ROOT/README.md" '| Codex + Hookアダプター | Agent Pluginsのスキル + 起動情報 |' "README support matrix omits Codex routing"
 require_text "$ROOT/README.md" '| Cursor + Hookアダプター | Agent Pluginsのスキル + 起動情報 |' "README support matrix omits Cursor routing"
-require_text "$ROOT/README.md" '| piパッケージ | スキル + 起動情報 + TUI + 画面検証 + 任意Web検索 |' "README support matrix omits pi"
+require_text "$ROOT/README.md" '| piパッケージ | スキル + 起動情報 + TUI + 本番変更確認 + 画面検証 + 任意Web検索 |' "README support matrix omits pi"
 require_text "$ROOT/README.md" '| Agent Skills対応ハーネス | スキルのみ |' "README support matrix omits the skills-only boundary"
 require_text "$ROOT/README.md" '## v1で守ること' "README does not define the v1 compatibility boundary"
 require_text "$ROOT/README.md" '提供する範囲' "README overstates repository checks as a runtime guarantee"

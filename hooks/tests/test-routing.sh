@@ -20,9 +20,9 @@ for skill in $(jq -r '.core[]' "$ROOT/scripts/skills.json"); do
     inside && /^description:/ {sub(/^description:[[:space:]]*/, ""); gsub(/^"|"$/, ""); print; exit}
   ' "$ROOT/skills/$skill/SKILL.md")
   assert_contains "routing uses $skill description" "$description" "$(cat "$ROUTING")"
-  assert_contains "$skill keeps merge authority without hooks" \
-    'PRのマージと既定ブランチへの直接のpushは、利用者が依頼の終点として明示した場合だけ行う' \
-    "$(cat "$ROOT/skills/$skill/SKILL.md")"
+	assert_contains "$skill keeps external-change authority explicit" \
+		'公開・配布・本番環境や共有データを変更する操作は、利用者が依頼の終点として明示した場合だけ行う' \
+		"$(cat "$ROOT/skills/$skill/SKILL.md")"
 done
 
 TMP=$(mktemp -d)
@@ -52,6 +52,7 @@ CLAUDE=$(printf '%s' "$PAYLOAD" | bash "$SESSION" claude)
 assert_contains "Claude receives routing" "## hikizanのスキル選択" "$CLAUDE"
 assert_contains "routing limits integration operations" "PRのマージと既定ブランチへの直接のpush" "$CLAUDE"
 assert_contains "routing does not treat PR creation as merge approval" "「PRまで」はマージを含めない" "$CLAUDE"
+assert_contains "routing requires explicit production authority" "公開・配布・本番環境や共有データを変更する操作" "$CLAUDE"
 assert_contains "Claude receives repository name" "リポジトリ: work" "$CLAUDE"
 assert_contains "dirty worktree is reported" "worktree=変更あり" "$CLAUDE"
 assert_contains "remote fetch updates behind count" "behind=1" "$CLAUDE"
