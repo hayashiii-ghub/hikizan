@@ -57,6 +57,8 @@ assert_contains "pi adapter registers its production guard" 'registerProductionG
   "$(cat "$PI_ADAPTER")"
 assert_contains "pi adapter registers Claude delegation" 'registerClaudeDelegate(pi)' \
   "$(cat "$PI_ADAPTER")"
+assert_contains "pi adapter registers direct skill aliases" 'registerSkillAliases(pi)' \
+  "$(cat "$PI_ADAPTER")"
 
 EXA_SEARCH="$ROOT/hooks/adapters/pi/exa-search.ts"
 EXA_CLIENT="$ROOT/hooks/adapters/pi/exa-client.js"
@@ -91,6 +93,9 @@ EOF
   assert_contains "pi registers the shimon command" '"name":"shimon"' "$PI_OUTPUT"
   assert_contains "pi registers the delegate command" '"name":"delegate"' "$PI_OUTPUT"
   assert_contains "pi discovers the hikizan skills" '"name":"skill:jikkou"' "$PI_OUTPUT"
+  for name in tansaku sekkei jikkou sadoku teishutsu houkoku; do
+    assert_contains "pi registers /$name as a direct skill alias" "\"name\":\"$name\"" "$PI_OUTPUT"
+  done
   assert_contains "pi registers shimon visual verification" 'PI_SHIMON_PRESENT' "$PI_OUTPUT"
   assert_contains "pi registers Claude ACP delegation" 'PI_CLAUDE_DELEGATE_PRESENT' "$PI_OUTPUT"
   assert_contains "pi omits Exa search without a key" 'PI_EXA_MISSING' "$PI_OUTPUT"

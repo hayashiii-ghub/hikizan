@@ -1,6 +1,6 @@
 {
   "name": "hikizan",
-  "version": "1.1.8",
+  "version": "1.1.9",
   "description": "hikizan for pi: portable workflow skills (tansaku / sekkei / jikkou / sadoku / teishutsu / houkoku), startup routing, repository status, a compact text-based TUI, confirmation before production-impacting shell operations, built-in shimon visual verification, read-only Claude delegation over ACP, and optional Exa web search.",
   "type": "module",
   "author": {

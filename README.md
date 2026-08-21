@@ -65,6 +65,8 @@ pi install git:github.com/hayashiii-ghub/hikizan
 
 piでは6スキル、起動時のリポジトリ状態、文字ベースのヘッダー、[shimon](https://github.com/hayashiii-ghub/shimon)の`shimon_verify`がまとめて読み込まれます。`/hikizan`でヘッダーの表示を切り替え、`/shimon`でshimonの実行状態を確認できます。
 
+piでは`/tansaku`、`/sekkei`、`/jikkou`、`/sadoku`、`/teishutsu`、`/houkoku`から各スキルを直接使えます。標準の`/skill:<name>`も引き続き利用できます。
+
 Claude Codeへ独立した意見を求める場合は、`/delegate claude <依頼>`または`delegate_claude`ツールを使います。ACP経由の一回限り・読み取り専用の実行で、通常の作業はpiのままです。先にClaude CodeをPro / Maxアカウントでログインしてください。`ANTHROPIC_API_KEY`などAPI課金・外部プロバイダーへ切り替える環境変数がある場合は、意図しない従量課金を避けるため委譲を停止します。
 
 ExaのAPIキーを設定してpiを起動すると、追加設定なしで任意の`web_search`も使えます。キーがなければ検索ツール自体を登録せず、従来のhikizanとして動作します。
