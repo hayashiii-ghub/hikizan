@@ -5,7 +5,7 @@
     "claude": "動詞単位のスキル（{{core_skills}}）、軽量な起動規則、作業開始時のGit状態で構成するClaude Codeプラグイン兼Agent Skillsパック。",
     "cursor": "hikizan for Cursor: optional routing and repository status for the portable skills ({{core_skills}}).",
     "codex": "hikizan for Codex: optional routing and repository status for the portable skills ({{core_skills}}).",
-    "pi": "hikizan for pi: portable workflow skills ({{core_skills}}), startup routing, repository status, a compact text-based TUI, confirmation before production-impacting shell operations, built-in shimon visual verification, and optional Exa web search."
+    "pi": "hikizan for pi: portable workflow skills ({{core_skills}}), startup routing, repository status, a compact text-based TUI, confirmation before production-impacting shell operations, built-in shimon visual verification, read-only Claude delegation over ACP, and optional Exa web search."
   },
   "codexInterface": {
     "shortDescription": "Japanese workflow skills with goal-aware routing",
@@ -13,7 +13,7 @@
     "category": "Productivity",
     "capabilities": ["Read", "Write"]
   },
-  "version": "1.1.7",
+  "version": "1.1.8",
   "author": {
     "name": "hayashiii-ghub"
   },
@@ -21,6 +21,8 @@
   "repository": "https://github.com/hayashiii-ghub/hikizan",
   "license": "MIT",
   "piDependencies": {
+    "@agentclientprotocol/claude-agent-acp": "0.65.0",
+    "acpx": "0.13.1",
     "@hayashiii/shimon": "^0.3.1"
   },
   "keywords": ["skills", "hooks", "japanese", "code-review", "workflow", "reporting"]
