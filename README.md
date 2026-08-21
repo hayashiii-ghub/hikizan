@@ -63,7 +63,7 @@ piパッケージ：
 pi install git:github.com/hayashiii-ghub/hikizan
 ```
 
-piでは6スキル、起動時のリポジトリ状態、文字ベースのヘッダー、[shimon](https://github.com/hayashiii-ghub/shimon)の`shimon_verify`がまとめて読み込まれます。`/hikizan`でヘッダーの表示を切り替えられます。
+piでは6スキル、起動時のリポジトリ状態、文字ベースのヘッダー、[shimon](https://github.com/hayashiii-ghub/shimon)の`shimon_verify`がまとめて読み込まれます。`/hikizan`でヘッダーの表示を切り替え、`/shimon`でshimonの実行状態を確認できます。
 
 ExaのAPIキーを設定してpiを起動すると、追加設定なしで任意の`web_search`も使えます。キーがなければ検索ツール自体を登録せず、従来のhikizanとして動作します。
 
@@ -140,7 +140,7 @@ UI・スタイル・配置・操作を変更したら、対象プロジェクト
 - 依頼に合うスキルを見つける短い規則を渡す
 - 現在のリポジトリ、ブランチ、作業ツリー、upstreamとの差分を知らせる
 
-piでは同じ起動情報に加え、hikizanのAA、6スキル、実行状態を示す短いステータスと`shimon_verify`を提供します。狭いターミナルでは短い文字表示へ縮退します。`EXA_API_KEY`がある場合だけ、低遅延の`web_search`も登録します。
+piでは同じ起動情報に加え、hikizanのAA、6スキル、実行状態を示す短いステータス、`/shimon`と`shimon_verify`を提供します。狭いターミナルでは短い文字表示へ縮退します。`EXA_API_KEY`がある場合だけ、低遅延の`web_search`も登録します。
 
 リモート確認に失敗しても作業は止めず、`未確認`と表示します。外部変更は明示された依頼に基づいて判断し、piでは本番・公開環境へ影響しやすいbashコマンドを実行する直前に確認します。非対話モードでは対象コマンドを停止します。この確認は権限境界ではないため、厳密な制御にはリポジトリや配布先の保護規則を使ってください。詳しい責務は[hooks/conditions.md](hooks/conditions.md)を参照してください。
 

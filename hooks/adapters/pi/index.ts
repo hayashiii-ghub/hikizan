@@ -6,7 +6,7 @@
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import type { ExtensionAPI, ExtensionContext } from "@earendil-works/pi-coding-agent";
-import { createShimonTool } from "@hayashiii/shimon/extensions/pi/index.ts";
+import shimonForPi from "@hayashiii/shimon/extensions/pi/index.ts";
 import { registerExaSearchIfConfigured } from "./exa-search.ts";
 import { registerProductionGuard } from "./production-guard.js";
 
@@ -44,7 +44,7 @@ function setStatus(ctx: ExtensionContext, text: string, tone: "accent" | "muted"
 
 export default function hikizanForPi(pi: ExtensionAPI) {
 	registerProductionGuard(pi);
-	pi.registerTool(createShimonTool());
+	shimonForPi(pi);
 	registerExaSearchIfConfigured(pi);
 
 	let startupContext = "";
