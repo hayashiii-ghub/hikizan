@@ -14,6 +14,8 @@ jq -e '
   (.homepage | type == "string" and length > 0) and
   (.repository | type == "string" and length > 0) and
   (.license | type == "string" and length > 0) and
+  (.piDependencies | type == "object" and length > 0) and
+  all(.piDependencies[]; type == "string" and length > 0) and
   (.keywords | type == "array" and length > 0) and
   all(.keywords[]; type == "string" and length > 0) and
   (has("$schema") | not) and
@@ -34,6 +36,7 @@ homepage="$(jq -r .homepage "$SRC")"
 repository="$(jq -r .repository "$SRC")"
 license="$(jq -r .license "$SRC")"
 keywords="$(jq -c .keywords "$SRC")"
+pi_dependencies="$(jq -c .piDependencies "$SRC")"
 codex_interface="$(jq -c .codexInterface "$SRC")"
 skill_list="$(jq -r '.core | join(" / ")' "$ROOT/scripts/skills.json")"
 [ -n "$skill_list" ] || { echo "✘ failed to read core skills from scripts/skills.json" >&2; exit 1; }
@@ -138,7 +141,7 @@ gen_pi() {
   jq -n --arg name "$name" --arg description "$pi_description" \
     --arg v "$ver" --argjson a "$author" --arg homepage "$homepage" \
     --arg repository "$repository" --arg license "$license" \
-    --argjson keywords "$keywords" '{
+    --argjson keywords "$keywords" --argjson dependencies "$pi_dependencies" '{
     name: $name,
     version: $v,
     description: $description,
@@ -148,6 +151,7 @@ gen_pi() {
     repository: $repository,
     license: $license,
     keywords: (($keywords + ["pi-package"]) | unique),
+    dependencies: $dependencies,
     peerDependencies: {
       "@earendil-works/pi-coding-agent": "*",
       "@earendil-works/pi-tui": "*",
