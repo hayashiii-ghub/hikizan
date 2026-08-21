@@ -33,6 +33,10 @@ assert_eq "pi package declares TypeBox as a peer" '"*"' \
   "$(jq -c '.peerDependencies.typebox' "$PI_PACKAGE")"
 assert_eq "pi package installs shimon visual verification" '"^0.3.1"' \
   "$(jq -c '.dependencies["@hayashiii/shimon"]' "$PI_PACKAGE")"
+assert_eq "pi package installs the ACP client" '"0.13.1"' \
+  "$(jq -c '.dependencies.acpx' "$PI_PACKAGE")"
+assert_eq "pi package installs the Claude ACP agent" '"0.65.0"' \
+  "$(jq -c '.dependencies["@agentclientprotocol/claude-agent-acp"]' "$PI_PACKAGE")"
 
 PI_ADAPTER="$ROOT/hooks/adapters/pi/index.ts"
 [ -f "$PI_ADAPTER" ]
@@ -50,6 +54,8 @@ assert_contains "pi adapter registers the complete shimon extension" 'shimonForP
 assert_contains "pi adapter conditionally registers Exa search" 'registerExaSearchIfConfigured(pi)' \
   "$(cat "$PI_ADAPTER")"
 assert_contains "pi adapter registers its production guard" 'registerProductionGuard(pi)' \
+  "$(cat "$PI_ADAPTER")"
+assert_contains "pi adapter registers Claude delegation" 'registerClaudeDelegate(pi)' \
   "$(cat "$PI_ADAPTER")"
 
 EXA_SEARCH="$ROOT/hooks/adapters/pi/exa-search.ts"
@@ -74,6 +80,7 @@ export default function inspectPiTools(pi: ExtensionAPI): void {
     const tools = pi.getAllTools();
     process.stderr.write(tools.some((tool) => tool.name === "shimon_verify") ? "PI_SHIMON_PRESENT\n" : "PI_SHIMON_MISSING\n");
     process.stderr.write(tools.some((tool) => tool.name === "web_search") ? "PI_EXA_PRESENT\n" : "PI_EXA_MISSING\n");
+    process.stderr.write(tools.some((tool) => tool.name === "delegate_claude") ? "PI_CLAUDE_DELEGATE_PRESENT\n" : "PI_CLAUDE_DELEGATE_MISSING\n");
   });
 }
 EOF
@@ -82,8 +89,10 @@ EOF
     pi --mode rpc --offline --no-session --approve -e "$ROOT" -e "$PI_INSPECTOR" 2>&1)
   assert_contains "pi loads the hikizan extension" '"name":"hikizan"' "$PI_OUTPUT"
   assert_contains "pi registers the shimon command" '"name":"shimon"' "$PI_OUTPUT"
+  assert_contains "pi registers the delegate command" '"name":"delegate"' "$PI_OUTPUT"
   assert_contains "pi discovers the hikizan skills" '"name":"skill:jikkou"' "$PI_OUTPUT"
   assert_contains "pi registers shimon visual verification" 'PI_SHIMON_PRESENT' "$PI_OUTPUT"
+  assert_contains "pi registers Claude ACP delegation" 'PI_CLAUDE_DELEGATE_PRESENT' "$PI_OUTPUT"
   assert_contains "pi omits Exa search without a key" 'PI_EXA_MISSING' "$PI_OUTPUT"
 
   PI_EXA_OUTPUT=$(printf '%s\n' '{"type":"get_state"}' | \

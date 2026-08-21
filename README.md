@@ -65,6 +65,8 @@ pi install git:github.com/hayashiii-ghub/hikizan
 
 piでは6スキル、起動時のリポジトリ状態、文字ベースのヘッダー、[shimon](https://github.com/hayashiii-ghub/shimon)の`shimon_verify`がまとめて読み込まれます。`/hikizan`でヘッダーの表示を切り替え、`/shimon`でshimonの実行状態を確認できます。
 
+Claude Codeへ独立した意見を求める場合は、`/delegate claude <依頼>`または`delegate_claude`ツールを使います。ACP経由の一回限り・読み取り専用の実行で、通常の作業はpiのままです。先にClaude CodeをPro / Maxアカウントでログインしてください。`ANTHROPIC_API_KEY`などAPI課金・外部プロバイダーへ切り替える環境変数がある場合は、意図しない従量課金を避けるため委譲を停止します。
+
 ExaのAPIキーを設定してpiを起動すると、追加設定なしで任意の`web_search`も使えます。キーがなければ検索ツール自体を登録せず、従来のhikizanとして動作します。
 
 ```bash
@@ -104,7 +106,7 @@ npx skills add github:hayashiii-ghub/hikizan -g
 | Claude Codeプラグイン | スキル + 起動情報 | マニフェスト、配線、Hook出力をCIで検査 |
 | Codex + Hookアダプター | Agent Pluginsのスキル + 起動情報 | マニフェスト、配線、Hook出力をCIで検査 |
 | Cursor + Hookアダプター | Agent Pluginsのスキル + 起動情報 | マニフェスト、配線、Hook出力をCIで検査 |
-| piパッケージ | スキル + 起動情報 + TUI + 本番変更確認 + 画面検証 + 任意Web検索 | マニフェストと配線をCIで検査。piがある環境では起動も確認 |
+| piパッケージ | スキル + 起動情報 + TUI + 本番変更確認 + 画面検証 + Claude ACP委譲 + 任意Web検索 | マニフェストと配線をCIで検査。piがある環境では起動も確認 |
 | Agent Plugins対応クライアント | スキル | ルート`plugin.json`と6スキルの構成をCIで検査 |
 | Agent Skills対応ハーネス | スキルのみ | 6スキルの`frontmatter`にある`name`、`description`、共通契約をCIで検査 |
 
@@ -140,7 +142,7 @@ UI・スタイル・配置・操作を変更したら、対象プロジェクト
 - 依頼に合うスキルを見つける短い規則を渡す
 - 現在のリポジトリ、ブランチ、作業ツリー、upstreamとの差分を知らせる
 
-piでは同じ起動情報に加え、hikizanのAA、6スキル、実行状態を示す短いステータス、`/shimon`と`shimon_verify`を提供します。狭いターミナルでは短い文字表示へ縮退します。`EXA_API_KEY`がある場合だけ、低遅延の`web_search`も登録します。
+piでは同じ起動情報に加え、hikizanのAA、6スキル、実行状態を示す短いステータス、`/shimon`と`shimon_verify`、読み取り専用の`/delegate claude`と`delegate_claude`を提供します。狭いターミナルでは短い文字表示へ縮退します。`EXA_API_KEY`がある場合だけ、低遅延の`web_search`も登録します。
 
 リモート確認に失敗しても作業は止めず、`未確認`と表示します。外部変更は明示された依頼に基づいて判断し、piでは本番・公開環境へ影響しやすいbashコマンドを実行する直前に確認します。非対話モードでは対象コマンドを停止します。この確認は権限境界ではないため、厳密な制御にはリポジトリや配布先の保護規則を使ってください。詳しい責務は[hooks/conditions.md](hooks/conditions.md)を参照してください。
 
