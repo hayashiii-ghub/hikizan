@@ -4,7 +4,9 @@ import { findGitPushRisk, findProductionRisk, hasGitPushCommand } from "../adapt
 
 const guardedCommands = [
 	["npm publish", "package-publish"],
+	["echo ready\nnpm publish", "package-publish"],
 	["cd app && npm run deploy", "deployment"],
+	["printf done\nnpx wrangler deploy", "deployment"],
 	["NODE_ENV=production npm run deploy", "deployment"],
 	["npm run deploy:prod", "deployment"],
 	["make deploy", "deployment"],
@@ -18,6 +20,7 @@ const guardedCommands = [
 	["gh pr merge 42 --squash", "remote-merge"],
 	["gh release create v2.0.0", "release"],
 	["git push origin main", "protected-push"],
+	["echo checked\ngit push origin main", "protected-push"],
 	["git -C app push origin main", "protected-push"],
 	["git push --force-with-lease origin feature/rework", "protected-push"],
 	["git push origin refs/tags/v2.0.0", "protected-push"],

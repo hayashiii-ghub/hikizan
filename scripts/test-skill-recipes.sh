@@ -118,12 +118,25 @@ git -C "$fork_repo" add b.txt
 git -C "$fork_repo" commit -qm B
 git -C "$fork_repo" push -qu upstream main
 git -C "$fork_repo" switch -q -c feature
+git -C "$fork_repo" config branch.feature.remote upstream
+git -C "$fork_repo" config branch.feature.pushRemote origin
 printf 'F\n' > "$fork_repo/f.txt"
 git -C "$fork_repo" add f.txt
 git -C "$fork_repo" commit -qm F
 git -C "$fork_repo" push -qu origin feature
 git -C "$fork_repo" fetch -q origin
 git -C "$fork_repo" fetch -q upstream
+
+# Push-target selection follows Git's explicit push configuration before the
+# tracking remote. A fork feature may track upstream/main while pushing to origin.
+push_remote="$(git -C "$fork_repo" config --get branch.feature.pushRemote ||
+  git -C "$fork_repo" config --get remote.pushDefault ||
+  git -C "$fork_repo" config --get branch.feature.remote || true)"
+[ "$push_remote" = 'origin' ] || {
+  echo '✘ fork push target ignored branch.pushRemote precedence'
+  exit 1
+}
+
 git -C "$fork_repo" branch -D main >/dev/null
 if git -C "$fork_repo" show-ref --verify --quiet refs/heads/main; then
   echo '✘ fork test precondition failed: local main still exists'

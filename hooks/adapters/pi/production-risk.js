@@ -3,7 +3,7 @@
  * 完全な権限制御ではなく、通常の開発操作を妨げない高確度の事故防止に絞る。
  */
 
-const COMMAND_BOUNDARY = String.raw`(?:^|(?:&&|\|\||;|\||\()\s*)`;
+const COMMAND_BOUNDARY = String.raw`(?:^|(?:&&|\|\||;|\||\(|\r?\n)\s*)`;
 const OPTIONAL_SUDO = String.raw`(?:sudo\s+(?:(?:-E|-n|-H|-S|--preserve-env)\s+)*(?:-u\s+[^\s;&|]+\s+)?)?`;
 const ENVIRONMENT_PREFIX = String.raw`(?:env\s+)?(?:[A-Za-z_][A-Za-z0-9_]*=(?:"[^"]*"|'[^']*'|[^\s;&|]+)\s+)*`;
 const COMMAND_PREFIX = `${COMMAND_BOUNDARY}${ENVIRONMENT_PREFIX}${OPTIONAL_SUDO}(?:command\\s+)?`;
