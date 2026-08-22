@@ -35,6 +35,8 @@ require_text "$ROOT/scripts/contract.md" '簡潔で分かりやすく書く' "sh
 require_text "$ROOT/scripts/contract.md" '同じ原因を防ぐ最小の共通箇所' "shared contract omits common-cause repair guidance"
 require_text "$ROOT/scripts/contract.md" '要求外の一般化はしない' "shared contract omits the overgeneralization boundary"
 require_text "$ROOT/scripts/contract.md" 'PRのマージと既定ブランチへの直接のpush、公開・配布・本番環境や共有データを変更する操作は、利用者が依頼の終点として明示した場合だけ行う' "shared contract omits the external-change authority boundary"
+require_text "$ROOT/skills/teishutsu/SKILL.md" '`branch.<branch>.pushRemote`、`remote.pushDefault`、`branch.<branch>.remote`' "teishutsu does not follow Git push-remote precedence"
+require_text "$ROOT/skills/teishutsu/SKILL.md" '作業ブランチが比較元またはPR先リモートの既定ブランチと同じ場合は停止する' "teishutsu does not stop PR submission from its base branch"
 for name in $CORE; do
   [ "$(grep -c '^## 次の進め方$' "$ROOT/skills/$name/SKILL.md")" = "1" ] || bad "skills/$name does not define exactly one handoff section"
 done

@@ -12,6 +12,7 @@ jobs:
       - uses: oven-sh/setup-bun@v2
       - run: shellcheck --version
       - run: bash scripts/check-all.sh
+      - run: bash scripts/test-pi-package.sh
   tag-version:
     if: startsWith(github.ref, 'refs/tags/v')
     runs-on: ubuntu-latest

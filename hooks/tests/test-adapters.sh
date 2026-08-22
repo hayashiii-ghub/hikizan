@@ -71,43 +71,4 @@ assert_contains "pi Exa tool gates registration on its API key" 'if (!apiKey) re
 assert_contains "pi Exa client uses the low-latency search type" 'type: "fast"' \
   "$(cat "$EXA_CLIENT")"
 
-if command -v pi >/dev/null 2>&1 && [ -d "$ROOT/node_modules/@hayashiii/shimon" ]; then
-  PI_AGENT_DIR=$(mktemp -d)
-  PI_INSPECTOR="$PI_AGENT_DIR/tool-inspector.ts"
-  cat > "$PI_INSPECTOR" <<'EOF'
-import type { ExtensionAPI } from "@earendil-works/pi-coding-agent";
-
-export default function inspectPiTools(pi: ExtensionAPI): void {
-  pi.on("session_start", async () => {
-    const tools = pi.getAllTools();
-    process.stderr.write(tools.some((tool) => tool.name === "shimon_verify") ? "PI_SHIMON_PRESENT\n" : "PI_SHIMON_MISSING\n");
-    process.stderr.write(tools.some((tool) => tool.name === "web_search") ? "PI_EXA_PRESENT\n" : "PI_EXA_MISSING\n");
-    process.stderr.write(tools.some((tool) => tool.name === "delegate_claude") ? "PI_CLAUDE_DELEGATE_PRESENT\n" : "PI_CLAUDE_DELEGATE_MISSING\n");
-  });
-}
-EOF
-  PI_OUTPUT=$(printf '%s\n' '{"type":"get_commands"}' '{"type":"get_state"}' | \
-    PI_CODING_AGENT_DIR="$PI_AGENT_DIR" HIKIZAN_SKIP_FETCH=1 \
-    pi --mode rpc --offline --no-session --approve -e "$ROOT" -e "$PI_INSPECTOR" 2>&1)
-  assert_contains "pi loads the hikizan extension" '"name":"hikizan"' "$PI_OUTPUT"
-  assert_contains "pi registers the shimon command" '"name":"shimon"' "$PI_OUTPUT"
-  assert_contains "pi registers the delegate command" '"name":"delegate"' "$PI_OUTPUT"
-  assert_contains "pi discovers the hikizan skills" '"name":"skill:jikkou"' "$PI_OUTPUT"
-  for name in tansaku sekkei jikkou sadoku teishutsu houkoku; do
-    assert_contains "pi registers /$name as a direct skill alias" "\"name\":\"$name\"" "$PI_OUTPUT"
-  done
-  assert_contains "pi registers shimon visual verification" 'PI_SHIMON_PRESENT' "$PI_OUTPUT"
-  assert_contains "pi registers Claude ACP delegation" 'PI_CLAUDE_DELEGATE_PRESENT' "$PI_OUTPUT"
-  assert_contains "pi omits Exa search without a key" 'PI_EXA_MISSING' "$PI_OUTPUT"
-
-  PI_EXA_OUTPUT=$(printf '%s\n' '{"type":"get_state"}' | \
-    PI_CODING_AGENT_DIR="$PI_AGENT_DIR" HIKIZAN_SKIP_FETCH=1 EXA_API_KEY=test-key \
-    pi --mode rpc --offline --no-session --approve -e "$ROOT" -e "$PI_INSPECTOR" 2>&1)
-  assert_contains "pi keeps shimon when Exa is configured" 'PI_SHIMON_PRESENT' "$PI_EXA_OUTPUT"
-  assert_contains "pi registers Exa search when a key is present" 'PI_EXA_PRESENT' "$PI_EXA_OUTPUT"
-  rm -rf "$PI_AGENT_DIR"
-else
-  printf '  skip: pi runtime smoke test (pi or installed package dependencies are unavailable)\n'
-fi
-
 hz_test_summary
