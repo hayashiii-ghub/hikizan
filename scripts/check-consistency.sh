@@ -37,6 +37,8 @@ require_text "$ROOT/scripts/contract.md" '要求外の一般化はしない' "sh
 require_text "$ROOT/scripts/contract.md" 'PRのマージと既定ブランチへの直接のpush、公開・配布・本番環境や共有データを変更する操作は、利用者が依頼の終点として明示した場合だけ行う' "shared contract omits the external-change authority boundary"
 require_text "$ROOT/skills/teishutsu/SKILL.md" '`branch.<branch>.pushRemote`、`remote.pushDefault`、`branch.<branch>.remote`' "teishutsu does not follow Git push-remote precedence"
 require_text "$ROOT/skills/teishutsu/SKILL.md" '作業ブランチが比較元またはPR先リモートの既定ブランチと同じ場合は停止する' "teishutsu does not stop PR submission from its base branch"
+require_text "$ROOT/README.md" 'packed artifactを一時環境へ導入し、実際のpi起動' "README does not require packed Pi startup verification"
+require_text "$ROOT/hooks/conditions.md" '読み取り専用のClaude ACP委譲' "hook responsibilities omit Claude ACP delegation"
 for name in $CORE; do
   [ "$(grep -c '^## 次の進め方$' "$ROOT/skills/$name/SKILL.md")" = "1" ] || bad "skills/$name does not define exactly one handoff section"
 done
@@ -144,7 +146,7 @@ require_text "$ROOT/README.md" '| Codex + Hookアダプター | Agent Pluginsの
 require_text "$ROOT/README.md" '| Cursor + Hookアダプター | Agent Pluginsのスキル + 起動情報 |' "README support matrix omits Cursor routing"
 require_text "$ROOT/README.md" '| piパッケージ | スキル + 起動情報 + TUI + 本番変更確認 + 画面検証 + Claude ACP委譲 + 任意Web検索 |' "README support matrix omits pi"
 require_text "$ROOT/README.md" '| Agent Skills対応ハーネス | スキルのみ |' "README support matrix omits the skills-only boundary"
-require_text "$ROOT/README.md" '## v1で守ること' "README does not define the v1 compatibility boundary"
+require_text "$ROOT/README.md" '## v2で守ること' "README does not define the v2 compatibility boundary"
 require_text "$ROOT/README.md" '提供する範囲' "README overstates repository checks as a runtime guarantee"
 require_text "$ROOT/skills/tansaku/references/fanout.md" '親エージェントが必要範囲を読む' "tansaku fan-out omits the inline fallback"
 forbid_text "$ROOT/skills/tansaku/references/fanout.md" 'Claude Code なら' "tansaku fan-out still singles out Claude Code"
