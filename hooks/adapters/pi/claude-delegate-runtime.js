@@ -5,6 +5,7 @@
 
 import { createRequire } from "node:module";
 import { dirname, resolve } from "node:path";
+import { fileURLToPath } from "node:url";
 
 const require = createRequire(import.meta.url);
 const BLOCKED_ENV = [
@@ -44,18 +45,20 @@ export function resolveClaudeAcpRuntime() {
 	return {
 		acpxCli: resolve(dirname(acpxPackage), "dist/cli.js"),
 		claudeAgent: resolve(dirname(claudeAgentPackage), "dist/index.js"),
+		claudeAgentProxy: resolve(dirname(fileURLToPath(import.meta.url)), "claude-agent-acp-read-only.js"),
 	};
 }
 
 export function buildClaudeDelegateInvocation({
 	acpxCli,
 	claudeAgent,
+	claudeAgentProxy,
 	cwd,
 	prompt,
 	model,
 	nodePath = process.execPath,
 }) {
-	const agentCommand = `${quoteCommandPart(nodePath)} ${quoteCommandPart(claudeAgent)}`;
+	const agentCommand = [nodePath, claudeAgentProxy, claudeAgent].map(quoteCommandPart).join(" ");
 	const args = [
 		acpxCli,
 		"--agent",
