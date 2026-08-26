@@ -10,6 +10,7 @@ import {
 	assertSubscriptionEnvironment,
 	buildClaudeDelegateInvocation,
 	resolveClaudeAcpRuntime,
+	resolveClaudeDelegateModel,
 } from "./claude-delegate-runtime.js";
 
 interface DelegateDetails {
@@ -28,6 +29,7 @@ async function delegateToClaude(
 		...resolveClaudeAcpRuntime(),
 		cwd: ctx.cwd,
 		prompt,
+		model: resolveClaudeDelegateModel(),
 	});
 	const startedAt = Date.now();
 	const result = await pi.exec(invocation.command, invocation.args, {
