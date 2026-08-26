@@ -80,7 +80,8 @@ jq -e '
   .dependencies == {
     "@agentclientprotocol/claude-agent-acp": "0.65.0",
     "@hayashiii/shimon": "^0.3.1",
-    "acpx": "0.13.1"
+    "acpx": "0.13.1",
+    "pi-rewind": "github:hayashiii-ghub/pi-rewind#c34c2a89436ddef69661bee8fa84ea6067f386c3"
   } and
   .pi.skills == ["./skills"] and
   .pi.extensions == ["./hooks/adapters/pi/index.ts"]
@@ -98,6 +99,7 @@ require_text "$ROOT/hooks/adapters/pi/index.ts" 'pi.on("session_start"' "pi does
 require_text "$ROOT/hooks/adapters/pi/index.ts" 'SESSION_ROUTING, "pi"' "pi does not load shared skill routing"
 require_text "$ROOT/hooks/adapters/pi/index.ts" 'ctx.ui.setHeader' "pi does not expose the hikizan TUI header"
 require_text "$ROOT/hooks/adapters/pi/index.ts" 'shimonForPi(pi)' "pi does not expose the complete shimon extension"
+require_text "$ROOT/hooks/adapters/pi/index.ts" 'rewindForPi(pi)' "pi does not expose safe rewind"
 require_text "$ROOT/hooks/adapters/pi/index.ts" 'registerExaSearchIfConfigured(pi)' "pi does not expose optional Exa search"
 require_text "$ROOT/hooks/adapters/pi/index.ts" 'registerProductionGuard(pi)' "pi does not register the production guard"
 require_text "$ROOT/hooks/adapters/pi/index.ts" 'registerClaudeDelegate(pi)' "pi does not register Claude ACP delegation"
@@ -144,7 +146,7 @@ require_text "$ROOT/README.md" '| Agent Plugins対応クライアント | スキ
 require_text "$ROOT/README.md" '| Claude Codeプラグイン | スキル + 起動情報 |' "README support matrix omits Claude Code routing"
 require_text "$ROOT/README.md" '| Codex + Hookアダプター | Agent Pluginsのスキル + 起動情報 |' "README support matrix omits Codex routing"
 require_text "$ROOT/README.md" '| Cursor + Hookアダプター | Agent Pluginsのスキル + 起動情報 |' "README support matrix omits Cursor routing"
-require_text "$ROOT/README.md" '| piパッケージ | スキル + 起動情報 + TUI + 本番変更確認 + 画面検証 + Claude ACP委譲 + 任意Web検索 |' "README support matrix omits pi"
+require_text "$ROOT/README.md" '| piパッケージ | スキル + 起動情報 + TUI + 安全な巻き戻し + 本番変更確認 + 画面検証 + Claude ACP委譲 + 任意Web検索 |' "README support matrix omits pi"
 require_text "$ROOT/README.md" '| Agent Skills対応ハーネス | スキルのみ |' "README support matrix omits the skills-only boundary"
 require_text "$ROOT/README.md" '## v2で守ること' "README does not define the v2 compatibility boundary"
 require_text "$ROOT/README.md" '提供する範囲' "README overstates repository checks as a runtime guarantee"

@@ -1,7 +1,7 @@
 {
   "name": "hikizan",
-  "version": "2.0.0",
-  "description": "hikizan for pi: portable workflow skills (tansaku / sekkei / jikkou / sadoku / teishutsu / houkoku), startup routing, repository status, a compact text-based TUI, confirmation before production-impacting shell operations, built-in shimon visual verification, read-only Claude delegation over ACP, and optional Exa web search.",
+  "version": "2.1.0",
+  "description": "hikizan for pi: portable workflow skills (tansaku / sekkei / jikkou / sadoku / teishutsu / houkoku), startup routing, repository status, a compact text-based TUI, safe file and conversation rewind, confirmation before production-impacting shell operations, built-in shimon visual verification, read-only Claude delegation over ACP, and optional Exa web search.",
   "type": "module",
   "author": {
     "name": "hayashiii-ghub"
@@ -21,7 +21,8 @@
   "dependencies": {
     "@agentclientprotocol/claude-agent-acp": "0.65.0",
     "acpx": "0.13.1",
-    "@hayashiii/shimon": "^0.3.1"
+    "@hayashiii/shimon": "^0.3.1",
+    "pi-rewind": "github:hayashiii-ghub/pi-rewind#c34c2a89436ddef69661bee8fa84ea6067f386c3"
   },
   "peerDependencies": {
     "@earendil-works/pi-coding-agent": "*",

@@ -1,6 +1,6 @@
 {
   "name": "hikizan",
-  "version": "2.0.0",
+  "version": "2.1.0",
   "description": "hikizan for Codex: optional routing and repository status for the portable skills (tansaku / sekkei / jikkou / sadoku / teishutsu / houkoku).",
   "author": {
     "name": "hayashiii-ghub"

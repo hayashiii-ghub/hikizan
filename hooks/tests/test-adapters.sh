@@ -33,6 +33,9 @@ assert_eq "pi package declares TypeBox as a peer" '"*"' \
   "$(jq -c '.peerDependencies.typebox' "$PI_PACKAGE")"
 assert_eq "pi package installs shimon visual verification" '"^0.3.1"' \
   "$(jq -c '.dependencies["@hayashiii/shimon"]' "$PI_PACKAGE")"
+assert_eq "pi package installs the pinned safe rewind" \
+  '"github:hayashiii-ghub/pi-rewind#c34c2a89436ddef69661bee8fa84ea6067f386c3"' \
+  "$(jq -c '.dependencies["pi-rewind"]' "$PI_PACKAGE")"
 assert_eq "pi package installs the ACP client" '"0.13.1"' \
   "$(jq -c '.dependencies.acpx' "$PI_PACKAGE")"
 assert_eq "pi package installs the Claude ACP agent" '"0.65.0"' \
@@ -50,6 +53,8 @@ assert_contains "pi adapter renders the hikizan ASCII wordmark" '/___/\\__,_/_/ 
 assert_contains "pi adapter keeps a narrow fallback" 'if (width < 38) return ["", "  hikizan", ""]' \
   "$(cat "$PI_ADAPTER")"
 assert_contains "pi adapter registers the complete shimon extension" 'shimonForPi(pi)' \
+  "$(cat "$PI_ADAPTER")"
+assert_contains "pi adapter registers safe rewind" 'rewindForPi(pi)' \
   "$(cat "$PI_ADAPTER")"
 assert_contains "pi adapter conditionally registers Exa search" 'registerExaSearchIfConfigured(pi)' \
   "$(cat "$PI_ADAPTER")"

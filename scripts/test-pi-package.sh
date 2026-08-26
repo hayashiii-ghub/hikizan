@@ -46,6 +46,7 @@ PI_OUTPUT="$(printf '%s\n' '{"type":"get_commands"}' '{"type":"get_state"}' | \
 assert_contains "packed Pi registers /hikizan" '"name":"hikizan"' "$PI_OUTPUT"
 assert_contains "packed Pi registers /shimon" '"name":"shimon"' "$PI_OUTPUT"
 assert_contains "packed Pi registers /delegate" '"name":"delegate"' "$PI_OUTPUT"
+assert_contains "packed Pi registers /rewind" '"name":"rewind"' "$PI_OUTPUT"
 assert_contains "packed Pi discovers hikizan skills" '"name":"skill:jikkou"' "$PI_OUTPUT"
 while IFS= read -r name; do
   assert_contains "packed Pi registers /$name" "\"name\":\"$name\"" "$PI_OUTPUT"
@@ -59,6 +60,15 @@ PI_EXA_OUTPUT="$(printf '%s\n' '{"type":"get_state"}' | \
   "$PI_BIN" --mode rpc --offline --no-session --approve -e "$PACKAGE_DIR" -e "$INSPECTOR" 2>&1)"
 assert_contains "packed Pi keeps shimon with Exa configured" 'PI_SHIMON_PRESENT' "$PI_EXA_OUTPUT"
 assert_contains "packed Pi registers Exa with a key" 'PI_EXA_PRESENT' "$PI_EXA_OUTPUT"
+
+if PI_REWIND_OUTPUT="$(node "$ROOT/scripts/test-pi-rewind-rpc.mjs" "$PI_BIN" "$PACKAGE_DIR" 2>&1)"; then
+  assert_exit "packed Pi rewind RPC smoke exits successfully" 0 0
+else
+  pi_rewind_status=$?
+  printf '%s\n' "$PI_REWIND_OUTPUT" >&2
+  assert_exit "packed Pi rewind RPC smoke exits successfully" 0 "$pi_rewind_status"
+fi
+assert_contains "packed Pi rewinds and undoes files without moving HEAD" 'PI_REWIND_SMOKE_OK' "$PI_REWIND_OUTPUT"
 
 hz_test_summary
 [ "$HZ_FAIL" -eq 0 ]

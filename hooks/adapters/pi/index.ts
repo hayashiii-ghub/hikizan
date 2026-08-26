@@ -7,6 +7,7 @@ import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import type { ExtensionAPI, ExtensionContext } from "@earendil-works/pi-coding-agent";
 import shimonForPi from "@hayashiii/shimon/extensions/pi/index.ts";
+import rewindForPi from "pi-rewind/src/index.ts";
 import { registerClaudeDelegate } from "./claude-delegate.ts";
 import { registerExaSearchIfConfigured } from "./exa-search.ts";
 import { registerProductionGuard } from "./production-guard.js";
@@ -61,6 +62,7 @@ function registerSkillAliases(pi: ExtensionAPI): void {
 export default function hikizanForPi(pi: ExtensionAPI) {
 	registerProductionGuard(pi);
 	shimonForPi(pi);
+	rewindForPi(pi);
 	registerClaudeDelegate(pi);
 	registerExaSearchIfConfigured(pi);
 	registerSkillAliases(pi);
