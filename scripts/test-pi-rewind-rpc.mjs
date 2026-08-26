@@ -35,7 +35,7 @@ let child;
 try {
 	await mkdir(repo);
 	runGit(repo, ["init"]);
-	runGit(repo, ["config", "user.email", "test@example.com"]);
+	runGit(repo, ["config", "user.email", "rewind-test"]);
 	runGit(repo, ["config", "user.name", "Hikizan Rewind Test"]);
 	await writeFile(demoPath, "before rewind\n");
 	runGit(repo, ["add", "demo.txt"]);
