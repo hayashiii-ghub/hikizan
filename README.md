@@ -71,7 +71,7 @@ piでは6スキル、起動時のリポジトリ状態、文字ベースのヘ�
 
 piでは`/tansaku`、`/sekkei`、`/jikkou`、`/sadoku`、`/teishutsu`、`/houkoku`から各スキルを直接使えます。標準の`/skill:<name>`も引き続き利用できます。
 
-Claude Codeへ独立した意見を求める場合は、`/delegate claude <依頼>`または`delegate_claude`ツールを使います。ACP経由の一回限り・読み取り専用の実行で、通常の作業はpiのままです。先にClaude CodeをPro / Maxアカウントでログインしてください。`ANTHROPIC_API_KEY`などAPI課金・外部プロバイダーへ切り替える環境変数がある場合は、意図しない従量課金を避けるため委譲を停止します。
+Claude Codeへ独立した意見を求める場合は、`/delegate claude <依頼>`または`delegate_claude`ツールを使います。ACP経由の一回限り・読み取り専用の実行で、通常の作業はpiのままです。委譲時は現在のPiセッションから利用者とアシスタントの表示テキストおよび要約を最大30,000文字までClaudeへ渡し、内部思考、画像、ツール呼び出し・結果、過去のClaude委譲結果は除外します。委譲セッションで利用できるのは`Read`、`Glob`、`Grep`だけで、対象リポジトリのClaude設定からフック、MCP、追加ツールを持ち込みません。先にClaude CodeをPro / Maxアカウントでログインしてください。モデルと思考量はClaude Codeの設定を引き継ぎ、モデルだけ変える場合は`HIKIZAN_CLAUDE_MODEL=opus pi`のように指定できます。`ANTHROPIC_API_KEY`などAPI課金・外部プロバイダーへ切り替える環境変数がある場合は、意図しない従量課金を避けるため委譲を停止します。
 
 ExaのAPIキーを設定してpiを起動すると、追加設定なしで任意の`web_search`も使えます。キーがなければ検索ツール自体を登録せず、従来のhikizanとして動作します。
 

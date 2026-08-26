@@ -1,15 +1,27 @@
 import assert from "node:assert/strict";
+import { spawn } from "node:child_process";
+import { once } from "node:events";
+import { dirname, resolve } from "node:path";
 import test from "node:test";
+import { fileURLToPath } from "node:url";
+
+import { hardenClaudeSessionNew } from "../adapters/pi/claude-agent-acp-read-only.js";
 
 import {
+	CLAUDE_READ_ONLY_SYSTEM_PROMPT,
 	assertSubscriptionEnvironment,
+	buildClaudeDelegatePrompt,
 	buildClaudeDelegateInvocation,
+	resolveClaudeDelegateModel,
 } from "../adapters/pi/claude-delegate-runtime.js";
+
+const testDirectory = dirname(fileURLToPath(import.meta.url));
 
 test("builds a read-only one-shot Claude ACP invocation", () => {
 	const invocation = buildClaudeDelegateInvocation({
 		acpxCli: "/plugin/node_modules/acpx/dist/cli.js",
 		claudeAgent: "/plugin/node_modules/@agentclientprotocol/claude-agent-acp/dist/index.js",
+		claudeAgentProxy: "/plugin/hooks/adapters/pi/claude-agent-acp-read-only.js",
 		cwd: "/repo",
 		prompt: "review this change",
 		nodePath: "/usr/local/bin/node",
@@ -19,7 +31,7 @@ test("builds a read-only one-shot Claude ACP invocation", () => {
 	assert.deepEqual(invocation.args, [
 		"/plugin/node_modules/acpx/dist/cli.js",
 		"--agent",
-		"'/usr/local/bin/node' '/plugin/node_modules/@agentclientprotocol/claude-agent-acp/dist/index.js'",
+		"'/usr/local/bin/node' '/plugin/hooks/adapters/pi/claude-agent-acp-read-only.js' '/plugin/node_modules/@agentclientprotocol/claude-agent-acp/dist/index.js'",
 		"--cwd",
 		"/repo",
 		"--timeout",
@@ -27,11 +39,169 @@ test("builds a read-only one-shot Claude ACP invocation", () => {
 		"--approve-reads",
 		"--non-interactive-permissions",
 		"deny",
+		"--allowed-tools",
+		"Read,Glob,Grep",
+		"--max-turns",
+		"12",
+		"--append-system-prompt",
+		CLAUDE_READ_ONLY_SYSTEM_PROMPT,
 		"--format",
 		"quiet",
 		"exec",
 		"review this change",
 	]);
+});
+
+test("includes the visible Pi session in the delegated prompt by default", () => {
+	const prompt = buildClaudeDelegatePrompt("どう思う？", [
+		{ role: "user", content: "認証処理をシンプルにしたい", timestamp: 1 },
+		{
+			role: "assistant",
+			content: [
+				{ type: "thinking", thinking: "hidden reasoning" },
+				{ type: "text", text: "Cookieだけを使う案が最小です。" },
+				{ type: "toolCall", id: "tool-1", name: "bash", arguments: { command: "print-secret" } },
+			],
+			timestamp: 2,
+		},
+		{
+			role: "toolResult",
+			toolCallId: "tool-1",
+			toolName: "bash",
+			content: [{ type: "text", text: "SECRET_OUTPUT" }],
+			isError: false,
+			timestamp: 3,
+		},
+		{
+			role: "custom",
+			customType: "hikizan-claude-delegate",
+			content: "OLD_CLAUDE_REVIEW",
+			display: true,
+			timestamp: 4,
+		},
+		{
+			role: "user",
+			content: [
+				{ type: "text", text: "この案で進める？" },
+				{ type: "image", data: "IMAGE_BASE64", mimeType: "image/png" },
+			],
+			timestamp: 5,
+		},
+	]);
+
+	assert.match(prompt, /<pi-session-context>/);
+	assert.match(prompt, /User:\n認証処理をシンプルにしたい/);
+	assert.match(prompt, /Assistant:\nCookieだけを使う案が最小です。/);
+	assert.match(prompt, /User:\nこの案で進める？/);
+	assert.match(prompt, /<delegate-request>\nどう思う？\n<\/delegate-request>/);
+	assert.doesNotMatch(prompt, /hidden reasoning|print-secret|SECRET_OUTPUT|OLD_CLAUDE_REVIEW|IMAGE_BASE64/);
+});
+
+test("keeps the newest visible session context within the delegated prompt budget", () => {
+	const prompt = buildClaudeDelegatePrompt(
+		"最新案を見て",
+		[
+			{ role: "user", content: `OLD_CONTEXT_${"x".repeat(80)}`, timestamp: 1 },
+			{ role: "assistant", content: [{ type: "text", text: "NEW_CONTEXT" }], timestamp: 2 },
+		],
+		80,
+	);
+
+	assert.doesNotMatch(prompt, /OLD_CONTEXT/);
+	assert.match(prompt, /NEW_CONTEXT/);
+	assert.match(prompt, /earlier visible session context omitted/);
+});
+
+test("restricts Claude session metadata to read-only built-in tools", () => {
+	const request = {
+		jsonrpc: "2.0",
+		id: 7,
+		method: "session/new",
+		params: {
+			cwd: "/repo",
+			mcpServers: [{ name: "project-server", command: "node", args: ["server.js"] }],
+			_meta: {
+				systemPrompt: { append: "stay focused" },
+				claudeCode: {
+					options: {
+						allowedTools: ["Bash", "Write"],
+						maxTurns: 12,
+						model: "opus",
+						settingSources: ["project", "local"],
+					},
+				},
+			},
+		},
+	};
+
+	assert.deepEqual(hardenClaudeSessionNew(request), {
+		...request,
+		params: {
+			...request.params,
+			mcpServers: [],
+			_meta: {
+				...request.params._meta,
+				claudeCode: {
+					options: {
+						...request.params._meta.claudeCode.options,
+						tools: ["Read", "Glob", "Grep"],
+						allowedTools: ["Read", "Glob", "Grep"],
+						settingSources: [],
+						strictMcpConfig: true,
+						mcpServers: {},
+					},
+				},
+			},
+		},
+	});
+});
+
+test("rewrites session/new on the ACP stdio stream", async () => {
+	const proxy = spawn(
+		process.execPath,
+		[
+			resolve(testDirectory, "../adapters/pi/claude-agent-acp-read-only.js"),
+			resolve(testDirectory, "fixtures/echo-claude-agent-acp.mjs"),
+		],
+		{ stdio: ["pipe", "pipe", "pipe"] },
+	);
+	let stdout = "";
+	let stderr = "";
+	proxy.stdout.setEncoding("utf8");
+	proxy.stderr.setEncoding("utf8");
+	proxy.stdout.on("data", (chunk) => {
+		stdout += chunk;
+	});
+	proxy.stderr.on("data", (chunk) => {
+		stderr += chunk;
+	});
+
+	proxy.stdin.end(`${JSON.stringify({ jsonrpc: "2.0", id: 1, method: "session/new", params: {} })}\n`);
+	const [code] = await once(proxy, "close");
+
+	assert.equal(code, 0, stderr);
+	const message = JSON.parse(stdout);
+	assert.deepEqual(message.params._meta.claudeCode.options.tools, ["Read", "Glob", "Grep"]);
+	assert.deepEqual(message.params._meta.claudeCode.options.settingSources, []);
+	assert.deepEqual(message.params.mcpServers, []);
+});
+
+test("uses an optional Claude model override", () => {
+	assert.equal(resolveClaudeDelegateModel({}), undefined);
+	assert.equal(resolveClaudeDelegateModel({ HIKIZAN_CLAUDE_MODEL: " opus " }), "opus");
+
+	const invocation = buildClaudeDelegateInvocation({
+		acpxCli: "/plugin/acpx.js",
+		claudeAgent: "/plugin/claude-acp.js",
+		claudeAgentProxy: "/plugin/claude-agent-acp-read-only.js",
+		cwd: "/repo",
+		prompt: "review",
+		nodePath: "/usr/local/bin/node",
+		model: "opus",
+	});
+	const modelIndex = invocation.args.indexOf("--model");
+	assert.notEqual(modelIndex, -1);
+	assert.equal(invocation.args[modelIndex + 1], "opus");
 });
 
 test("refuses API-billed or gateway-routed Claude environments", () => {

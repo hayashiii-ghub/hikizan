@@ -23,6 +23,8 @@ PACKAGE_DIR="$RUNTIME/node_modules/hikizan"
 assert_exit "packed package installs a Pi executable" 0 "$?"
 [ -d "$PACKAGE_DIR" ]
 assert_exit "packed hikizan package is installed" 0 "$?"
+[ -f "$PACKAGE_DIR/hooks/adapters/pi/claude-agent-acp-read-only.js" ]
+assert_exit "packed hikizan includes the read-only Claude ACP proxy" 0 "$?"
 
 INSPECTOR="$TMP/tool-inspector.ts"
 cat > "$INSPECTOR" <<'EOF'
