@@ -10,6 +10,7 @@ import { hardenClaudeSessionNew } from "../adapters/pi/claude-agent-acp-read-onl
 import {
 	CLAUDE_READ_ONLY_SYSTEM_PROMPT,
 	assertSubscriptionEnvironment,
+	buildClaudeDelegatePrompt,
 	buildClaudeDelegateInvocation,
 	resolveClaudeDelegateModel,
 } from "../adapters/pi/claude-delegate-runtime.js";
@@ -49,6 +50,66 @@ test("builds a read-only one-shot Claude ACP invocation", () => {
 		"exec",
 		"review this change",
 	]);
+});
+
+test("includes the visible Pi session in the delegated prompt by default", () => {
+	const prompt = buildClaudeDelegatePrompt("どう思う？", [
+		{ role: "user", content: "認証処理をシンプルにしたい", timestamp: 1 },
+		{
+			role: "assistant",
+			content: [
+				{ type: "thinking", thinking: "hidden reasoning" },
+				{ type: "text", text: "Cookieだけを使う案が最小です。" },
+				{ type: "toolCall", id: "tool-1", name: "bash", arguments: { command: "print-secret" } },
+			],
+			timestamp: 2,
+		},
+		{
+			role: "toolResult",
+			toolCallId: "tool-1",
+			toolName: "bash",
+			content: [{ type: "text", text: "SECRET_OUTPUT" }],
+			isError: false,
+			timestamp: 3,
+		},
+		{
+			role: "custom",
+			customType: "hikizan-claude-delegate",
+			content: "OLD_CLAUDE_REVIEW",
+			display: true,
+			timestamp: 4,
+		},
+		{
+			role: "user",
+			content: [
+				{ type: "text", text: "この案で進める？" },
+				{ type: "image", data: "IMAGE_BASE64", mimeType: "image/png" },
+			],
+			timestamp: 5,
+		},
+	]);
+
+	assert.match(prompt, /<pi-session-context>/);
+	assert.match(prompt, /User:\n認証処理をシンプルにしたい/);
+	assert.match(prompt, /Assistant:\nCookieだけを使う案が最小です。/);
+	assert.match(prompt, /User:\nこの案で進める？/);
+	assert.match(prompt, /<delegate-request>\nどう思う？\n<\/delegate-request>/);
+	assert.doesNotMatch(prompt, /hidden reasoning|print-secret|SECRET_OUTPUT|OLD_CLAUDE_REVIEW|IMAGE_BASE64/);
+});
+
+test("keeps the newest visible session context within the delegated prompt budget", () => {
+	const prompt = buildClaudeDelegatePrompt(
+		"最新案を見て",
+		[
+			{ role: "user", content: `OLD_CONTEXT_${"x".repeat(80)}`, timestamp: 1 },
+			{ role: "assistant", content: [{ type: "text", text: "NEW_CONTEXT" }], timestamp: 2 },
+		],
+		80,
+	);
+
+	assert.doesNotMatch(prompt, /OLD_CONTEXT/);
+	assert.match(prompt, /NEW_CONTEXT/);
+	assert.match(prompt, /earlier visible session context omitted/);
 });
 
 test("restricts Claude session metadata to read-only built-in tools", () => {

@@ -3,11 +3,16 @@
  * 通常ターンはpiのまま、独立した読み取り専用の意見が必要な時だけClaudeを使う。
  */
 
-import type { ExtensionAPI, ExtensionContext } from "@earendil-works/pi-coding-agent";
+import {
+	sessionEntryToContextMessages,
+	type ExtensionAPI,
+	type ExtensionContext,
+} from "@earendil-works/pi-coding-agent";
 import { Text } from "@earendil-works/pi-tui";
 import { Type } from "typebox";
 import {
 	assertSubscriptionEnvironment,
+	buildClaudeDelegatePrompt,
 	buildClaudeDelegateInvocation,
 	resolveClaudeAcpRuntime,
 	resolveClaudeDelegateModel,
@@ -25,10 +30,11 @@ async function delegateToClaude(
 	signal?: AbortSignal,
 ): Promise<{ text: string; details: DelegateDetails }> {
 	assertSubscriptionEnvironment();
+	const sessionMessages = ctx.sessionManager.buildContextEntries().flatMap(sessionEntryToContextMessages);
 	const invocation = buildClaudeDelegateInvocation({
 		...resolveClaudeAcpRuntime(),
 		cwd: ctx.cwd,
-		prompt,
+		prompt: buildClaudeDelegatePrompt(prompt, sessionMessages),
 		model: resolveClaudeDelegateModel(),
 	});
 	const startedAt = Date.now();
@@ -51,18 +57,18 @@ export function registerClaudeDelegate(pi: ExtensionAPI): void {
 		name: "delegate_claude",
 		label: "Delegate Claude",
 		description:
-			"Ask Claude Code for an independent, read-only second opinion through ACP. Use for focused review, diagnosis, or design comparison when another agent materially improves confidence. Claude cannot modify files in this mode.",
+			"Ask Claude Code for an independent, read-only second opinion through ACP with the current visible Pi session as context. Use for focused review, diagnosis, or design comparison when another agent materially improves confidence. Claude cannot modify files in this mode.",
 		promptSnippet: "Delegate a focused read-only second opinion to Claude Code through ACP",
 		promptGuidelines: [
 			"Use delegate_claude only when an independent Claude review or comparison adds clear value.",
-			"Give Claude a self-contained, focused prompt and verify its claims before acting on them.",
+			"The current visible Pi session is included automatically; give Claude a focused question and verify its claims before acting on them.",
 			"Do not claim Claude changed files; delegated runs are read-only.",
 		],
 		parameters: Type.Object({
 			prompt: Type.String({
 				minLength: 1,
 				maxLength: 20_000,
-				description: "Self-contained task for Claude, including the files or question to inspect",
+				description: "Focused question for Claude; the current visible Pi session is included automatically",
 			}),
 		}),
 		executionMode: "sequential",
@@ -94,7 +100,7 @@ export function registerClaudeDelegate(pi: ExtensionAPI): void {
 	});
 
 	pi.registerCommand("delegate", {
-		description: "ClaudeへACP経由で読み取り専用の意見を求める: /delegate claude <依頼>",
+		description: "現在のPiセッションを添えてClaudeへ読み取り専用の意見を求める: /delegate claude <依頼>",
 		handler: async (args, ctx) => {
 			const match = args.trim().match(/^claude\s+([\s\S]+)$/i);
 			if (!match) {
