@@ -15,10 +15,10 @@ v2では、v1から引き継ぐポータブルなスキル境界と、正式対�
 - 修正、追加、削除、実行が明示された場合だけ実装を始める境界
 - PRマージ、既定ブランチへの直接のpush、公開・配布・本番環境や共有データの変更は、依頼の終点として明示された場合だけ行う境界
 - ハーネスに依存しない`skills/`と、任意で追加できるHookの分離
-- piでの6スキル、起動情報、TUI、本番変更確認、画面検証、Claude ACP委譲、任意Web検索の一体提供
+- piでの6スキル、起動情報、TUI、安全な巻き戻し、本番変更確認、画面検証、Claude ACP委譲、任意Web検索の一体提供
 - リリース前にpacked artifactを一時環境へ導入し、実際のpi起動とスキル・コマンド・ツール登録を確認する配布契約
 
-v1の6スキルIDと導入経路は維持します。piパッケージはClaude ACP実行環境とshimonの依存関係を含むためSkills単体より導入容量が大きくなりますが、Chromium本体、外部サービスのAPIキー、Claudeの認証情報は自動導入しません。
+v1の6スキルIDと導入経路は維持します。piパッケージはClaude ACP実行環境、shimon、[pi-rewind](https://github.com/arpagon/pi-rewind)の検証済み修正版を依存関係に含むためSkills単体より導入容量が大きくなりますが、Chromium本体、外部サービスのAPIキー、Claudeの認証情報は自動導入しません。
 
 ## 導入方法を選ぶ
 
@@ -67,7 +67,9 @@ piパッケージ：
 pi install git:github.com/hayashiii-ghub/hikizan
 ```
 
-piでは6スキル、起動時のリポジトリ状態、文字ベースのヘッダー、[shimon](https://github.com/hayashiii-ghub/shimon)の`shimon_verify`がまとめて読み込まれます。`/hikizan`でヘッダーの表示を切り替え、`/shimon`でshimonの実行状態を確認できます。
+piでは6スキル、起動時のリポジトリ状態、文字ベースのヘッダー、[shimon](https://github.com/hayashiii-ghub/shimon)の`shimon_verify`、`/rewind`がまとめて読み込まれます。`/hikizan`でヘッダーの表示を切り替え、`/shimon`でshimonの実行状態を確認できます。
+
+`/rewind`はGitリポジトリ内で利用でき、チェックポイントを選んでファイル、会話、または両方を巻き戻せます。ファイルを戻す前に現在状態の安全用チェックポイントと差分プレビューを作り、Gitの現在の`HEAD`は動かしません。安全用チェックポイントやプレビューを作れない場合は復元を中止します。
 
 piでは`/tansaku`、`/sekkei`、`/jikkou`、`/sadoku`、`/teishutsu`、`/houkoku`から各スキルを直接使えます。標準の`/skill:<name>`も引き続き利用できます。
 
@@ -93,6 +95,8 @@ npx playwright install chromium
 
 以前にshimonを単体のpiパッケージとして導入している場合は、`pi list`でshimonのsourceを確認し、`pi remove <source>`で外してからhikizanを更新してください。同じ`shimon_verify`を2つのパッケージから登録するとpiが起動を拒否します。
 
+以前にpi-rewindを単体導入している場合も、`pi list`でsourceを確認し、`pi remove <source>`で外してからhikizanを更新してください。Hikizan v2.1.0以降は`/rewind`を内蔵します。
+
 CursorのHookアダプターは、プラグイン画面からGitHubリポジトリ`hayashiii-ghub/hikizan`を追加します。
 
 そのほかのAgent Plugins対応クライアントでは、このGitHubリポジトリをクライアント標準の方法で追加します。ルートの`plugin.json`と`skills/`が読み込まれます。
@@ -112,7 +116,7 @@ npx skills add github:hayashiii-ghub/hikizan -g
 | Claude Codeプラグイン | スキル + 起動情報 | マニフェスト、配線、Hook出力をCIで検査 |
 | Codex + Hookアダプター | Agent Pluginsのスキル + 起動情報 | マニフェスト、配線、Hook出力をCIで検査 |
 | Cursor + Hookアダプター | Agent Pluginsのスキル + 起動情報 | マニフェスト、配線、Hook出力をCIで検査 |
-| piパッケージ | スキル + 起動情報 + TUI + 本番変更確認 + 画面検証 + Claude ACP委譲 + 任意Web検索 | packed artifactを一時導入し、実pi起動とスキル・コマンド・ツール登録をCIで検査 |
+| piパッケージ | スキル + 起動情報 + TUI + 安全な巻き戻し + 本番変更確認 + 画面検証 + Claude ACP委譲 + 任意Web検索 | packed artifactを一時導入し、実pi起動とスキル・コマンド・ツール登録をCIで検査 |
 | Agent Plugins対応クライアント | スキル | ルート`plugin.json`と6スキルの構成をCIで検査 |
 | Agent Skills対応ハーネス | スキルのみ | 6スキルの`frontmatter`にある`name`、`description`、共通契約をCIで検査 |
 
