@@ -1,8 +1,8 @@
 {
   "$schema": "https://json.schemastore.org/claude-code-plugin-manifest.json",
   "name": "hikizan",
-  "description": "動詞単位のスキル（tansaku / sekkei / jikkou / sadoku / teishutsu / houkoku）、軽量な起動規則、作業開始時のGit状態で構成するClaude Codeプラグイン兼Agent Skillsパック。",
-  "version": "2.1.0",
+  "description": "日本語のスキル（tansaku / sekkei / jikkou / sadoku / teishutsu / houkoku）と軽量な起動規則で、AIとの作業の現在地・判断・結果を把握するためのプラグイン。",
+  "version": "2.2.0",
   "author": {
     "name": "hayashiii-ghub"
   },

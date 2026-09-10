@@ -1,19 +1,22 @@
 {
   "name": "hikizan",
   "descriptions": {
-    "portable": "Portable Japanese workflow skills ({{core_skills}}) for planning, implementation, review, delivery, and communication.",
-    "claude": "動詞単位のスキル（{{core_skills}}）、軽量な起動規則、作業開始時のGit状態で構成するClaude Codeプラグイン兼Agent Skillsパック。",
-    "cursor": "hikizan for Cursor: optional routing and repository status for the portable skills ({{core_skills}}).",
-    "codex": "hikizan for Codex: optional routing and repository status for the portable skills ({{core_skills}}).",
-    "pi": "hikizan for pi: portable workflow skills ({{core_skills}}), startup routing, repository status, a compact text-based TUI, safe file and conversation rewind, confirmation before production-impacting shell operations, built-in shimon visual verification, read-only Claude delegation over ACP, and optional Exa web search."
+    "portable": "Japanese skills ({{core_skills}}) to follow AI work, make decisions, and understand results.",
+    "claude": "日本語のスキル（{{core_skills}}）と軽量な起動規則で、AIとの作業の現在地・判断・結果を把握するためのプラグイン。",
+    "cursor": "hikizan for Cursor: optional routing for the portable Japanese skills ({{core_skills}}).",
+    "codex": "hikizan for Codex: optional routing for the portable Japanese skills ({{core_skills}}).",
+    "pi": "hikizan for pi: portable Japanese skills ({{core_skills}}), direct skill commands, a text header, safe file and conversation rewind, confirmation before production-impacting shell operations, shimon visual verification, read-only Claude delegation over ACP, and optional Exa web search."
   },
   "codexInterface": {
-    "shortDescription": "Japanese workflow skills with goal-aware routing",
-    "longDescription": "Verb-oriented Japanese workflow skills with lightweight routing, prose guidance, and startup repository status.",
+    "shortDescription": "Japanese skills to follow AI work and make decisions",
+    "longDescription": "Japanese skills with lightweight routing to follow work, make decisions, and understand results.",
     "category": "Productivity",
-    "capabilities": ["Read", "Write"]
+    "capabilities": [
+      "Read",
+      "Write"
+    ]
   },
-  "version": "2.1.0",
+  "version": "2.2.0",
   "author": {
     "name": "hayashiii-ghub"
   },
@@ -26,5 +29,12 @@
     "@hayashiii/shimon": "^0.3.1",
     "pi-rewind": "github:hayashiii-ghub/pi-rewind#c34c2a89436ddef69661bee8fa84ea6067f386c3"
   },
-  "keywords": ["skills", "hooks", "japanese", "code-review", "workflow", "reporting"]
+  "keywords": [
+    "skills",
+    "hooks",
+    "japanese",
+    "code-review",
+    "workflow",
+    "reporting"
+  ]
 }

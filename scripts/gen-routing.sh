@@ -33,8 +33,7 @@ gen_routing() {
     [ -n "$description" ] || { echo "✘ missing description: $skill" >&2; return 1; }
     printf -- '- `%s`：%s\n' "$skill" "$description"
   done
-  printf '\n%s\n\n' "$operation_rule"
-  printf '%s\n' '起動するスキルごとに、作業の直前に1行だけ`🌲 <スキル名>（日本語名）：<今回の目的>`と表示する。停止時に意味のある次の進め方があれば、最大3件を推奨順に`A（あ）`、`I（い）`、`U（う）`で示し、英字とひらがなのどちらの回答も同じ選択として扱う。'
+  printf '\n%s\n' "$operation_rule"
 }
 
 gen_cursor_rule() {

@@ -1,7 +1,7 @@
 {
   "name": "hikizan",
-  "version": "2.1.0",
-  "description": "hikizan for pi: portable workflow skills (tansaku / sekkei / jikkou / sadoku / teishutsu / houkoku), startup routing, repository status, a compact text-based TUI, safe file and conversation rewind, confirmation before production-impacting shell operations, built-in shimon visual verification, read-only Claude delegation over ACP, and optional Exa web search.",
+  "version": "2.2.0",
+  "description": "hikizan for pi: portable Japanese skills (tansaku / sekkei / jikkou / sadoku / teishutsu / houkoku), direct skill commands, a text header, safe file and conversation rewind, confirmation before production-impacting shell operations, shimon visual verification, read-only Claude delegation over ACP, and optional Exa web search.",
   "type": "module",
   "author": {
     "name": "hayashiii-ghub"

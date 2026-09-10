@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
-# description由来の起動規則と、セッション開始時のGit状態を確認する。
-# スキル選択と作業開始時の前提がハーネス間でずれないようにするために使う。
+# description由来の起動規則と、Gitを呼ばない起動処理を確認する。
+# 起動情報の配線を保ち、不要なGit操作の再導入を防ぐために使う。
 
 DIR="$(cd "$(dirname "$0")" && pwd)"
 . "$DIR/lib/harness.sh"
@@ -26,55 +26,25 @@ for skill in $(jq -r '.core[]' "$ROOT/scripts/skills.json"); do
 done
 
 TMP=$(mktemp -d)
-REMOTE="$TMP/remote.git"
-WORK="$TMP/work"
-OTHER="$TMP/other"
-git init -q --bare -b main "$REMOTE"
-git init -q "$WORK"
-git -C "$WORK" config user.email test@localhost
-git -C "$WORK" config user.name test
-printf 'base\n' > "$WORK/file.txt"
-git -C "$WORK" add file.txt
-git -C "$WORK" commit -qm base
-git -C "$WORK" branch -M main
-git -C "$WORK" remote add origin "$REMOTE"
-git -C "$WORK" push -qu --set-upstream origin main
-git clone -q "$REMOTE" "$OTHER"
-git -C "$OTHER" config user.email test@localhost
-git -C "$OTHER" config user.name test
-printf 'remote\n' >> "$OTHER/file.txt"
-git -C "$OTHER" commit -qam remote
-git -C "$OTHER" push -q origin main
-printf 'dirty\n' >> "$WORK/file.txt"
-PAYLOAD=$(jq -nc --arg cwd "$WORK" '{cwd:$cwd}')
-
-CLAUDE=$(printf '%s' "$PAYLOAD" | bash "$SESSION" claude)
-assert_contains "Claude receives routing" "## hikizanのスキル選択" "$CLAUDE"
-assert_contains "routing limits integration operations" "PRのマージと既定ブランチへの直接のpush" "$CLAUDE"
-assert_contains "routing does not treat PR creation as merge approval" "「PRまで」はマージを含めない" "$CLAUDE"
-assert_contains "routing requires explicit production authority" "公開・配布・本番環境や共有データを変更する操作" "$CLAUDE"
-assert_contains "Claude receives repository name" "リポジトリ: work" "$CLAUDE"
-assert_contains "dirty worktree is reported" "worktree=変更あり" "$CLAUDE"
-assert_contains "remote fetch updates behind count" "behind=1" "$CLAUDE"
-assert_contains "successful fetch is reported" "remote=確認済み" "$CLAUDE"
-
-CODEX=$(HIKIZAN_SKIP_FETCH=1 bash "$SESSION" codex <<<"$PAYLOAD")
+trap 'rm -rf "$TMP"' EXIT
+mkdir "$TMP/bin"
+cat > "$TMP/bin/git" <<'EOF'
+#!/usr/bin/env bash
+# 起動処理からのGit呼び出しを記録する。
+# fetchを含むGit操作が戻っていないことを確かめる。
+printf 'called\n' >> "$HZ_GIT_LOG"
+exit 1
+EOF
+chmod +x "$TMP/bin/git"
+export HZ_GIT_LOG="$TMP/git.log"
+export PATH="$TMP/bin:$PATH"
+CLAUDE=$(bash "$SESSION" claude </dev/null)
+assert_eq "Claude receives only routing" "$(cat "$ROUTING")" "$CLAUDE"
+CODEX=$(bash "$SESSION" codex <<<'{"cwd":"/nonexistent"}')
 assert_eq "Codex event is SessionStart" "SessionStart" \
   "$(printf '%s' "$CODEX" | jq -r '.hookSpecificOutput.hookEventName')"
-assert_contains "Codex receives routing" "## hikizanのスキル選択" \
+assert_eq "Codex receives only routing" "$(cat "$ROUTING")" \
   "$(printf '%s' "$CODEX" | jq -r '.hookSpecificOutput.additionalContext')"
-
-CURSOR=$(HIKIZAN_SKIP_FETCH=1 bash "$SESSION" cursor <<<"$PAYLOAD")
-CURSOR_CONTEXT=$(printf '%s' "$CURSOR" | jq -r '.additional_context')
-assert_contains "Cursor receives dynamic repository status" "リポジトリ: work" "$CURSOR_CONTEXT"
-case "$CURSOR_CONTEXT" in
-  *'## hikizanのスキル選択'*) HZ_FAIL=$((HZ_FAIL + 1)); printf '  FAIL: Cursor dynamic context duplicates its generated rule\n' ;;
-  *) HZ_PASS=$((HZ_PASS + 1)) ;;
-esac
-
-PI=$(HIKIZAN_SKIP_FETCH=1 bash "$SESSION" pi <<<"$PAYLOAD")
-assert_contains "pi receives routing" "## hikizanのスキル選択" "$PI"
-assert_contains "pi receives repository status" "リポジトリ: work" "$PI"
-
-rm -rf "$TMP"
+[ ! -e "$HZ_GIT_LOG" ]
+assert_exit "startup does not call Git" 0 "$?"
 hz_test_summary
