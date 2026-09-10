@@ -1,5 +1,5 @@
 {
-  "description": "hikizan: lightweight skill routing and repository status.",
+  "description": "hikizan: lightweight skill routing.",
   "hooks": {
     "SessionStart": [
       {

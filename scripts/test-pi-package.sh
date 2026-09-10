@@ -19,12 +19,15 @@ npm_config_cache="$TMP/npm-cache" npm install --prefix "$RUNTIME" --no-audit --n
 
 PI_BIN="$RUNTIME/node_modules/.bin/pi"
 PACKAGE_DIR="$RUNTIME/node_modules/hikizan"
-[ -x "$PI_BIN" ]
-assert_exit "packed package installs a Pi executable" 0 "$?"
-[ -d "$PACKAGE_DIR" ]
-assert_exit "packed hikizan package is installed" 0 "$?"
-[ -f "$PACKAGE_DIR/hooks/adapters/pi/claude-agent-acp-read-only.js" ]
-assert_exit "packed hikizan includes the read-only Claude ACP proxy" 0 "$?"
+file_status=0
+[ -x "$PI_BIN" ] || file_status=1
+assert_exit "packed package installs a Pi executable" 0 "$file_status"
+file_status=0
+[ -d "$PACKAGE_DIR" ] || file_status=1
+assert_exit "packed hikizan package is installed" 0 "$file_status"
+file_status=0
+[ -f "$PACKAGE_DIR/hooks/adapters/pi/claude-agent-acp-read-only.js" ] || file_status=1
+assert_exit "packed hikizan includes the read-only Claude ACP proxy" 0 "$file_status"
 
 INSPECTOR="$TMP/tool-inspector.ts"
 cat > "$INSPECTOR" <<'EOF'
@@ -41,7 +44,7 @@ export default function inspectPiTools(pi: ExtensionAPI): void {
 EOF
 
 PI_OUTPUT="$(printf '%s\n' '{"type":"get_commands"}' '{"type":"get_state"}' | \
-  PI_CODING_AGENT_DIR="$TMP/pi-agent" HIKIZAN_SKIP_FETCH=1 \
+  PI_CODING_AGENT_DIR="$TMP/pi-agent" \
   "$PI_BIN" --mode rpc --offline --no-session --approve -e "$PACKAGE_DIR" -e "$INSPECTOR" 2>&1)"
 assert_contains "packed Pi registers /hikizan" '"name":"hikizan"' "$PI_OUTPUT"
 assert_contains "packed Pi registers /shimon" '"name":"shimon"' "$PI_OUTPUT"
@@ -56,7 +59,7 @@ assert_contains "packed Pi registers Claude delegation" 'PI_CLAUDE_DELEGATE_PRES
 assert_contains "packed Pi omits Exa without a key" 'PI_EXA_MISSING' "$PI_OUTPUT"
 
 PI_EXA_OUTPUT="$(printf '%s\n' '{"type":"get_state"}' | \
-  PI_CODING_AGENT_DIR="$TMP/pi-exa-agent" HIKIZAN_SKIP_FETCH=1 EXA_API_KEY=test-key \
+  PI_CODING_AGENT_DIR="$TMP/pi-exa-agent" EXA_API_KEY=test-key \
   "$PI_BIN" --mode rpc --offline --no-session --approve -e "$PACKAGE_DIR" -e "$INSPECTOR" 2>&1)"
 assert_contains "packed Pi keeps shimon with Exa configured" 'PI_SHIMON_PRESENT' "$PI_EXA_OUTPUT"
 assert_contains "packed Pi registers Exa with a key" 'PI_EXA_PRESENT' "$PI_EXA_OUTPUT"

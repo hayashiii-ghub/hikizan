@@ -4,7 +4,7 @@
   "owner": {
     "name": "hayashiii-ghub"
   },
-  "description": "調査・設計・実装・レビュー・提出・文章のスキルと軽量な起動情報をまとめたAgent Skillsパック。",
+  "description": "AIとの作業の現在地、必要な判断、結果を把握するための日本語Agent Skillsパック。",
   "plugins": [
     {
       "name": "hikizan",

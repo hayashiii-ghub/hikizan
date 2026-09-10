@@ -6,7 +6,7 @@
 
 ## 検証
 
-必須の依存は`bash` / `jq` / `git` / `gh` / `awk`です。`shellcheck`はローカルでは任意、CIでは必須です。
+検査には`bash` / `jq` / `git` / `gh` / `awk` / Node.js 24を使い、配布物の検査にはnpmも必要です。`shellcheck`はローカルでは任意、CIでは必須です。
 
 ```bash
 bash scripts/check-all.sh
@@ -14,13 +14,19 @@ bash scripts/check-all.sh
 
 変更後は関係する生成スクリプトを実行し、最後にこのコマンドで全体を確認します。
 
+## 設計の基準
+
+hikizanが担うのは、AIが進めた仕事を人が理解して引き受けられる状態にすることです。各`SKILL.md`に成果、判断の観点、表示、選択、権限の約束をまとめ、1枚で役割が完結する形にします。操作手順や一般的な作業指南はモデルと利用先プロジェクトに任せます。具体例への対処を、全作業の必須工程へ広げません。
+
+READMEは利用者の入口、piの案内は環境固有の使い方、この文書は開発と配布の正本です。検査は配線・生成物・動作を守り、文章の表現を固定する検査はUIと権限の約束に限ります。
+
 ## 編集規約
 
 - スキル本文はハーネスに依存させず、別スキルは論理名で参照する
 - ディレクトリ、ファイル、スキルIDは英語のASCII識別子を使い、人が読むMarkdownの見出しは日本語にする
 - 自作のシェルスクリプトはshebang直後の2行で、何をするかと、なぜ必要かを日本語で書く。特殊な引数がある場合だけ使い方を続ける
 - 6スキルは固定工程ではなく独立した観点として扱い、起動条件と変更権限は各`SKILL.md`の`description`を正本にする
-- コミット、ブランチ、PRの命名は`skills/teishutsu/references/naming.md`、日本語散文は`skills/houkoku/references/writing-style.md`に従う
+- 命名は変更の目的が伝わる形にし、日本語散文は`skills/houkoku/SKILL.md`の好みに従う
 
 ## 生成元
 
@@ -30,17 +36,35 @@ bash scripts/check-all.sh
 | スキルの集合・順序 | `scripts/skills.json` | 関係する生成スクリプト |
 | 起動規則とREADME一覧 | 各`SKILL.md`の`description` | `bash scripts/gen-routing.sh` / `bash scripts/gen-trigger-docs.sh` |
 | Agent Plugins・ハーネス別・piマニフェスト | `plugin.src.json` | `bash scripts/gen-manifests.sh` |
-| 実装時の視覚検証 | `skills/jikkou/references/visual-verification.md` | — |
-| 査読時の視覚検証 | `skills/sadoku/references/visual-verification.md` | — |
 
 生成先のマーカー区間、4つの`plugin.json`、ルートの`package.json`は直接編集しません。
 
-## フック
+## 実行時連携
 
-フックは、スキル選択規則の注入と起動時のGit状態確認を扱います。piアダプターだけは、`EXA_API_KEY`設定時の任意Web検索、組み込みの画面検証、本番・公開環境へ影響しやすいbashコマンドの実行前確認も提供します。正確な条件は`hooks/conditions.md`、共通処理は`hooks/scripts/`、ハーネス差分は`hooks/adapters/`、回帰検査は`hooks/tests/`に置きます。実装判断、コミット判断、会話回数による内省、利用状況計測は追加しません。
+登録条件と失敗時の扱いは[フックの責務](hooks/conditions.md)を正本にします。共通処理は`hooks/scripts/`、環境差分は`hooks/adapters/`、回帰検査は`hooks/tests/`へ置きます。実装判断、コミット判断、会話回数による内省、利用状況計測は追加しません。
+
+## 配布と検証範囲
+
+配布と互換性確認はパック単位です。6スキルID、独立した観点としての利用、依頼に応じた変更権限を維持します。共通本文はSkills単体の導入でも読めるよう各スキルへ生成します。piの同梱機能と導入経路も互換性の対象です。
+
+リリース前はpacked artifactを一時環境へ導入し、実際のpi起動とスキル・コマンド・ツール登録、巻き戻しを確認します。
+
+```bash
+bash scripts/test-pi-package.sh
+```
+
+| 実行環境 | 提供する範囲 | リポジトリ内の確認 |
+| --- | --- | --- |
+| Claude Codeプラグイン | スキル + 起動規則 | マニフェスト、配線、Hook出力 |
+| Codexプラグイン | スキル + 起動規則 | マニフェスト、配線、Hook出力 |
+| Cursorプラグイン | スキル + 規則ファイル | マニフェスト、規則の生成 |
+| piパッケージ | スキルと[追加機能](hooks/adapters/pi/README.md) | 配布物の導入、実pi起動と登録、巻き戻し |
+| Agent Plugins / Agent Skills | スキル | マニフェスト、スキル構成、共通本文 |
+
+Claude Code・Codex・Cursor本体のE2Eや、自然文からのスキル選択・認知負荷の改善は、この検査だけでは確認できません。起動確認と実際の会話での評価は区別します。
 
 ## 安全
 
 - 破壊的操作、公開・配布、本番環境や共有データの変更、強制プッシュは利用者の明示依頼なしに進めない
-- PR本文とコミットメッセージの秘密情報検査は`skills/teishutsu/references/pr-template.md`に従う
+- 提出する差分・本文・コミットメッセージ・ログに秘密情報や不要な個人情報を含めない
 - 実行可能Markdownはコードとしてレビューする

@@ -57,7 +57,6 @@ try {
 			env: {
 				...process.env,
 				PI_CODING_AGENT_DIR: agentDir,
-				HIKIZAN_SKIP_FETCH: "1",
 			},
 			stdio: ["pipe", "pipe", "pipe"],
 		},

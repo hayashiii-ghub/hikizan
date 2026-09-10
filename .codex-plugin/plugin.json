@@ -1,7 +1,7 @@
 {
   "name": "hikizan",
-  "version": "2.1.0",
-  "description": "hikizan for Codex: optional routing and repository status for the portable skills (tansaku / sekkei / jikkou / sadoku / teishutsu / houkoku).",
+  "version": "2.2.0",
+  "description": "hikizan for Codex: optional routing for the portable Japanese skills (tansaku / sekkei / jikkou / sadoku / teishutsu / houkoku).",
   "author": {
     "name": "hayashiii-ghub"
   },
@@ -10,8 +10,8 @@
   "license": "MIT",
   "interface": {
     "displayName": "hikizan",
-    "shortDescription": "Japanese workflow skills with goal-aware routing",
-    "longDescription": "Verb-oriented Japanese workflow skills with lightweight routing, prose guidance, and startup repository status.",
+    "shortDescription": "Japanese skills to follow AI work and make decisions",
+    "longDescription": "Japanese skills with lightweight routing to follow work, make decisions, and understand results.",
     "developerName": "hayashiii-ghub",
     "category": "Productivity",
     "capabilities": [
